@@ -27,6 +27,7 @@
   --on-calda: #1E120C;
   --on-band: #F5EADB; --on-band-2: rgba(245, 234, 219, .64); --band-line: rgba(245, 234, 219, .14);
 }
+@media (max-width: 860px) { :root { --nav-h: 72px; } }
 
 /* Dia · Merengue */
 :root, [data-theme='light'] {
@@ -47,6 +48,7 @@
   --grain: .085; --grain-blend: multiply;
   --band: #2B1D17;
   --sugar: 255, 255, 255;
+  --hero-dim: 1;
 }
 
 /* Noite · Ganache */
@@ -68,4 +70,5 @@
   --grain: .055; --grain-blend: screen;
   --band: #0C0806;
   --sugar: 245, 234, 219;
+  --hero-dim: .86;
 }

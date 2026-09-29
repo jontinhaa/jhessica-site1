@@ -43,6 +43,9 @@ ul, ol { list-style: none; }
 .t-s { font-size: .75rem; line-height: 1.55; letter-spacing: .02em; color: var(--muted); }
 .t-bold-m { font-size: .6875rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
 .eyebrow { display: inline-block; font-size: .66rem; font-weight: 600; letter-spacing: .34em; text-transform: uppercase; color: var(--accent-ink); }
+.eyebrow-line { display: flex; align-items: center; gap: 1rem; }
+.eyebrow-line i { width: 48px; height: 1px; background: var(--accent); flex: none; }
+.eyebrow-line span { font-size: .625rem; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; color: var(--accent-ink); }
 .kicker { display: block; font-size: .625rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--accent-ink); }
 .micro { font-size: .59rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
 .hand { font-family: var(--hand); font-size: 1.55rem; line-height: 1.25; color: var(--accent); }
