@@ -1,0 +1,71 @@
+/* Tokens · fonte da verdade: ../design_system2.html (seção 02 · Cores & superfícies).
+   O tema é um escopo: qualquer bloco pode fixar data-theme="light" | "dark". */
+
+:root {
+  --serif: var(--font-serif), Georgia, serif;
+  --sans: var(--font-sans), system-ui, sans-serif;
+  --poster: var(--font-poster), 'Arial Narrow', sans-serif;
+  --hand: var(--font-hand), cursive;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --max: 1400px;
+  --pad: clamp(22px, 6vw, 96px);
+  --sec-y: clamp(5rem, 12vh, 8.5rem);
+  --nav-h: 84px;
+  --gap: clamp(1.25rem, 3vw, 3rem);
+
+  --r-pill: 100px; --r-xs: 3px; --r-sm: 6px; --r-md: 12px; --r-lg: 18px; --r-glass: 22px; --r-xl: 32px;
+
+  --e-out: cubic-bezier(.2, .8, .2, 1);        /* entrar, revelar */
+  --e-zoom: cubic-bezier(.25, .46, .45, .94);  /* zoom de foto */
+  --e-flip: cubic-bezier(.55, 0, .1, 1);       /* virar, desenhar */
+  --e-soft: cubic-bezier(.22, .61, .36, 1);    /* subir, aparecer */
+  --e-std: cubic-bezier(.4, 0, .2, 1);         /* cor, borda, fundo */
+
+  --calda: linear-gradient(100deg, #EDC282 0%, #D59A4E 52%, #B87733 100%);
+  --fita: linear-gradient(90deg, transparent, #D9A45B 16%, #C85A68 50%, #D9A45B 84%, transparent);
+  --on-calda: #1E120C;
+  --on-band: #F5EADB; --on-band-2: rgba(245, 234, 219, .64); --band-line: rgba(245, 234, 219, .14);
+}
+
+/* Dia · Merengue */
+:root, [data-theme='light'] {
+  color-scheme: light;
+  --bg: #F6EFE4; --bg-rgb: 246, 239, 228; --bg-2: #EFE4D3; --tint: rgba(43, 29, 23, .03);
+  --surface: #FBF6EE; --surface-2: #FFFCF7; --field: #FFFDF9;
+  --ink: #2B1D17; --ink-rgb: 43, 29, 23; --ink-2: #5A4338; --muted: #78624F;
+  --line: rgba(43, 29, 23, .12); --line-2: rgba(43, 29, 23, .22);
+  --accent: #B8742F; --accent-rgb: 184, 116, 47; --accent-ink: #8F5520; --accent-2: #E3B373;
+  --berry: #8E2F3C; --pista: #5E7236; --danger: #A23B2C; --danger-rgb: 162, 59, 44;
+  --on-accent: #1E120C;
+  --glass: rgba(255, 251, 245, .58); --glass-strong: rgba(251, 246, 238, .86); --glass-line: rgba(184, 116, 47, .26);
+  --glass-shadow: 0 24px 48px -28px rgba(43, 29, 23, .45);
+  --shadow-1: 0 1px 2px rgba(43, 29, 23, .06), 0 10px 26px -14px rgba(43, 29, 23, .22);
+  --shadow-2: 0 34px 60px -30px rgba(43, 29, 23, .42);
+  --glow-a: rgba(227, 179, 115, .40); --glow-b: rgba(200, 90, 104, .14);
+  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .17 0 0 0 0 .11 0 0 0 0 .09 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain: .085; --grain-blend: multiply;
+  --band: #2B1D17;
+  --sugar: 255, 255, 255;
+}
+
+/* Noite · Ganache */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #140D0A; --bg-rgb: 20, 13, 10; --bg-2: #1B120E; --tint: rgba(255, 236, 214, .018);
+  --surface: #1E1410; --surface-2: #261914; --field: #1A110D;
+  --ink: #F5EADB; --ink-rgb: 245, 234, 219; --ink-2: rgba(245, 234, 219, .74); --muted: rgba(245, 234, 219, .5);
+  --line: rgba(217, 164, 91, .14); --line-2: rgba(217, 164, 91, .27);
+  --accent: #D9A45B; --accent-rgb: 217, 164, 91; --accent-ink: #E4B774; --accent-2: #F0CD8E;
+  --berry: #D0707C; --pista: #A9B878; --danger: #E4806B; --danger-rgb: 228, 128, 107;
+  --on-accent: #1A100B;
+  --glass: rgba(255, 244, 230, .04); --glass-strong: rgba(28, 19, 15, .78); --glass-line: rgba(217, 164, 91, .17);
+  --glass-shadow: 0 20px 40px -20px rgba(0, 0, 0, .85);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .45), 0 12px 30px -16px rgba(0, 0, 0, .75);
+  --shadow-2: 0 40px 70px -32px rgba(0, 0, 0, .95);
+  --glow-a: rgba(228, 183, 96, .11); --glow-b: rgba(120, 53, 15, .20);
+  --grain-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .93 0 0 0 0 .85 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain: .055; --grain-blend: screen;
+  --band: #0C0806;
+  --sugar: 245, 234, 219;
+}

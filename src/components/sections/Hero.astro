@@ -1,0 +1,29 @@
+---
+// HERO · esqueleto. Ainda não desenvolvida.
+// Referência (design_system2.html · "0 · HERO"):
+//  - estrutura Nereo: grade 12 col, texto em 7 (eyebrow com fio, h1 .l1 + <em>, ornamento, lead,
+//    Button calda + vidro, três selos com ícone) e três cards .glass-card empilhados em 5;
+//  - foto do bolo em tela cheia com véus (linear 90° + radial) e troca dia/noite (hero-dia / hero-noite);
+//  - Asagiri: parallax da foto, canvas de açúcar caindo, "role devagar", texto vertical;
+//  - Clarix: letras do h1 entram em 3D; anotação à mão com seta apontando para o bolo.
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+---
+
+<section class="hero" id="top">
+  <div class="wrapx">
+    <p class="eyebrow">Confeitaria artesanal · sob encomenda</p>
+    <h1 class="h1"><span class="l1">Açúcar, tempo</span><em>&amp; afeto.</em></h1>
+    <p class="lead">Bolos e doces feitos à mão, com receita testada em casa e tempo certo de forno.</p>
+    <div class="cta">
+      <Button href="#encomendar"><Icon name="solar:bag-4-linear" />Encomendar</Button>
+      <Button variant="vidro" href="#cardapio">Ver cardápio</Button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero { min-height: 100svh; display: flex; align-items: center; padding: calc(var(--nav-h) + 2rem) 0 5rem; }
+  .wrapx { display: flex; flex-direction: column; align-items: flex-start; gap: 2rem; }
+  .cta { display: flex; flex-wrap: wrap; gap: 1rem; }
+</style>

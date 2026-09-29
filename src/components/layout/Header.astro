@@ -1,0 +1,106 @@
+---
+// Nav de vidro fosco (Nereo) que encolhe ao rolar (Asagiri) com trilho de progresso (Sable).
+// Abaixo de 1180px os links vão para a gaveta.
+import { site } from '../../data/site';
+import Logo from '../ui/Logo.astro';
+import ThemeSwitch from '../ui/ThemeSwitch.astro';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+---
+
+<header class="nav" id="nav">
+  <Logo href="#top" />
+  <nav class="nlinks" aria-label="Principal">
+    {site.nav.map((l) => <a class="nlink" href={l.href}>{l.label}</a>)}
+  </nav>
+  <div class="nav-r">
+    <ThemeSwitch />
+    <Button variant="linha" size="sm" href={site.cta.href} class="nav-cta">{site.cta.label}</Button>
+    <button class="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="drawer" data-drawer-toggle>
+      <span class="i-open"><Icon name="solar:hamburger-menu-linear" /></span>
+      <span class="i-close"><Icon name="solar:close-circle-linear" /></span>
+    </button>
+  </div>
+  <i class="prog" aria-hidden="true"></i>
+</header>
+
+<div class="drawer" id="drawer" aria-hidden="true">
+  <nav aria-label="Menu">
+    {site.nav.map((l, i) => <a href={l.href}><em>{String(i + 1).padStart(2, '0')}</em>{l.label}</a>)}
+    <a href={site.cta.href}><em>{String(site.nav.length + 1).padStart(2, '0')}</em>{site.cta.label}</a>
+  </nav>
+  <div class="foot">
+    <p class="hand">com carinho, J.</p>
+    <ThemeSwitch />
+  </div>
+</div>
+
+<style>
+  .nav {
+    position: fixed; inset: 0 0 auto; z-index: 90; height: var(--nav-h);
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 0 var(--pad);
+    background: rgba(var(--bg-rgb), .36); -webkit-backdrop-filter: blur(22px) saturate(1.2); backdrop-filter: blur(22px) saturate(1.2);
+    border-bottom: 1px solid transparent;
+    transition: height .5s var(--e-out), background-color .5s, border-color .5s, box-shadow .5s;
+  }
+  .nav.docked { height: 66px; background: rgba(var(--bg-rgb), .8); border-bottom-color: var(--line); box-shadow: 0 14px 30px -24px rgba(0, 0, 0, .5); }
+  .prog { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--calda); transform-origin: 0 50%; transform: scaleX(0); }
+
+  .nlinks { display: flex; align-items: center; gap: 2rem; }
+  .nlink { position: relative; font-size: .6875rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); transition: color .3s; }
+  .nlink::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 0; height: 1px; background: var(--accent); transition: width .35s var(--e-std); }
+  .nlink:hover, .nlink.is-current { color: var(--accent-ink); }
+  .nlink:hover::after, .nlink.is-current::after { width: 100%; }
+
+  .nav-r { display: flex; align-items: center; gap: .9rem; }
+  .burger { display: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line-2); place-items: center; font-size: 20px; }
+  .burger .i-close, .burger[aria-expanded='true'] .i-open { display: none; }
+  .burger[aria-expanded='true'] .i-close { display: inline; }
+
+  .drawer {
+    position: fixed; inset: 0; z-index: 85; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 7rem var(--pad) 2.5rem; background: var(--bg-2);
+    transform: translateX(100%); visibility: hidden; transition: transform .6s var(--e-out), visibility .6s;
+  }
+  .drawer.open { transform: none; visibility: visible; }
+  .drawer nav { display: flex; flex-direction: column; gap: 1.1rem; }
+  .drawer nav a { font-family: var(--serif); font-weight: 300; font-size: clamp(2rem, 8vw, 3rem); line-height: 1; letter-spacing: .06em; text-transform: uppercase; }
+  .drawer nav em { font-style: italic; color: var(--accent); font-size: .5em; letter-spacing: .1em; margin-right: .6em; vertical-align: .4em; }
+  .drawer .foot { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+
+  @media (max-width: 1180px) { .nlinks { display: none; } .burger { display: inline-grid; } }
+  @media (max-width: 860px) { .nav { --nav-h: 72px; } .nav-r :global(.nav-cta) { display: none; } }
+</style>
+
+<script>
+  const nav = document.getElementById('nav')!;
+  const prog = nav.querySelector<HTMLElement>('.prog')!;
+  const drawer = document.getElementById('drawer')!;
+  const toggles = document.querySelectorAll<HTMLButtonElement>('[data-drawer-toggle]');
+
+  function onScroll() {
+    const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    nav.classList.toggle('docked', y > 40);
+    prog.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  function setDrawer(open: boolean) {
+    drawer.classList.toggle('open', open);
+    drawer.setAttribute('aria-hidden', String(!open));
+    toggles.forEach((b) => b.setAttribute('aria-expanded', String(open)));
+  }
+  toggles.forEach((b) => b.addEventListener('click', () => setDrawer(!drawer.classList.contains('open'))));
+  drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setDrawer(false)));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') setDrawer(false); });
+
+  // link da seção visível
+  const links = nav.querySelectorAll<HTMLAnchorElement>('.nlink');
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) links.forEach((a) => a.classList.toggle('is-current', a.hash === '#' + e.target.id));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  links.forEach((a) => { const s = document.querySelector(a.hash); if (s) spy.observe(s); });
+</script>

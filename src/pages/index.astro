@@ -1,0 +1,22 @@
+---
+// Página inicial. A ordem aqui é a ordem do site; os links da nav ficam em src/data/site.ts.
+// Referência visual de tudo: ../design_system2.html
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/sections/Hero.astro';
+import Sobre from '../components/sections/Sobre.astro';
+import Cardapio from '../components/sections/Cardapio.astro';
+import Processo from '../components/sections/Processo.astro';
+import Depoimentos from '../components/sections/Depoimentos.astro';
+import Encomenda from '../components/sections/Encomenda.astro';
+import Contato from '../components/sections/Contato.astro';
+---
+
+<BaseLayout>
+  <Hero />
+  <Sobre />
+  <Cardapio />
+  <Processo />
+  <Depoimentos />
+  <Encomenda />
+  <Contato />
+</BaseLayout>

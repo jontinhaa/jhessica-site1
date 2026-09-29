@@ -1,0 +1,45 @@
+---
+// Chave dia/noite. O tema inicial é aplicado no <head> do BaseLayout (sem piscar).
+// Ao trocar, o novo tema abre em círculo a partir da chave (View Transitions).
+import Icon from './Icon.astro';
+---
+
+<button class="theme-switch" type="button" data-theme-toggle aria-label="Alternar entre dia e noite">
+  <i class="thumb" aria-hidden="true"></i>
+  <span class="t-day"><Icon name="solar:sun-2-linear" /></span>
+  <span class="t-night"><Icon name="solar:moon-stars-linear" /></span>
+</button>
+
+<style>
+  .theme-switch { position: relative; display: inline-flex; align-items: center; height: 40px; padding: 3px; border-radius: var(--r-pill); border: 1px solid var(--line-2); background: rgba(var(--ink-rgb), .03); }
+  span { position: relative; z-index: 1; width: 34px; height: 32px; display: grid; place-items: center; font-size: 16px; color: var(--muted); transition: color .4s; }
+  .thumb { position: absolute; top: 3px; left: 3px; width: 34px; height: 32px; border-radius: var(--r-pill); background: var(--accent); box-shadow: 0 4px 14px -4px rgba(var(--accent-rgb), .8); transition: transform .6s var(--e-out); }
+  :global([data-theme='light']) .t-day, :global([data-theme='dark']) .t-night { color: var(--on-accent); }
+  :global([data-theme='dark']) .thumb { transform: translateX(34px); }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setTheme(t: string) {
+    root.dataset.theme = t;
+    try { localStorage.setItem('theme', t); } catch {}
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      if (!document.startViewTransition || reduced) return setTheme(next);
+      const r = btn.getBoundingClientRect();
+      const x = r.left + r.width / 2, y = r.top + r.height / 2;
+      const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      document.startViewTransition(() => setTheme(next)).ready.then(() => {
+        root.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+          { duration: 900, easing: 'cubic-bezier(.2,.8,.2,1)', pseudoElement: '::view-transition-new(root)' },
+        );
+      });
+    });
+  });
+</script>

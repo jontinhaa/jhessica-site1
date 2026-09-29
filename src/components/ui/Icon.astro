@@ -1,0 +1,34 @@
+---
+// Ícone Solar / Simple Icons embutido como SVG no build (sem script nem requisição no navegador).
+// Uso: <Icon name="solar:bag-4-linear" />  · tamanho pelo font-size do pai (1em) ou pela prop size.
+import { getIconData, iconToSVG } from '@iconify/utils';
+import solar from '@iconify-json/solar/icons.json';
+import simpleIcons from '@iconify-json/simple-icons/icons.json';
+
+interface Props {
+  name: `${'solar' | 'simple-icons'}:${string}`;
+  size?: string;
+  /** Texto para leitor de tela. Sem label, o ícone é decorativo. */
+  label?: string;
+  class?: string;
+}
+
+const { name, size = '1em', label, class: className } = Astro.props;
+const [prefix, iconName] = name.split(':');
+const data = getIconData(prefix === 'solar' ? solar : simpleIcons, iconName);
+if (!data) throw new Error(`Ícone não encontrado: ${name}`);
+const { attributes, body } = iconToSVG(data, { height: size });
+---
+
+<svg
+  {...attributes}
+  class:list={['icon', className]}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  set:html={body}
+/>
+
+<style>
+  .icon { display: inline-block; flex: none; vertical-align: -.125em; }
+</style>

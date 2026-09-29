@@ -1,0 +1,29 @@
+---
+// Cabeçalho de seção (padrão Nereo): eyebrow com fio + título à esquerda, texto de apoio à direita.
+// Título pelo slot padrão, com <em> para o trecho em itálico caramelo; apoio pelo slot "aside".
+interface Props {
+  eyebrow: string;
+  as?: 'h2' | 'h3';
+  center?: boolean;
+}
+const { eyebrow, as: Tag = 'h2', center = false } = Astro.props;
+---
+
+<header class:list={['head', center && 'head--center']}>
+  <div>
+    <div class="eyebrow-line"><i aria-hidden="true"></i><span>{eyebrow}</span></div>
+    <Tag class="h2"><slot /></Tag>
+  </div>
+  {Astro.slots.has('aside') && <p class="aside"><slot name="aside" /></p>}
+</header>
+
+<style>
+  .head { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; flex-wrap: wrap; margin-bottom: 4rem; }
+  .head .h2 { margin-top: 1.1rem; }
+  .head--center { flex-direction: column; align-items: center; text-align: center; }
+  .head--center .eyebrow-line { justify-content: center; }
+  .eyebrow-line { display: flex; align-items: center; gap: 1rem; }
+  .eyebrow-line i { width: 48px; height: 1px; background: var(--accent); flex: none; }
+  .eyebrow-line span { font-size: .625rem; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; color: var(--accent-ink); }
+  .aside { max-width: 25rem; font-size: .9rem; color: var(--muted); }
+</style>

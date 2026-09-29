@@ -1,0 +1,61 @@
+---
+// Botão em pílula do design system. Com href vira <a>; sem href, <button>.
+//   calda · gradiente de caramelo (principal)     vidro · fantasma fosco que enche de caramelo
+//   linha · contorno que inverte                   cacau · sólido, a calda sobe por dentro
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = {
+  variant?: 'calda' | 'vidro' | 'linha' | 'cacau';
+  size?: 'md' | 'sm';
+  href?: string;
+  block?: boolean;
+} & HTMLAttributes<'button'> & Omit<HTMLAttributes<'a'>, 'type'>;
+
+const { variant = 'calda', size = 'md', href, block = false, class: className, type = 'button', ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  class:list={['btn', `btn--${variant}`, size === 'sm' && 'btn--sm', block && 'btn--block', className]}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .btn {
+    --h: 52px;
+    position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+    height: var(--h); padding: 0 1.9rem; border-radius: var(--r-pill); border: 1px solid transparent;
+    font-family: var(--sans); font-size: .6875rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase;
+    white-space: nowrap; isolation: isolate; overflow: hidden; cursor: pointer;
+    transition: transform .35s var(--e-out), box-shadow .35s var(--e-std), background-color .35s var(--e-std),
+      color .35s var(--e-std), border-color .35s var(--e-std), filter .35s;
+  }
+  .btn :global(.icon) { font-size: 16px; }
+  .btn--sm { --h: 40px; padding: 0 1.2rem; font-size: .625rem; gap: .45rem; }
+  .btn--block { width: 100%; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .btn:disabled, .btn[aria-disabled='true'] { opacity: .42; filter: saturate(.3); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn--calda { background: var(--calda); color: var(--on-calda); border-color: rgba(255, 255, 255, .14); box-shadow: 0 12px 26px -14px rgba(168, 101, 42, .9); }
+  .btn--calda::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .55) 48%, transparent 66%); transform: translateX(-120%); transition: transform .9s var(--e-out); }
+  .btn--calda:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 18px 32px -14px rgba(168, 101, 42, .95); }
+  .btn--calda:hover::after { transform: translateX(120%); }
+  .btn--calda:active { transform: translateY(0) scale(.97); }
+
+  .btn--vidro { background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-color: rgba(var(--accent-rgb), .45); color: var(--ink); }
+  .btn--vidro:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+  .btn--linha { border-color: rgba(var(--ink-rgb), .34); color: var(--ink); }
+  .btn--linha:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+  .btn--cacau { background: var(--ink); color: var(--bg); }
+  .btn--cacau::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--accent); transform: translateY(101%); border-radius: 40% 40% 0 0 / 30% 30% 0 0; transition: transform .55s var(--e-out), border-radius .55s var(--e-out); }
+  .btn--cacau:hover { color: var(--on-accent); }
+  .btn--cacau:hover::before { transform: none; border-radius: 0; }
+
+  .btn--vidro:active, .btn--linha:active, .btn--cacau:active { transform: scale(.97); }
+</style>

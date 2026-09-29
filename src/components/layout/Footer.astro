@@ -1,0 +1,62 @@
+---
+// Rodapé em faixa cacau (Asagiri footer): marca, colunas de links, social e linha legal.
+import { site } from '../../data/site';
+import Logo from '../ui/Logo.astro';
+import Icon from '../ui/Icon.astro';
+
+const year = new Date().getFullYear();
+const social = [
+  { label: 'Instagram', icon: 'simple-icons:instagram', href: site.contact.instagram },
+  { label: 'WhatsApp', icon: 'simple-icons:whatsapp', href: site.contact.whatsapp },
+] as const;
+---
+
+<footer class="foot band">
+  <div class="wrapx">
+    <div class="frow">
+      <div class="fbrand">
+        <Logo href="#top" text={false} />
+        <p class="wordmark">{site.name}</p>
+        <p class="hand">{site.tagline}</p>
+      </div>
+      <div class="fcols">
+        <div class="fcol">
+          <h4>Navegue</h4>
+          {site.nav.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+        <div class="fcol">
+          <h4>Ateliê</h4>
+          <a href={site.cta.href}>{site.cta.label}</a>
+          <span>{site.contact.address}</span>
+          <div class="social">
+            {social.map((s) => (
+              <a href={s.href || '#contato'} aria-label={s.label} target={s.href ? '_blank' : undefined} rel={s.href ? 'noopener' : undefined}>
+                <Icon name={s.icon} />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>© {year} {site.title}</span>
+      <span>Feito à mão, como os bolos.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot { padding: clamp(4rem, 9vh, 7rem) 0 2.5rem; }
+  .frow { display: flex; justify-content: space-between; gap: 2.5rem; flex-wrap: wrap; align-items: flex-start; }
+  .fbrand :global(.mark) { width: 56px; height: 56px; color: var(--accent-2); margin-bottom: 1rem; }
+  .fbrand .wordmark { font-size: 1.6rem; }
+  .fbrand .hand { margin-top: .8rem; color: #EFC98C; font-size: 1.35rem; }
+  .fcols { display: flex; flex-wrap: wrap; gap: 4rem; }
+  .fcol h4 { margin-bottom: 1rem; font-size: .6rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-2); }
+  .fcol > a, .fcol > span { display: block; margin-bottom: .55rem; font-size: .88rem; color: var(--on-band-2); transition: color .3s; }
+  .fcol > a:hover { color: var(--on-band); }
+  .social { display: flex; gap: .7rem; margin-top: 1rem; }
+  .social a { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; color: var(--on-band-2); border: 1px solid var(--band-line); transition: color .3s, border-color .3s, transform .4s var(--e-out); }
+  .social a:hover { color: var(--accent-2); border-color: var(--accent-2); transform: translateY(-2px); }
+  .fbot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3.5rem; padding-top: 1.6rem; border-top: 1px solid var(--band-line); font-size: .68rem; letter-spacing: .04em; color: var(--on-band-2); }
+</style>
