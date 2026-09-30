@@ -1,13 +1,18 @@
 ---
-// PROCESSO · como é feito. Esqueleto.
+// COMO PEDIR · do forno à mesa (antiga seção Processo). Esqueleto: título e âncora prontos, conteúdo por fazer.
 // Referência (design_system2.html · 05 Movimento): cena fixada na horizontal "Do forno à mesa"
-// (Asagiri .ritual, faixa .band) e/ou camadas empilhadas Massa · Recheio · Cobertura (Follow .stack).
-// Precisa de GSAP + ScrollTrigger + Lenis quando for desenvolvida.
-import SectionHead from '../ui/SectionHead.astro';
+// (Asagiri .ritual, faixa .band). Regras (prazo, entrega aos domingos, fechado aos sábados) em
+// regrasPedido (site.ts). Precisa de GSAP + ScrollTrigger + Lenis quando for desenvolvida.
+import SectionHeading from '../ui/SectionHeading.astro';
+import type { Secao } from '../../data/site';
+
+interface Props { secao: Secao; numero: number }
+const { secao, numero } = Astro.props;
 ---
 
-<section class="sec band" id="processo">
+<section class="sec band" id={secao.id}>
   <div class="wrapx" data-theme="dark">
-    <SectionHead eyebrow="03 · Processo" center>Do forno à mesa, <em>em quatro tempos.</em></SectionHead>
+    <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} center />
+    <div class="sec-body">{/* TODO: conteúdo da etapa "ComoPedir" */}</div>
   </div>
 </section>

@@ -1,7 +1,7 @@
 ---
-// DEPOIMENTOS. Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · 03 Componentes): .depo (fusão de opacidade entre falas,
-// nome em .hand) + faixa de números com contador (Asagiri .numbers) ou interlúdio em parallax.
+// INGREDIENTES · o que entra e o que fica de fora. Esqueleto: título e âncora prontos, conteúdo por fazer.
+// Sem glúten e sem leite: listar o que a cozinha usa e o que não entra.
+// Alérgenos por produto em src/data/cardapio.ts (campo alergenos).
 import SectionHeading from '../ui/SectionHeading.astro';
 import type { Secao } from '../../data/site';
 
@@ -12,6 +12,6 @@ const { secao, numero } = Astro.props;
 <section class="sec sec--tint" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "Depoimentos" */}</div>
+    <div class="sec-body">{/* TODO: conteúdo da etapa "Ingredientes" */}</div>
   </div>
 </section>

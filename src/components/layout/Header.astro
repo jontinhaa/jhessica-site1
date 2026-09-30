@@ -1,7 +1,8 @@
 ---
 // Nav de vidro fosco (Nereo) que encolhe ao rolar (Asagiri) com trilho de progresso (Sable).
-// Abaixo de 1180px os links vão para a gaveta.
-import { site } from '../../data/site';
+// Links saem de `menu` (src/data/site.ts) com href "/#id", para funcionar também fora da home.
+// Abaixo de 1180px os links vão para a gaveta (links + Encomendar + chave de tema).
+import { menu, pedido } from '../../data/site';
 import Logo from '../ui/Logo.astro';
 import ThemeSwitch from '../ui/ThemeSwitch.astro';
 import Button from '../ui/Button.astro';
@@ -9,14 +10,14 @@ import Icon from '../ui/Icon.astro';
 ---
 
 <header class="nav" id="nav">
-  <Logo href="#top" />
+  <Logo href="/#top" />
   <nav class="nlinks" aria-label="Principal">
-    {site.nav.map((l) => <a class="nlink" href={l.href}>{l.label}</a>)}
+    {menu.map((l) => <a class="nlink" href={l.href}>{l.rotulo}</a>)}
   </nav>
   <div class="nav-r">
     <ThemeSwitch />
-    <Button variant="linha" size="sm" href={site.cta.href} class="nav-cta">{site.cta.label}</Button>
-    <button class="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="drawer" data-drawer-toggle>
+    <Button variant="linha" size="sm" href={pedido.href} class="nav-cta">{pedido.rotulo}</Button>
+    <button class="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="drawer">
       <span class="i-open"><Icon name="solar:hamburger-menu-linear" /></span>
       <span class="i-close"><Icon name="solar:close-circle-linear" /></span>
     </button>
@@ -26,11 +27,10 @@ import Icon from '../ui/Icon.astro';
 
 <div class="drawer" id="drawer" aria-hidden="true">
   <nav aria-label="Menu">
-    {site.nav.map((l, i) => <a href={l.href}><em>{String(i + 1).padStart(2, '0')}</em>{l.label}</a>)}
-    <a href={site.cta.href}><em>{String(site.nav.length + 1).padStart(2, '0')}</em>{site.cta.label}</a>
+    {menu.map((l, i) => <a href={l.href}><em>{String(i + 1).padStart(2, '0')}</em>{l.rotulo}</a>)}
   </nav>
   <div class="foot">
-    <p class="hand">com carinho, J.</p>
+    <Button href={pedido.href}><Icon name="solar:bag-4-linear" />{pedido.rotulo}</Button>
     <ThemeSwitch />
   </div>
 </div>
@@ -47,7 +47,7 @@ import Icon from '../ui/Icon.astro';
   .prog { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--calda); transform-origin: 0 50%; transform: scaleX(0); }
 
   .nlinks { display: flex; align-items: center; gap: 2rem; }
-  .nlink { position: relative; font-size: .6875rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); transition: color .3s; }
+  .nlink { position: relative; font-size: .75rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); transition: color .3s; }
   .nlink::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 0; height: 1px; background: var(--accent); transition: width .35s var(--e-std); }
   .nlink:hover, .nlink.is-current { color: var(--accent-ink); }
   .nlink:hover::after, .nlink.is-current::after { width: 100%; }
@@ -62,21 +62,26 @@ import Icon from '../ui/Icon.astro';
     padding: 7rem var(--pad) 2.5rem; background: var(--bg-2);
     transform: translateX(100%); visibility: hidden; transition: transform .6s var(--e-out), visibility .6s;
   }
-  .drawer.open { transform: none; visibility: visible; }
-  .drawer nav { display: flex; flex-direction: column; gap: 1.1rem; }
+  /* ao abrir, visível na hora (0s, não .01ms: com transição de verdade a gaveta, e cada filho que herda o
+     visibility, ainda é hidden e recusa o foco); ao fechar, some só depois de deslizar */
+  .drawer.open { transform: none; visibility: visible; transition: transform .6s var(--e-out), visibility 0s; }
+  @media (prefers-reduced-motion: reduce) { .drawer.open, .drawer.open :global(*) { transition-duration: 0s !important; } }
+  .drawer nav { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; }
   .drawer nav a { font-family: var(--serif); font-weight: 300; font-size: clamp(2rem, 8vw, 3rem); line-height: 1; letter-spacing: .06em; text-transform: uppercase; }
   .drawer nav em { font-style: italic; color: var(--accent); font-size: .5em; letter-spacing: .1em; margin-right: .6em; vertical-align: .4em; }
-  .drawer .foot { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+  .drawer .foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 
   @media (max-width: 1180px) { .nlinks { display: none; } .burger { display: inline-grid; } }
   @media (max-width: 860px) { .nav-r :global(.nav-cta) { display: none; } }
+  /* 360px: marca + chave + menu cabem em 20px de margem */
+  @media (max-width: 400px) { .nav { gap: .75rem; } .nav-r { gap: .5rem; } }
 </style>
 
 <script>
   const nav = document.getElementById('nav')!;
   const prog = nav.querySelector<HTMLElement>('.prog')!;
   const drawer = document.getElementById('drawer')!;
-  const toggles = document.querySelectorAll<HTMLButtonElement>('[data-drawer-toggle]');
+  const burger = nav.querySelector<HTMLButtonElement>('.burger')!;
 
   function onScroll() {
     const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
@@ -86,21 +91,42 @@ import Icon from '../ui/Icon.astro';
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
+  // ---------- gaveta: Esc, clique num link ou fora fecham; o foco fica preso entre o botão e a gaveta ----------
+  const isOpen = () => drawer.classList.contains('open');
+  const focaveis = () => [burger, ...drawer.querySelectorAll<HTMLElement>('a[href], button')];
   function setDrawer(open: boolean) {
     drawer.classList.toggle('open', open);
     drawer.setAttribute('aria-hidden', String(!open));
-    toggles.forEach((b) => b.setAttribute('aria-expanded', String(open)));
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    if (open) drawer.querySelector<HTMLElement>('a[href]')?.focus();
+    else if (drawer.contains(document.activeElement)) burger.focus();
   }
-  toggles.forEach((b) => b.addEventListener('click', () => setDrawer(!drawer.classList.contains('open'))));
+  burger.addEventListener('click', () => setDrawer(!isOpen()));
   drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setDrawer(false)));
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') setDrawer(false); });
+  document.addEventListener('click', (e) => {
+    const t = e.target as Element;
+    if (isOpen() && !t.closest('#drawer nav, #drawer .foot, .burger')) setDrawer(false);
+  });
+  addEventListener('keydown', (e) => {
+    if (!isOpen()) return;
+    if (e.key === 'Escape') { setDrawer(false); burger.focus(); return; }
+    if (e.key !== 'Tab') return;
+    const f = focaveis(), first = f[0], last = f[f.length - 1], at = document.activeElement as HTMLElement;
+    if (!f.includes(at)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && at === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+  });
 
-  // link da seção visível
+  // ---------- link da seção visível (só na home; fora dela os alvos não existem) ----------
   const links = nav.querySelectorAll<HTMLAnchorElement>('.nlink');
   const spy = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (e.isIntersecting) links.forEach((a) => a.classList.toggle('is-current', a.hash === '#' + e.target.id));
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  links.forEach((a) => { const s = document.querySelector(a.hash); if (s) spy.observe(s); });
+  links.forEach((a) => {
+    const s = a.pathname === location.pathname && document.getElementById(a.hash.slice(1));
+    if (s) spy.observe(s);
+  });
 </script>

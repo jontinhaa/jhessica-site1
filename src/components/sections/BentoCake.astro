@@ -1,13 +1,18 @@
 ---
-// ENCOMENDA · formulário de orçamento. Esqueleto.
+// BENTO CAKE · o bolo da festa (antiga seção Encomendas). Esqueleto: título e âncora prontos, conteúdo por fazer.
 // Referência (design_system2.html · 03 Componentes): formulário em vidro "Conta pra gente a festa"
-// (.field/.input/.select, .seg retirada|entrega, .switch, .stepper, validação de 72 h) + .comanda.
-// Definir o destino do envio (WhatsApp com mensagem pronta, e-mail ou serviço de formulário).
-import SectionHead from '../ui/SectionHead.astro';
+// (.field/.input/.select, .seg retirada|entrega, .switch, .stepper) + .comanda.
+// Massas, recheios e preço do produto "bento-cake" em src/data/cardapio.ts; prazos em regrasPedido (site.ts).
+import SectionHeading from '../ui/SectionHeading.astro';
+import type { Secao } from '../../data/site';
+
+interface Props { secao: Secao; numero: number }
+const { secao, numero } = Astro.props;
 ---
 
-<section class="sec sec--tint" id="encomendar">
+<section class="sec" id={secao.id}>
   <div class="wrapx">
-    <SectionHead eyebrow="05 · Encomendas">Conta pra gente <em>a festa.</em></SectionHead>
+    <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
+    <div class="sec-body">{/* TODO: conteúdo da etapa "BentoCake" */}</div>
   </div>
 </section>

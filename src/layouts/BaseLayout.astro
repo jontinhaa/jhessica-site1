@@ -1,6 +1,6 @@
 ---
 import { Font } from 'astro:assets';
-import { site } from '../data/site';
+import { seo } from '../data/site';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import '../styles/global.css';
@@ -9,11 +9,11 @@ interface Props {
   title?: string;
   description?: string;
 }
-const { title = site.title, description = site.description } = Astro.props;
+const { title = seo.titulo, description = seo.descricao } = Astro.props;
 ---
 
 <!doctype html>
-<html lang={site.lang} data-theme="dark">
+<html lang={seo.idioma} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />

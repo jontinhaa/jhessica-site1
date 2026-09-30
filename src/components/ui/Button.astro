@@ -29,13 +29,13 @@ const Tag = href ? 'a' : 'button';
     --h: 52px;
     position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
     height: var(--h); padding: 0 1.9rem; border-radius: var(--r-pill); border: 1px solid transparent;
-    font-family: var(--sans); font-size: .6875rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase;
+    font-family: var(--sans); font-size: .75rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase;
     white-space: nowrap; isolation: isolate; overflow: hidden; cursor: pointer;
     transition: transform .35s var(--e-out), box-shadow .35s var(--e-std), background-color .35s var(--e-std),
       color .35s var(--e-std), border-color .35s var(--e-std), filter .35s;
   }
   .btn :global(.icon) { font-size: 16px; }
-  .btn--sm { --h: 40px; padding: 0 1.2rem; font-size: .625rem; gap: .45rem; }
+  .btn--sm { --h: 40px; padding: 0 1.2rem; font-size: .75rem; gap: .45rem; }
   .btn--block { width: 100%; }
   .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .btn:disabled, .btn[aria-disabled='true'] { opacity: .42; filter: saturate(.3); cursor: not-allowed; transform: none; box-shadow: none; }

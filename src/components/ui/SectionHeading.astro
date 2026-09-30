@@ -1,18 +1,24 @@
 ---
-// Cabeçalho de seção (padrão Nereo): eyebrow com fio + título à esquerda, texto de apoio à direita.
-// Título pelo slot padrão, com <em> para o trecho em itálico caramelo; apoio pelo slot "aside".
+// Cabeçalho de seção (padrão Nereo): sobretítulo "NN · RÓTULO" com fio + título com o final em itálico caramelo.
+// Nas seções da home o número é a posição em src/data/site.ts (secoes). Texto de apoio opcional pelo slot "aside".
 interface Props {
-  eyebrow: string;
-  as?: 'h2' | 'h3';
+  /** 1 → "01"; texto passa direto (ex.: "404"); sem número, o sobretítulo é só o rótulo. */
+  numero?: number | string;
+  rotulo: string;
+  titulo: string;
+  tituloDestaque: string;
+  as?: 'h1' | 'h2' | 'h3';
   center?: boolean;
 }
-const { eyebrow, as: Tag = 'h2', center = false } = Astro.props;
+const { numero, rotulo, titulo, tituloDestaque, as: Tag = 'h2', center = false } = Astro.props;
+const n = typeof numero === 'number' ? String(numero).padStart(2, '0') : numero;
+const sobretitulo = n ? `${n} · ${rotulo}` : rotulo;
 ---
 
 <header class:list={['head', center && 'head--center']}>
   <div>
-    <div class="eyebrow-line"><i aria-hidden="true"></i><span>{eyebrow}</span></div>
-    <Tag class="h2"><slot /></Tag>
+    <div class="eyebrow-line"><i aria-hidden="true"></i><span>{sobretitulo}</span></div>
+    <Tag class="h2">{titulo}{' '}<em>{tituloDestaque}</em></Tag>
   </div>
   {Astro.slots.has('aside') && <p class="aside"><slot name="aside" /></p>}
 </header>

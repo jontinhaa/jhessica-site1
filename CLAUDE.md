@@ -16,12 +16,15 @@ templates/
 src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
   styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…)
-  data/site.ts           marca, navegação, CTA e contato: Header/Footer/SEO leem daqui
+  data/site.ts           marca, seo, contato/redes, regrasPedido, secoes (ordem da home) e menu
+  data/cardapio.ts       categorias e produtos (variantes, adicionais, opções), precoMinimo, getProdutosPorCategoria
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header e Footer
-  components/layout/     Header (nav de vidro + gaveta), Footer
-  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHead
-  components/sections/   uma seção por arquivo, na ordem de pages/index.astro (hoje são esqueletos)
-  pages/index.astro      ordem das seções
+  components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
+  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading
+  components/sections/   Hero + uma seção por item de `secoes` (hoje esqueletos com título e âncora)
+  pages/index.astro      Hero + seções percorrendo `secoes`
+  pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)
+  pages/404.astro
   pages/design-system.astro  rota de referência (só desenvolvimento)
 ```
 
@@ -34,6 +37,8 @@ src/
 - Ícones: `<Icon name="solar:…" />` (Solar Linear) ou `simple-icons:…` para redes. SVG gerado no build.
 - Rabiscos: `<Doodle name="batedor" />`, no máximo um por dobra de tela.
 - Conteúdo repetido (produtos, depoimentos) vem de dados, não escrito à mão no markup.
+- Seção nova da home: item em `secoes` (site.ts) + componente em `pages/index.astro`. Número do sobretítulo = posição.
+  Links internos sempre `/#id` (funcionam fora da home). Produto e preço só em `data/cardapio.ts`.
 - Toda animação precisa respeitar `prefers-reduced-motion`.
 - Rodar `npm run check` e `npm run build` antes de dar uma tarefa por concluída.
 - Vídeo da hero: `public/videos/hero-1080.mp4` (≥768px), `hero-retrato.mp4` (9:16) e `hero-poster.webp`, gerados de

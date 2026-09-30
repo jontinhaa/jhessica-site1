@@ -16,6 +16,10 @@ import Icon from './Icon.astro';
   .thumb { position: absolute; top: 3px; left: 3px; width: 34px; height: 32px; border-radius: var(--r-pill); background: var(--accent); box-shadow: 0 4px 14px -4px rgba(var(--accent-rgb), .8); transition: transform .6s var(--e-out); }
   :global([data-theme='light']) .t-day, :global([data-theme='dark']) .t-night { color: var(--on-accent); }
   :global([data-theme='dark']) .thumb { transform: translateX(34px); }
+  @media (max-width: 640px) {
+    span, .thumb { width: 30px; }
+    :global([data-theme='dark']) .thumb { transform: translateX(30px); }
+  }
 </style>
 
 <script>

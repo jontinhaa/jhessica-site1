@@ -1,13 +1,14 @@
 ---
 // Rodapé em faixa cacau (Asagiri footer): marca, colunas de links, social e linha legal.
-import { site } from '../../data/site';
+// Links saem de `menu` e `redes` (src/data/site.ts). Rede sem endereço aparece desabilitada, nunca aponta para "#".
+import { marca, menu, pedido, redes } from '../../data/site';
 import Logo from '../ui/Logo.astro';
 import Icon from '../ui/Icon.astro';
 
-const year = new Date().getFullYear();
+const ano = new Date().getFullYear();
 const social = [
-  { label: 'Instagram', icon: 'simple-icons:instagram', href: site.contact.instagram },
-  { label: 'WhatsApp', icon: 'simple-icons:whatsapp', href: site.contact.whatsapp },
+  { label: 'Instagram da Jhessica', icon: 'simple-icons:instagram', href: redes.instagram },
+  { label: 'WhatsApp da Jhessica', icon: 'simple-icons:whatsapp', href: redes.whatsapp },
 ] as const;
 ---
 
@@ -15,32 +16,33 @@ const social = [
   <div class="wrapx">
     <div class="frow">
       <div class="fbrand">
-        <Logo href="#top" text={false} />
-        <p class="wordmark">{site.name}</p>
-        <p class="hand">{site.tagline}</p>
+        <Logo href="/#top" text={false} />
+        <p class="wordmark">{marca.nomeCurto}</p>
+        <p class="hand">{marca.assinatura.toLowerCase()}</p>
       </div>
       <div class="fcols">
         <div class="fcol">
-          <h4>Navegue</h4>
-          {site.nav.map((l) => <a href={l.href}>{l.label}</a>)}
+          <h2>Navegue</h2>
+          {menu.map((l) => <a href={l.href}>{l.rotulo}</a>)}
+          <a href="/#perguntas">Perguntas frequentes</a>
         </div>
         <div class="fcol">
-          <h4>Ateliê</h4>
-          <a href={site.cta.href}>{site.cta.label}</a>
-          <span>{site.contact.address}</span>
+          <h2>Ateliê</h2>
+          <a href={pedido.href}>{pedido.rotulo}</a>
+          <span>Retirada com hora marcada</span>
           <div class="social">
-            {social.map((s) => (
-              <a href={s.href || '#contato'} aria-label={s.label} target={s.href ? '_blank' : undefined} rel={s.href ? 'noopener' : undefined}>
-                <Icon name={s.icon} />
-              </a>
+            {social.map((s) => s.href ? (
+              <a href={s.href} aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} /></a>
+            ) : (
+              <a role="link" aria-disabled="true" aria-label={`${s.label} (em breve)`} class="is-off"><Icon name={s.icon} /></a>
             ))}
           </div>
         </div>
       </div>
     </div>
     <div class="fbot">
-      <span>© {year} {site.title}</span>
-      <span>Feito à mão, como os bolos.</span>
+      <span>© {ano} {marca.nome}</span>
+      <span>Feito à mão, como os bolos. · Site por <a href="https://www.linkedin.com/in/jhonatanalmeida" target="_blank" rel="noopener">Jhonatan Almeida</a></span>
     </div>
   </div>
 </footer>
@@ -52,11 +54,14 @@ const social = [
   .fbrand .wordmark { font-size: 1.6rem; }
   .fbrand .hand { margin-top: .8rem; color: #EFC98C; font-size: 1.35rem; }
   .fcols { display: flex; flex-wrap: wrap; gap: 4rem; }
-  .fcol h4 { margin-bottom: 1rem; font-size: .6rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-2); }
+  .fcol h2 { margin-bottom: 1rem; font-size: .6rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-2); }
   .fcol > a, .fcol > span { display: block; margin-bottom: .55rem; font-size: .88rem; color: var(--on-band-2); transition: color .3s; }
   .fcol > a:hover { color: var(--on-band); }
   .social { display: flex; gap: .7rem; margin-top: 1rem; }
   .social a { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; color: var(--on-band-2); border: 1px solid var(--band-line); transition: color .3s, border-color .3s, transform .4s var(--e-out); }
-  .social a:hover { color: var(--accent-2); border-color: var(--accent-2); transform: translateY(-2px); }
+  .social a[href]:hover { color: var(--accent-2); border-color: var(--accent-2); transform: translateY(-2px); }
+  .social .is-off { opacity: .4; cursor: not-allowed; }
   .fbot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3.5rem; padding-top: 1.6rem; border-top: 1px solid var(--band-line); font-size: .68rem; letter-spacing: .04em; color: var(--on-band-2); }
+  .fbot a { color: var(--on-band); text-decoration: underline; text-decoration-color: var(--band-line); text-underline-offset: 3px; transition: text-decoration-color .3s; }
+  .fbot a:hover { text-decoration-color: var(--accent-2); }
 </style>

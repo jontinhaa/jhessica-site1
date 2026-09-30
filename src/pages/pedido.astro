@@ -1,0 +1,41 @@
+---
+// /pedido · PLACEHOLDER. Lista crua das categorias e produtos de src/data/cardapio.ts, só para as âncoras
+// (#bolos, #paes, #fatias, #brigadeiros, #bento) já funcionarem. Carrinho e visual final: etapa própria.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import { marca } from '../data/site';
+import { categorias, formatarPreco, getProdutosPorCategoria } from '../data/cardapio';
+---
+
+<BaseLayout title={`Cardápio completo · ${marca.nome}`}>
+  <section class="sec pedido">
+    <div class="wrapx">
+      <SectionHeading rotulo="Encomendas" titulo="Cardápio" tituloDestaque="completo." as="h1" />
+      {categorias.map((cat) => (
+        <section class="sec categoria" id={cat.id} aria-labelledby={`t-${cat.id}`}>
+          <h2 class="h4" id={`t-${cat.id}`}>{cat.nome}</h2>
+          <p class="t-m">{cat.chamada}</p>
+          <ul>
+            {getProdutosPorCategoria(cat.id).map((p) => (
+              <li>
+                <strong>{p.nome}</strong>
+                {' · '}{p.variantes.map((v) => `${v.rotulo} ${formatarPreco(v.preco)}`).join(' · ')}
+                {p.adicionais?.map((a) => ` · ${a.rotulo} +${formatarPreco(a.preco)}`)}
+                {p.opcoes?.map((o) => <span class="t-s">{o.rotulo}: {o.valores.join(', ')}</span>)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pedido { padding-top: calc(var(--nav-h) + 3rem); }
+  .categoria { padding: 2rem 0; border-top: 1px solid var(--line); }
+  .categoria ul { display: flex; flex-direction: column; gap: .8rem; margin-top: 1.2rem; }
+  .categoria li { color: var(--ink-2); }
+  .categoria strong { font-weight: 500; color: var(--ink); }
+  .categoria .t-s { display: block; }
+</style>

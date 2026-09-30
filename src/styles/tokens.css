@@ -28,6 +28,7 @@
   --on-band: #F5EADB; --on-band-2: rgba(245, 234, 219, .64); --band-line: rgba(245, 234, 219, .14);
 }
 @media (max-width: 860px) { :root { --nav-h: 72px; } }
+@media (max-width: 768px) { :root { --pad: 20px; } }
 
 /* Dia · Merengue */
 :root, [data-theme='light'] {

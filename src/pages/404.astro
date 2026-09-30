@@ -1,0 +1,31 @@
+---
+// 404 · título no padrão das seções e dois caminhos de volta.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import Button from '../components/ui/Button.astro';
+import Icon from '../components/ui/Icon.astro';
+import { marca, pedido } from '../data/site';
+---
+
+<BaseLayout title={`Página não encontrada · ${marca.nome}`}>
+  <section class="sec nao-achada">
+    <div class="wrapx">
+      <SectionHeading numero="404" rotulo="Página não encontrada" titulo="Essa página" tituloDestaque="saiu do forno antes da hora." as="h1" />
+      <p class="lead">O endereço pode ter mudado ou ainda não existe. O cardápio e a página inicial continuam no mesmo lugar.</p>
+      <div class="acoes">
+        <Button href={pedido.href}><Icon name="solar:list-heart-minimalistic-linear" />Ver cardápio</Button>
+        <Button variant="vidro" href="/"><Icon name="solar:home-2-linear" />Voltar ao início</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nao-achada { min-height: 100svh; display: flex; align-items: center; padding-top: calc(var(--nav-h) + 3rem); }
+  .nao-achada :global(.head) { margin-bottom: 2rem; }
+  .acoes { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem; }
+  @media (max-width: 768px) {
+    .acoes { flex-direction: column; gap: 12px; }
+    .acoes :global(.btn) { width: 100%; }
+  }
+</style>

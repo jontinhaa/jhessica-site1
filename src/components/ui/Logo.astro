@@ -5,12 +5,12 @@ interface Props {
   text?: boolean;
   href?: string;
 }
-import { site } from '../../data/site';
+import { marca } from '../../data/site';
 import { scallop } from './mark';
 const { text = true, href = '/' } = Astro.props;
 ---
 
-<a class="brand" href={href} aria-label={`${site.name}, ${site.tagline}`}>
+<a class="brand" href={href} aria-label={`${marca.nome}, início`}>
   <svg class="mark" viewBox="0 0 80 80" aria-hidden="true">
     <path d={scallop} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
     <circle cx="40" cy="40" r="23" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2.5 3.2" opacity=".7" />
@@ -18,8 +18,8 @@ const { text = true, href = '/' } = Astro.props;
   </svg>
   {text && (
     <span class="bt">
-      <b>{site.name}</b>
-      <small>{site.tagline}</small>
+      <b>{marca.nomeCurto}</b>
+      <small>{marca.assinatura}</small>
     </span>
   )}
 </a>

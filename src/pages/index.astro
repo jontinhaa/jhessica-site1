@@ -1,22 +1,37 @@
 ---
-// Página inicial. A ordem aqui é a ordem do site; os links da nav ficam em src/data/site.ts.
-// Referência visual de tudo: ../design_system2.html
+// Página inicial: Hero e, depois, as seções na ordem de `secoes` (src/data/site.ts).
+// Número do sobretítulo = posição no array. Seção nova: componente aqui + item em `secoes`.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/sections/Hero.astro';
-import Sobre from '../components/sections/Sobre.astro';
 import Cardapio from '../components/sections/Cardapio.astro';
-import Processo from '../components/sections/Processo.astro';
+import BentoCake from '../components/sections/BentoCake.astro';
+import Ingredientes from '../components/sections/Ingredientes.astro';
+import ComoPedir from '../components/sections/ComoPedir.astro';
+import Sobre from '../components/sections/Sobre.astro';
 import Depoimentos from '../components/sections/Depoimentos.astro';
-import Encomenda from '../components/sections/Encomenda.astro';
+import Perguntas from '../components/sections/Perguntas.astro';
 import Contato from '../components/sections/Contato.astro';
+import { secoes } from '../data/site';
+
+const componentes = {
+  cardapio: Cardapio,
+  'bento-cake': BentoCake,
+  ingredientes: Ingredientes,
+  'como-pedir': ComoPedir,
+  sobre: Sobre,
+  depoimentos: Depoimentos,
+  perguntas: Perguntas,
+  contato: Contato,
+} as const;
+
+const faltando = secoes.filter((s) => !(s.id in componentes)).map((s) => s.id);
+if (faltando.length) throw new Error(`Seção sem componente em pages/index.astro: ${faltando.join(', ')}`);
 ---
 
 <BaseLayout>
   <Hero />
-  <Sobre />
-  <Cardapio />
-  <Processo />
-  <Depoimentos />
-  <Encomenda />
-  <Contato />
+  {secoes.map((secao, i) => {
+    const Secao = componentes[secao.id as keyof typeof componentes];
+    return <Secao secao={secao} numero={i + 1} />;
+  })}
 </BaseLayout>

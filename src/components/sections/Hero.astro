@@ -52,15 +52,15 @@ const faixa = [
         <svg viewBox="0 0 14 14"><g fill="currentColor"><circle cx="10.6" cy="7" r="2.1" /><circle cx="8.8" cy="10.1" r="2.1" /><circle cx="5.2" cy="10.1" r="2.1" /><circle cx="3.4" cy="7" r="2.1" /><circle cx="5.2" cy="3.9" r="2.1" /><circle cx="8.8" cy="3.9" r="2.1" /></g><circle cx="7" cy="7" r="1.3" style="fill: var(--bg)" /></svg>
         <i></i>
       </div>
-      <p class="lead" data-hero style="--i:2">Receitas artesanais, saborosas e pensadas para diferentes necessidades alimentares.</p>
+      <p class="lead" data-hero style="--i:2">Bolos, pães e doces sem glúten e sem leite, feitos à mão em Marabá.</p>
       <div class="hero-cta" data-hero style="--i:3">
-        <Button href="#encomendar"><Icon name="solar:bag-4-linear" />Encomendar</Button>
+        <Button href="/pedido"><Icon name="solar:bag-4-linear" />Encomendar</Button>
         <Button variant="vidro" href="#cardapio"><Icon name="solar:list-heart-minimalistic-linear" />Ver cardápio</Button>
       </div>
       <ul class="hero-badges" data-hero style="--i:4">
-        <li><Icon name="solar:leaf-linear" /><span>Sem glúten &amp; sem leite</span></li>
-        <li><Icon name="solar:whisk-linear" /><span>Feito à mão</span></li>
-        <li><Icon name="solar:home-smile-linear" /><span>Sabor de casa</span></li>
+        <li><Icon name="solar:hand-heart-linear" /><span>Feito à mão</span></li>
+        <li><Icon name="solar:calendar-linear" /><span>Pedidos com 2 dias de antecedência</span></li>
+        <li><Icon name="solar:delivery-linear" /><span>Entrega aos domingos</span></li>
       </ul>
     </div>
 
@@ -105,7 +105,7 @@ const faixa = [
   <p class="hero-v">Fechados aos sábados</p>
   <div class="scroll-cue" data-hero style="--i:5" aria-hidden="true"><span class="ln"></span>Role devagar</div>
   <!-- WCAG 2.2.2: vídeo, açúcar e faixa param juntos -->
-  <button class="hero-pause" type="button" aria-label="Pausar animações" aria-pressed="false">
+  <button class="hero-pause" type="button" aria-label="Pausar vídeo">
     <Icon name="solar:pause-linear" class="i-pause" />
     <Icon name="solar:play-linear" class="i-play" />
   </button>
@@ -152,7 +152,7 @@ const faixa = [
   .hero-grid { position: relative; z-index: 3; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3rem; align-items: center; }
   .hero-copy { grid-column: span 7; display: flex; flex-direction: column; align-items: flex-start; gap: 2rem; }
   .hero-copy .lead { max-width: 540px; }
-  .sig { display: block; width: fit-content; margin: 0 0 .1em .04em; font-family: var(--hand); font-size: clamp(1.6rem, 2.4vw, 2.3rem); font-weight: 400; font-style: normal; line-height: 1.2; letter-spacing: .01em; text-transform: none; color: var(--accent); rotate: -4deg; transform-origin: 0 100%; }
+  .sig { display: block; width: fit-content; margin: 0 0 .1em .04em; font-family: var(--hand); font-size: clamp(1.75rem, 2.4vw, 2.3rem); font-weight: 400; font-style: normal; line-height: 1.2; letter-spacing: .01em; text-transform: none; color: var(--accent); rotate: -4deg; transform-origin: 0 100%; }
   /* letras em 3D (Clarix .char-mask > .hero-char); a máscara sobra para o acento e o itálico */
   .w { display: inline-block; white-space: nowrap; }
   .cm { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .18em .08em .35em; margin: -.18em -.08em -.35em; perspective: 500px; }
@@ -161,8 +161,8 @@ const faixa = [
   .ornament i { flex: 1; height: 1px; background: var(--line-2); }
   .ornament svg { width: 14px; height: 14px; flex: none; color: var(--accent); }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 1rem; padding-top: .5rem; }
-  .hero-badges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; width: 100%; max-width: 600px; padding-top: 2.4rem; border-top: 1px solid var(--line-2); }
-  .hero-badges li { display: flex; align-items: center; gap: .75rem; font-size: .59rem; font-weight: 500; letter-spacing: .16em; line-height: 1.4; text-transform: uppercase; color: var(--ink-2); }
+  .hero-badges { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.35fr) minmax(0, 1fr); gap: 1.5rem; width: 100%; max-width: 680px; padding-top: 2.4rem; border-top: 1px solid var(--line-2); }
+  .hero-badges li { display: flex; align-items: center; gap: .75rem; font-size: .75rem; font-weight: 500; letter-spacing: .12em; line-height: 1.4; text-transform: uppercase; color: var(--ink-2); }
   .hero-badges li + li { padding-left: 1.2rem; border-left: 1px solid var(--line-2); }
   .hero-badges :global(.icon) { font-size: 20px; color: var(--accent); }
 
@@ -176,6 +176,11 @@ const faixa = [
   .hc-big { font-family: var(--serif); font-size: 2rem; font-weight: 300; line-height: 1.1; letter-spacing: .02em; }
   .hc-big em { display: block; font-style: italic; color: var(--accent); }
   .hc-mid { margin-top: .3rem; font-family: var(--serif); font-size: 1.35rem; font-weight: 300; line-height: 1.2; }
+  /* rótulos em caixa alta: mínimo de 12px (acessibilidade) */
+  .hero-copy .eyebrow-line span, .hc .kicker, .hc .micro { font-size: .75rem; }
+  /* contraste ≥ 4.5 sobre o vídeo em todas as cenas: caramelo puxado para a tinta, cinza trocado pelo tom de texto */
+  .hc .kicker, .hero-copy .eyebrow-line span { color: color-mix(in srgb, var(--accent-ink) 80%, var(--ink)); }
+  .hc .micro { color: var(--ink-2); }
   .hc .micro { margin-top: .5rem; }
   .hc .t-m { margin-top: .35rem; font-size: .78rem; }
   .well--sm { width: 40px; height: 40px; font-size: 16px; background: none; }
@@ -187,12 +192,12 @@ const faixa = [
   /* brilho na cor do fundo: a anotação cai sobre o pão ou a caixa branca em algumas cenas */
   .hero-note { width: 100%; max-width: 350px; display: flex; align-items: flex-start; gap: .2rem; margin-top: .2rem; transform: rotate(-4deg); text-shadow: 0 0 10px rgba(var(--bg-rgb), .9), 0 0 3px rgba(var(--bg-rgb), .9); }
   .hero-note :global(.doodle) { width: 56px; height: 42px; flex: none; margin-top: -.9rem; color: var(--accent); scale: -1 -1; filter: drop-shadow(0 0 5px rgba(var(--bg-rgb), .9)); }
-  .scroll-cue { position: absolute; left: max(var(--pad), calc((100vw - var(--max)) / 2 + var(--pad))); bottom: 2rem; z-index: 3; display: flex; align-items: center; gap: .8rem; font-size: .58rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+  .scroll-cue { position: absolute; left: max(var(--pad), calc((100vw - var(--max)) / 2 + var(--pad))); bottom: 2rem; z-index: 3; display: flex; align-items: center; gap: .8rem; font-size: .75rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
   .ln { position: relative; width: 46px; height: 1px; overflow: hidden; background: var(--line-2); }
   .ln::after { content: ''; position: absolute; inset: 0; width: 40%; background: var(--accent); animation: run 2.4s ease-in-out infinite; }
   .hero-pause { position: absolute; right: max(var(--pad), calc((100vw - var(--max)) / 2 + var(--pad))); bottom: 1.1rem; z-index: 3; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); font-size: 16px; color: var(--ink-2); background: var(--glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: color .3s, border-color .3s, transform .4s var(--e-out); }
   .hero-pause:hover { color: var(--accent); border-color: var(--accent); transform: rotate(-8deg); }
-  .hero-pause[aria-pressed='true'] :global(.i-pause), .hero-pause[aria-pressed='false'] :global(.i-play) { display: none; }
+  .hero.is-paused .hero-pause :global(.i-pause), .hero:not(.is-paused) .hero-pause :global(.i-play) { display: none; }
 
   /* ---------- faixa corrente (Sable .ann) ---------- */
   .ticker { position: relative; overflow: hidden; padding: 1.15rem 0; border-block: 1px solid var(--line); background: rgba(var(--bg-rgb), .55); }
@@ -253,8 +258,18 @@ const faixa = [
     .scroll-cue { display: none; }
     .hero-v { top: auto; right: auto; bottom: 1.1rem; left: var(--pad); transform: none; writing-mode: horizontal-tb; padding: .6rem calc(1.1rem - .32em) .6rem 1.1rem; font-size: .9rem; }
   }
-  @media (max-width: 640px) {
-    .hero-badges { grid-template-columns: minmax(0, 1fr); gap: .9rem; }
+  /* celular: selo, título, subtítulo, botões e selos na primeira tela. Cards, anotação, aviso vertical,
+     ornamento e "role devagar" saem (repetem o subtítulo; o aviso de sábado vai para "Como pedir" e o rodapé). */
+  @media (max-width: 768px) {
+    .hero-cards, .hero-v, .ornament, .scroll-cue { display: none; }
+    /* o texto ocupa a tela toda: véu mais firme (contraste ≥ 4.5 em todas as cenas); no dia o creme segura o cacau */
+    .scrim-x { background: linear-gradient(90deg, var(--bg) 0%, rgba(var(--bg-rgb), .9) 45%, rgba(var(--bg-rgb), .66) 100%); }
+    :global([data-theme='light']) .scrim-x { background: linear-gradient(90deg, var(--bg) 0%, rgba(var(--bg-rgb), .93) 55%, rgba(var(--bg-rgb), .86) 100%); }
+    .hero-copy { gap: 1.5rem; }
+    .h1 { font-size: clamp(2.4rem, 12.5vw, 3.4rem); }
+    .hero-cta { flex-direction: column; gap: 12px; width: 100%; padding-top: 0; }
+    .hero-cta :global(.btn) { width: 100%; min-height: 48px; }
+    .hero-badges { grid-template-columns: minmax(0, 1fr); gap: .8rem; padding-top: 1.4rem; }
     .hero-badges li + li { padding-left: 0; border-left: 0; }
   }
 </style>
@@ -326,7 +341,7 @@ const faixa = [
     sugar(on);
     hero.classList.toggle('is-paused', paused);
     ticker.classList.toggle('is-paused', paused);
-    btn.setAttribute('aria-pressed', String(paused));
+    btn.setAttribute('aria-label', paused ? 'Reproduzir vídeo' : 'Pausar vídeo');
   }
   btn.addEventListener('click', () => { paused = !paused; sync(); });
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }).observe(hero);

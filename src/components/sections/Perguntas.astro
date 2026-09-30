@@ -1,7 +1,6 @@
 ---
-// SOBRE · nossa história, quem faz. Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · 04 Layout): Padrão B "Dividido, mídia em parallax"
-// (.split.rev + .media com legenda .cap) com .meta (números) e .steps (passos à mão).
+// PERGUNTAS · dúvidas frequentes. Esqueleto: título e âncora prontos, conteúdo por fazer.
+// Perguntas e respostas devem vir de dados (src/data/), com <details>/<summary> para abrir e fechar.
 import SectionHeading from '../ui/SectionHeading.astro';
 import type { Secao } from '../../data/site';
 
@@ -12,6 +11,6 @@ const { secao, numero } = Astro.props;
 <section class="sec" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "Sobre" */}</div>
+    <div class="sec-body">{/* TODO: conteúdo da etapa "Perguntas" */}</div>
   </div>
 </section>

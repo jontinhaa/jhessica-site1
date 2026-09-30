@@ -1,12 +1,17 @@
 ---
-// CONTATO · fechamento. Esqueleto.
-// Referência (design_system2.html · fim): CTA "Encomende com calma" (Asagiri .cta-sec) com rastro
-// de fotos seguindo o cursor (Follow image-trail) + linhas de contato com .well.
-import SectionHead from '../ui/SectionHead.astro';
+// CONTATO · fechamento. Esqueleto: título e âncora prontos, conteúdo por fazer.
+// Referência (design_system2.html · fim): CTA (Asagiri .cta-sec) com rastro de fotos seguindo o
+// cursor (Follow image-trail) + linhas de contato com .well. Contato e redes em src/data/site.ts.
+import SectionHeading from '../ui/SectionHeading.astro';
+import type { Secao } from '../../data/site';
+
+interface Props { secao: Secao; numero: number }
+const { secao, numero } = Astro.props;
 ---
 
-<section class="sec" id="contato">
+<section class="sec sec--tint" id={secao.id}>
   <div class="wrapx">
-    <SectionHead eyebrow="06 · Contato" center>Encomende <em>com calma.</em></SectionHead>
+    <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} center />
+    <div class="sec-body">{/* TODO: conteúdo da etapa "Contato" */}</div>
   </div>
 </section>
