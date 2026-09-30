@@ -33,7 +33,7 @@ export const categorias: Categoria[] = [
   { id: 'paes', nome: 'Pães artesanais', tipo: 'Pão de todo dia', chamada: 'Batata-doce e integral, de 600 a 800 g.' },
   { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.' },
   { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6.' },
-  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário que todo mundo pode comer.' },
+  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem glúten e sem leite, para a festa inteira dividir.' },
 ];
 
 const img = (id: string) => `/images/cardapio/${id}.webp`; // TODO: fotos reais

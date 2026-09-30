@@ -36,6 +36,8 @@ ul, ol { list-style: none; }
 .h2 { font-family: var(--serif); font-weight: 300; font-size: clamp(2.3rem, 4.6vw, 3.9rem); line-height: 1.02; letter-spacing: -.015em; }
 .h3 { font-family: var(--serif); font-weight: 300; font-size: clamp(1.9rem, 3.2vw, 2.8rem); line-height: 1.08; letter-spacing: -.01em; }
 .h4 { font-family: var(--serif); font-weight: 500; font-size: 1.6rem; line-height: 1.15; }
+/* títulos quebram em linhas de tamanho parecido (sem palavra sozinha na última linha) */
+.h1, .h2, .h3 { text-wrap: balance; }
 .h2 em, .h3 em, .h4 em, .quote em { font-style: italic; color: var(--accent); }
 .lead { font-size: clamp(1rem, 1.25vw, 1.125rem); line-height: 1.7; color: var(--ink-2); max-width: 46ch; }
 .t-l { font-size: 1rem; line-height: 1.7; color: var(--ink-2); max-width: 60ch; }

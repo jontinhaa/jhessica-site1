@@ -48,7 +48,7 @@ const vitrine = categorias.map((cat) => {
       <div class="bento">
         {vitrine.map((c) => (
           <a
-            class:list={['tile', 'cat', !c.foto && ['ph', 'ph-empty', c.ph], c.esgotado && 'is-out']}
+            class:list={['tile', 'cat', c.id === 'bolos' && 'cat--largo', !c.foto && ['ph', 'ph-empty', c.ph], c.esgotado && 'is-out']}
             href={`/pedido#${c.id}`}
             style={`grid-area: ${c.id}`}
             data-ph={c.foto ? undefined : `${c.id}.jpg`}
@@ -128,7 +128,7 @@ const vitrine = categorias.map((cat) => {
   /* chamada + seta: visíveis por padrão; só com ponteiro de verdade acima de 860px ficam guardadas e sobem no hover/foco */
   .mais { display: grid; grid-template-rows: 1fr; }
   .mais-in { min-height: 0; overflow: hidden; display: flex; align-items: flex-end; gap: .6rem; }
-  .chamada { font-size: .875rem; line-height: 1.5; color: var(--ink-2); max-width: 34ch; }
+  .chamada { font-size: .875rem; line-height: 1.5; color: var(--ink-2); max-width: 44ch; text-wrap: balance; }
   .mais-in :global(.icon) { flex: none; font-size: 1.1rem; margin-bottom: .15rem; color: var(--accent-2); }
   @media (hover: hover) and (min-width: 861px) {
     .mais, .ov::before { opacity: 0; transition: opacity .5s; }
@@ -140,8 +140,14 @@ const vitrine = categorias.map((cat) => {
     .ov { position: relative; inset: auto; flex-grow: 1; padding: 2.5rem 1rem 1rem; gap: .25rem; }
     .ov::before { display: none; }
     .ov .h4 { font-size: clamp(1.15rem, 4.2vw, 1.6rem); }
-    /* a legenda ocupa quase o bloco todo: véu mais alto */
-    .ov::after { background: linear-gradient(to top, rgba(20, 13, 10, .92) 0%, rgba(20, 13, 10, .8) 50%, rgba(20, 13, 10, .72) 100%); }
+    /* véu só atrás do texto (--veu ≈ altura da pilha), para a foto aparecer em cima */
+    .cat { --veu: 100px; }
+    .cat--largo { --veu: 130px; }
+    .ov::after { background: linear-gradient(to top, rgba(20, 13, 10, .9) 0, rgba(20, 13, 10, .8) var(--veu), rgba(20, 13, 10, 0) calc(var(--veu) + 80px)); }
+    /* blocos 1×1: só tipo, nome, preço e seta (no canto, na linha do preço); a chamada fica para o bloco largo */
+    .cat:not(.cat--largo) .chamada { display: none; }
+    .cat:not(.cat--largo) .mais { position: absolute; right: 1rem; bottom: 1rem; }
+    .cat:not(.cat--largo) .preco small { display: block; } /* "a partir de" em cima: a seta não encosta no preço */
     .chamada { font-size: .8125rem; }
     .cat .tag { left: .75rem; top: .75rem; }
     .tile.txt { flex-direction: row; align-items: center; padding: 1.2rem 1.4rem; }

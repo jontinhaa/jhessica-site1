@@ -45,9 +45,12 @@ export interface Secao {
   rotuloMenu?: string;
 }
 
+/** Espaço não separável, para palavra curta não ficar sozinha no fim da linha (“à sobremesa”). */
+const nbsp = String.fromCharCode(160);
+
 // Ordem da home. O número do sobretítulo é a posição (índice + 1); o id vira âncora e item de menu.
 export const secoes: Secao[] = [
-  { id: 'cardapio', rotulo: 'Cardápio', titulo: 'Do café da manhã', tituloDestaque: 'à sobremesa.', noMenu: true },
+  { id: 'cardapio', rotulo: 'Cardápio', titulo: 'Do café da manhã', tituloDestaque: `à${nbsp}sobremesa.`, noMenu: true },
   { id: 'bento-cake', rotulo: 'Bento Cake', titulo: 'Conta pra gente', tituloDestaque: 'a festa.', noMenu: false },
   { id: 'ingredientes', rotulo: 'Ingredientes', titulo: 'O que entra', tituloDestaque: 'e o que fica de fora.', noMenu: false },
   { id: 'como-pedir', rotulo: 'Como pedir', titulo: 'Do forno à mesa,', tituloDestaque: 'em quatro tempos.', noMenu: true },
