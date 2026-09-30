@@ -67,7 +67,8 @@ const vitrine = categorias.map((cat) => {
         ))}
         <div class="tile txt" style="grid-area: mao" data-rv>
           <span class="rabisco"><Doodle name="granulado" /></span>
-          <p class="hand">sim, até o brigadeiro é sem leite</p>
+          {/* o acento de "até" encosta na haste do t nesta fonte: o é ganha .1em de respiro */}
+          <p class="hand">sim, at<span class="respiro">é</span> o brigadeiro é sem leite</p>
         </div>
       </div>
 
@@ -100,8 +101,10 @@ const vitrine = categorias.map((cat) => {
   }
 
   .tile { position: relative; overflow: hidden; border-radius: var(--r-lg); background: var(--bg-2); }
-  .tile.txt { display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; padding: 1.6rem; background: var(--surface); border: 1px solid var(--line); }
-  .rabisco { display: block; width: 46px; height: 46px; color: var(--accent); }
+  .tile.txt { display: flex; align-items: center; gap: 1.4rem; padding: 1.6rem 2rem; background: var(--surface); border: 1px solid var(--line); }
+  .rabisco { display: block; flex: none; width: 46px; height: 46px; color: var(--accent); }
+  .tile.txt .hand { font-size: clamp(1.6rem, 2.2vw, 2.1rem); text-wrap: balance; }
+  .respiro { margin-left: .1em; }
 
   /* bloco de categoria: a foto preenche e a legenda fica embaixo, por cima dela (como no DS). Abaixo de 860px a legenda
      entra no fluxo para a linha crescer se ela precisar; acima, as linhas são fixas e o hover não mexe na grade. */
@@ -147,11 +150,16 @@ const vitrine = categorias.map((cat) => {
     /* blocos 1×1: só tipo, nome, preço e seta (no canto, na linha do preço); a chamada fica para o bloco largo */
     .cat:not(.cat--largo) .chamada { display: none; }
     .cat:not(.cat--largo) .mais { position: absolute; right: 1rem; bottom: 1rem; }
-    .cat:not(.cat--largo) .preco small { display: block; } /* "a partir de" em cima: a seta não encosta no preço */
+    /* 1×1: "a partir de" na linha do preço, menor; o preço encolhe antes de quebrar e deixa lugar para a seta */
+    .cat:not(.cat--largo) .ov { padding-inline: .75rem; }
+    .cat:not(.cat--largo) .mais { right: .75rem; }
+    .cat:not(.cat--largo) .mais-in :global(.icon) { font-size: 1rem; }
+    .cat:not(.cat--largo) .preco { padding-right: 1.4rem; font-size: clamp(.9375rem, 4.2vw, 1.2rem); }
+    .cat:not(.cat--largo) .preco small { font-size: .6875rem; }
     .chamada { font-size: .8125rem; }
     .cat .tag { left: .75rem; top: .75rem; }
-    .tile.txt { flex-direction: row; align-items: center; padding: 1.2rem 1.4rem; }
-    .rabisco { flex: none; }
+    .tile.txt { gap: 1rem; padding: 1.2rem 1.4rem; }
+    .tile.txt .hand { font-size: 1.55rem; }
   }
 
   .ver-tudo { margin-top: 2.5rem; }

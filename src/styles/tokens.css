@@ -29,6 +29,7 @@
 }
 @media (max-width: 860px) { :root { --nav-h: 72px; } }
 @media (max-width: 768px) { :root { --pad: 20px; } }
+@media (max-width: 640px) { :root { --sec-y: clamp(3.5rem, 9vh, 5rem); } } /* seções mais juntas no celular */
 
 /* Dia · Merengue */
 :root, [data-theme='light'] {
