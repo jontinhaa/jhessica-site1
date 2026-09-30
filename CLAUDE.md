@@ -42,7 +42,7 @@ src/
 - Toda animação precisa respeitar `prefers-reduced-motion`.
 - Rodar `npm run check` e `npm run build` antes de dar uma tarefa por concluída.
 - Vídeo da hero: `public/videos/hero-1080.mp4` (≥768px), `hero-retrato.mp4` (9:16) e `hero-poster.webp`, gerados de
-  `final_4k60.mp4` com ffmpeg: `-vf "fps=30,scale=1920:1080"` e `-vf "fps=30,crop=1216:2160:1946:0,scale=720:1280"`,
+  `../assets/videos/final_4k60.mp4` (master, fora do git e do build) com ffmpeg: `-vf "fps=30,scale=1920:1080"` e `-vf "fps=30,crop=1216:2160:1946:0,scale=720:1280"`,
   ambos `-an -c:v libx264 -preset slower -tune film -x264-params aq-mode=3 -crf 29 -pix_fmt yuv420p -movflags +faststart`.
   Sobre vídeo, vidro com texto usa `--glass-strong` (o `--glass` de 4% só aguenta foto escura e parada).
 
