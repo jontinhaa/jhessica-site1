@@ -12,7 +12,8 @@ export interface Opcao { id: string; rotulo: string; valores: string[] }
 
 export type CategoriaId = 'bolos' | 'paes' | 'fatias' | 'brigadeiros' | 'bento';
 
-export interface Categoria { id: CategoriaId; nome: string; chamada: string }
+/** tipo = ocasião, no sobretítulo da vitrine ("Café da tarde"). */
+export interface Categoria { id: CategoriaId; nome: string; tipo: string; chamada: string }
 
 export interface Produto {
   id: string;
@@ -28,11 +29,11 @@ export interface Produto {
 }
 
 export const categorias: Categoria[] = [
-  { id: 'bolos', nome: 'Bolos caseirinhos', chamada: 'O bolo do café da tarde, em 500 g.' },
-  { id: 'paes', nome: 'Pães artesanais', chamada: 'Batata-doce e integral, de 600 a 800 g.' },
-  { id: 'fatias', nome: 'Bolos em fatia', chamada: 'Para provar sem encomendar um bolo inteiro.' },
-  { id: 'brigadeiros', nome: 'Brigadeiros', chamada: 'Cacau, paçoca e beijinho, em caixas com 6.' },
-  { id: 'bento', nome: 'Bento Cake', chamada: 'O bolo de aniversário que todo mundo pode comer.' },
+  { id: 'bolos', nome: 'Bolos caseirinhos', tipo: 'Café da tarde', chamada: 'O bolo do café da tarde, em 500 g.' },
+  { id: 'paes', nome: 'Pães artesanais', tipo: 'Pão de todo dia', chamada: 'Batata-doce e integral, de 600 a 800 g.' },
+  { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.' },
+  { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6.' },
+  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário que todo mundo pode comer.' },
 ];
 
 const img = (id: string) => `/images/cardapio/${id}.webp`; // TODO: fotos reais
@@ -87,4 +88,6 @@ export function precoMinimo(categoriaId: CategoriaId): number | null {
   return precos.length ? Math.min(...precos) : null;
 }
 
-export const formatarPreco = (valor: number) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+/** "R$ 30" quando inteiro, "R$ 32,50" quando não. */
+export const formatarPreco = (valor: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(valor) ? 0 : 2 }).format(valor);

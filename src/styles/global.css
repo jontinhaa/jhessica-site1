@@ -66,8 +66,39 @@ ul, ol { list-style: none; }
 .well { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; flex: none; border: 1px solid var(--line-2); background: rgba(var(--accent-rgb), .07); color: var(--accent); font-size: 20px; }
 .fita { height: 1px; background: var(--fita); border: 0; }
 
+/* ---------- etiquetas e link com rabisco (seção 03 do design system) ---------- */
+.tag { display: inline-flex; align-items: center; gap: .35rem; height: 24px; padding: 0 .65rem; border-radius: var(--r-pill); font-size: .56rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; border: 1px solid var(--line-2); color: var(--ink-2); }
+.tag--vidro { border-color: rgba(255, 255, 255, .3); background: rgba(20, 13, 10, .34); color: #FBF3E6; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+/* .risco = o traço desenhado embaixo; .icon = a seta que anda 4px */
+.link-r { position: relative; display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; font-weight: 500; color: var(--ink); transition: color .3s; }
+.link-r .risco { position: absolute; left: -3%; bottom: -.55em; width: 106%; height: .75em; overflow: visible; fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset .6s var(--e-flip), opacity .2s; }
+.link-r:hover, .link-r:focus-visible { color: var(--accent-ink); }
+.link-r:hover .risco, .link-r:focus-visible .risco { stroke-dashoffset: 0; opacity: 1; } /* opacity: esconde a ponta redonda parada */
+.link-r .icon { transition: transform .4s var(--e-out); }
+.link-r:hover .icon, .link-r:focus-visible .icon { transform: translateX(4px); }
+
+/* ---------- placeholder de foto: .ph.ph-empty enquanto o arquivo não existe (data-ph = nome esperado) ---------- */
+.ph { position: relative; background-color: var(--bg-2); --ph-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 30 46 18l10 10M10 30v20l46-2V28M10 37c14-.5 30-1.5 46-2.2M10 43.5c15-.5 30-1.5 46-2.3'/%3E%3Ccircle cx='40' cy='15' r='4'/%3E%3Cpath d='M40 11c1-4 3-6 6-7M14 30c1 3 3 3 4 .5M26 26.2c1 3.3 3 3.3 4 .3'/%3E%3C/svg%3E"); }
+.ph[data-ico='doce'] { --ph-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 34 6 20h24l6-20M20 34l4 20M26 34l2 20M32 34v20M38 34l-2 20M44 34l-4 20M14 34c2-2.5 4-2.5 6 0 2-2.5 4-2.5 6 0 2-2.5 4-2.5 6 0 2-2.5 4-2.5 6 0 2-2.5 4-2.5 6 0 2-2.5 4-2.5 6 0M18.5 30c-.5-10 6.5-16.5 14-16.4 8 .2 14 6.9 13 16.4M26 20l2-1.5M35 18l2 1.5M30 25l1.5 1.8'/%3E%3C/svg%3E"); }
+.ph.ph-empty { background: radial-gradient(90% 70% at 68% 38%, rgba(var(--accent-rgb), .30), transparent 62%), radial-gradient(70% 60% at 18% 92%, color-mix(in srgb, var(--berry) 22%, transparent), transparent 60%), linear-gradient(160deg, var(--surface-2), var(--bg-2)); }
+.ph.ph--noite.ph-empty { background: radial-gradient(60% 70% at 74% 52%, rgba(217, 164, 91, .34), transparent 64%), radial-gradient(50% 60% at 90% 10%, rgba(200, 90, 104, .16), transparent 60%), linear-gradient(90deg, #140D0A, #2A1A12); }
+.ph.ph--fruta.ph-empty { background: radial-gradient(80% 70% at 60% 35%, rgba(208, 112, 124, .45), transparent 62%), linear-gradient(160deg, #5E1F2A, #2A1015); }
+.ph.ph--pista.ph-empty { background: radial-gradient(80% 70% at 60% 35%, rgba(169, 184, 120, .45), transparent 62%), linear-gradient(160deg, #4C5A2B, #232A14); }
+.ph.ph--caramelo.ph-empty { background: radial-gradient(80% 70% at 60% 35%, rgba(240, 205, 142, .55), transparent 62%), linear-gradient(160deg, #B8742F, #5A3416); }
+.ph.ph-empty::before { content: ''; position: absolute; left: 50%; top: 50%; width: min(34%, 120px); aspect-ratio: 1; transform: translate(-50%, -56%); background: currentColor; color: rgba(var(--ink-rgb), .28); -webkit-mask: var(--ph-ico) center / contain no-repeat; mask: var(--ph-ico) center / contain no-repeat; pointer-events: none; z-index: 0; }
+.ph.ph--noite.ph-empty::before, .ph.ph--fruta.ph-empty::before, .ph.ph--pista.ph-empty::before, .ph.ph--caramelo.ph-empty::before { color: rgba(251, 243, 230, .34); }
+.ph.ph-empty::after { content: attr(data-ph); position: absolute; right: .75rem; bottom: .75rem; z-index: 0; padding: .32rem .5rem; border-radius: 4px; font: 10px/1 var(--mono); letter-spacing: .04em; color: #FBF3E6; background: rgba(20, 13, 10, .5); pointer-events: none; }
+
+/* ---------- revelar [data-rv] (seção 10 do design system): sobe 44px e aparece em 1.2s, a 88% da tela,
+   cascata (i % 4) × 80ms. O DS usa GSAP; aqui é CSS + IntersectionObserver (script no BaseLayout).
+   .rv-on vem do script inline do <head>: sem JS, nada fica escondido. ---------- */
+.rv-on [data-rv] { opacity: 0; translate: 0 44px; transition: opacity 1.2s var(--e-soft), translate 1.2s var(--e-soft); transition-delay: var(--rv-d, 0s); }
+.rv-on [data-rv].is-in { opacity: 1; translate: none; }
+
 /* ---------- movimento reduzido ---------- */
 @media (prefers-reduced-motion: reduce) {
   .grain { animation: none; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  /* revelar vira só fade (.7s, como no DS) */
+  .rv-on [data-rv] { translate: none; transition: opacity .7s var(--e-zoom) !important; }
 }

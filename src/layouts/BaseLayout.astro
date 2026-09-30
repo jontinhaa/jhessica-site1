@@ -29,6 +29,7 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
         try { t = localStorage.getItem('theme'); } catch (e) {}
         if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.classList.add('rv-on');
       })();
     </script>
     <Font cssVariable="--font-serif" preload />
@@ -43,5 +44,18 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
       <slot />
     </main>
     <Footer />
+    <script>
+      // [data-rv]: revela ao entrar na tela (88%; 94% com movimento reduzido), em cascata de 80ms entre vizinhos
+      const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      }), { rootMargin: `0px 0px ${reduzido ? -6 : -12}% 0px` });
+      document.querySelectorAll<HTMLElement>('[data-rv]').forEach((el) => {
+        if (!reduzido) el.style.setProperty('--rv-d', `${([...el.parentElement!.children].indexOf(el) % 4) * 80}ms`);
+        io.observe(el);
+      });
+    </script>
   </body>
 </html>

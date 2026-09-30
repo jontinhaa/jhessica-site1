@@ -17,10 +17,12 @@ templates/
   design_system.astro    design system vivo em /design-system, só no dev (CSS global e scripts inline de propósito)
 src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
-  styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…)
+  styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…),
+                         .tag, .link-r, placeholder .ph e o revelar [data-rv]
   data/site.ts           marca, seo, contato/redes, regrasPedido, secoes (ordem da home) e menu
-  data/cardapio.ts       categorias e produtos (variantes, adicionais, opções), precoMinimo, getProdutosPorCategoria
-  layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header e Footer
+  data/cardapio.ts       categorias (nome, tipo, chamada) e produtos (variantes, adicionais, opções), precoMinimo, formatarPreco
+  assets/images/cardapio/  fotos da vitrine ({categoria}.jpg|webp) + FONTES-PROVISORIAS.md
+  layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading
   components/sections/   Hero + uma seção por item de `secoes` (hoje esqueletos com título e âncora)
@@ -41,6 +43,10 @@ src/
 - Seção nova da home: item em `secoes` (site.ts) + componente em `pages/index.astro`. Número do sobretítulo = posição.
   Links internos sempre `/#id` (funcionam fora da home). Produto e preço só em `data/cardapio.ts`.
 - Toda animação precisa respeitar `prefers-reduced-motion`.
+- Entrada de bloco: `data-rv` (sobe 44px e aparece em 1.2s, cascata de 80ms; só fade com movimento reduzido). É CSS +
+  IntersectionObserver no BaseLayout, sem GSAP. `data-seat` do DS ainda não foi portado.
+- Foto de produto: `<Image />` de `astro:assets` a partir de `src/assets/images/…`; se o arquivo faltar, o bloco usa
+  `.ph.ph-empty` com `data-ph` (nome esperado) e o build não quebra.
 - Rodar `npm run check` e `npm run build` antes de dar uma tarefa por concluída.
 - Vídeo da hero: `public/videos/hero-1080.mp4` (≥768px), `hero-retrato.mp4` (9:16) e `hero-poster.webp`, gerados de
   `../assets/videos/final_4k60.mp4` (master, fora do git e do build) com ffmpeg: `-vf "fps=30,scale=1920:1080"` e `-vf "fps=30,crop=1216:2160:1946:0,scale=720:1280"`,
@@ -53,6 +59,12 @@ src/
    entrada dela são CSS nativo (scroll-driven animations), sem GSAP.
 2. Instalar `gsap` e `lenis` só quando a primeira cena fixada (ritual horizontal, camadas) for construída.
 3. Fotos: gerar pelo briefing, salvar em `src/assets/images/` e usar `<Image />` do `astro:assets`.
+
+### Pendências de lançamento (não publicar sem resolver)
+
+- **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver
+  `src/assets/images/cardapio/FONTES-PROVISORIAS.md`): substituir pelas fotos reais da Jhessica e ajustar os `alt`.
+- Página /design-system não pode ir para produção (já garantido: a rota só existe no dev).
 4. Preencher `contact` em `src/data/site.ts` e definir o destino do formulário de encomenda.
 
 ## Development
