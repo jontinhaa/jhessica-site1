@@ -6,13 +6,15 @@ Site one-page em Astro 7 (estático), português do Brasil, modo dia e noite.
 (convertido de `../design_system2.html`). Tokens, tipografia, componentes, layout e movimento do site saem de lá.
 A hero segue a seção "0 · HERO" dele, com vídeo no lugar da foto dia/noite. As fotos previstas e a direção de arte estão em
 `../.briefing/design-system-2.md`; o template as procura em `public/images/ds2/`.
-A rota `src/pages/design-system.astro` é só para desenvolvimento: remover antes de publicar.
+**Página /design-system é só de desenvolvimento; nunca publicar.** Ela tem produtos, preços e avaliação fictícios.
+A rota é injetada em `astro.config.mjs` apenas quando o comando é `dev` (não existe arquivo em `src/pages/`),
+então `npm run build` não a gera. Não linkar para ela em nenhuma página.
 
 ### Estrutura
 
 ```
 templates/
-  design_system.astro    design system vivo (página de referência, CSS global e scripts inline de propósito)
+  design_system.astro    design system vivo em /design-system, só no dev (CSS global e scripts inline de propósito)
 src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
   styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…)
@@ -25,7 +27,6 @@ src/
   pages/index.astro      Hero + seções percorrendo `secoes`
   pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)
   pages/404.astro
-  pages/design-system.astro  rota de referência (só desenvolvimento)
 ```
 
 ### Convenções
