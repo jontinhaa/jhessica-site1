@@ -1,4 +1,5 @@
 // Configuração central. Header, Footer, SEO e a ordem das seções da home leem daqui.
+import type { Alergeno } from './cardapio';
 
 export const marca = {
   nome: 'Jhessica em Cozinha Saudável',
@@ -34,6 +35,36 @@ export const regrasPedido = {
   cidadeEntrega: 'Marabá',
   taxaEntrega: null as number | null, // TODO: confirmar com a cliente
   limiteGrandeVolume: null as number | null, // TODO: confirmar com a cliente (a partir de quantos itens vale o prazo de 7 dias)
+};
+
+// O que a seção Ingredientes pode afirmar. null = não confirmado: a frase correspondente não promete nada.
+export const compromisso = {
+  cozinhaSemGluten: null as boolean | null, // TODO: confirmar com a cliente
+  cozinhaSemLeite: null as boolean | null, // TODO: confirmar com a cliente
+  semAcucarRefinado: null as boolean | null, // true = nenhum produto usa; false ou null = "evitamos"
+  ingredientesQueEntram: [] as { nome: string; porque: string }[], // TODO: preencher com a cliente
+};
+
+type Cozinha = Pick<typeof compromisso, 'cozinhaSemGluten' | 'cozinhaSemLeite'>;
+
+/** Linha do açúcar: "nada de" só quando confirmado; nos outros casos, "evitamos". */
+export const textoAcucar = (semAcucarRefinado = compromisso.semAcucarRefinado) =>
+  semAcucarRefinado === true ? 'E nada de açúcar refinado.' : 'E evitamos açúcar refinado e o excesso de industrializados.';
+
+/** Frase sobre a cozinha; null (não mostra nada) enquanto glúten ou leite não estiver confirmado. */
+export function textoCozinha({ cozinhaSemGluten: gluten, cozinhaSemLeite: leite }: Cozinha = compromisso): string | null {
+  if (gluten === null || leite === null) return null;
+  if (gluten && leite) return 'Na nossa cozinha não entram glúten nem leite, em receita nenhuma.';
+  const tracos = [!gluten && 'glúten', !leite && 'leite'].filter(Boolean).join(' e ');
+  return `Nossa cozinha também prepara outras receitas. Tomamos cuidado com a separação, mas não garantimos ausência de traços de ${tracos}.`;
+}
+
+export const rotulosAlergenos: Record<Alergeno, string> = {
+  ovo: 'Ovo',
+  amendoim: 'Amendoim',
+  coco: 'Coco',
+  castanhas: 'Castanhas',
+  soja: 'Soja',
 };
 
 export interface Secao {

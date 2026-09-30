@@ -1,17 +1,176 @@
 ---
-// INGREDIENTES · o que entra e o que fica de fora. Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Sem glúten e sem leite: listar o que a cozinha usa e o que não entra.
-// Alérgenos por produto em src/data/cardapio.ts (campo alergenos).
+// INGREDIENTES · o que a receita tem e não tem, sem prometer além dos dados.
+// Frases condicionais (açúcar, cozinha) e a lista "O que entra" vêm de `compromisso` em src/data/site.ts:
+// enquanto um dado for null, a frase não afirma nada. Alérgenos por produto ficam em src/data/cardapio.ts.
+// Foto PROVISÓRIA: ver src/assets/images/ingredientes/FONTES-PROVISORIAS.md.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
-import type { Secao } from '../../data/site';
+import Icon from '../ui/Icon.astro';
+import Doodle from '../ui/Doodle.astro';
+import { compromisso, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
+
+const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/ingredientes/destaque.{jpg,jpeg,png,webp}', { eager: true });
+const foto = Object.values(fotos)[0]?.default;
+
+const zeros = ['ingredientes com glúten', 'com leite ou derivados', 'conservantes'];
+const cozinha = textoCozinha();
+const entram = compromisso.ingredientesQueEntram;
 ---
 
 <section class="sec sec--tint" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "Ingredientes" */}</div>
+    <div class="sec-body">
+      <div class="split rev">
+        <figure class:list={['media', !foto && ['ph', 'ph-empty', 'ph--caramelo']]} data-ph={foto ? undefined : 'ingredientes/destaque.webp'}>
+          {foto && (
+            // TODO: alt final com a foto real
+            <Image class="par" src={foto} alt="Tigela de farinha com colher de pau sobre a mesa de madeira do ateliê, com panelas de cobre ao fundo"
+              widths={[400, foto.width]} sizes="(max-width: 860px) calc(100vw - 40px), 55vw" loading="lazy" data-par />
+          )}
+          <figcaption class="cap">Mesa do ateliê</figcaption>
+        </figure>
+
+        <div class="texto">
+          <p class="lead" data-rv>Cada receita foi pensada para quem tem restrição e para quem só quer comer melhor, sem abrir mão do sabor.</p>
+
+          <ul class="zeros">
+            {zeros.map((legenda, i) => (
+              <li data-rv>
+                <span class="num"><span class="numeral">0</span>{i === 0 && <span class="rabisco"><Doodle name="trigo" /></span>}</span>
+                <span class="micro">{legenda}</span>
+              </li>
+            ))}
+          </ul>
+
+          <p class="t-m" data-rv>{textoAcucar()}</p>
+
+          <aside class="surface bom-saber" data-rv>
+            <span class="well"><Icon name="solar:leaf-linear" /></span>
+            <div>
+              <span class="kicker">Bom saber</span>
+              <h3 class="h4">Sem leite não é o mesmo que sem lactose.</h3>
+              <p class="t-m">Um produto sem lactose ainda pode ter leite. Aqui, as receitas não levam leite nem derivados: nada de manteiga, creme de leite, leite condensado ou leite em pó.</p>
+            </div>
+          </aside>
+
+          {cozinha && <p class="t-m" data-rv>{cozinha}</p>}
+
+          <div class="alergenos" data-rv>
+            <h3 class="t-bold-s">Outros alérgenos</h3>
+            <ul class="tags">{Object.values(rotulosAlergenos).map((r) => <li class="tag">{r}</li>)}</ul>
+            <p class="t-s">Cada produto do cardápio mostra o que contém. Tem alguma alergia? Conte no pedido.</p>
+            <a class="link-r" href="/pedido">
+              Ver o cardápio<Icon name="solar:arrow-right-linear" />
+              <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {entram.length > 0 && (
+        <div class="entram">
+          <h3 class="t-bold-s">O que entra</h3>
+          <ul class="flips">
+            {entram.map((item, i) => (
+              <li data-rv>
+                <button class={`flip fl-${(i % 4) + 1}`} type="button" aria-pressed="false">
+                  <span class="flip-in">
+                    <span class="flip-f"><span class="n">{String(i + 1).padStart(2, '0')}</span><span class="h4">{item.nome}</span></span>
+                    <span class="flip-b"><span class="kicker">Por que entra</span><span class="t-m">{item.porque}</span></span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   </div>
 </section>
+
+<style>
+  .texto { display: flex; flex-direction: column; align-items: flex-start; gap: 1.8rem; }
+  /* contraste ≥ 4.5:1 (medido): véu da legenda mais escuro que o do DS (.42), textos pequenos um tom mais fortes */
+  .media .cap { background: rgba(20, 13, 10, .72); }
+  .t-bold-s { color: color-mix(in srgb, var(--accent-ink) 80%, var(--ink)); }
+  .alergenos .t-s { color: var(--ink-2); }
+  .texto .lead { max-width: 40ch; }
+
+  /* três zeros lado a lado; o rabisco de trigo acompanha o primeiro */
+  .zeros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; width: 100%; }
+  .zeros li { display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; }
+  .num { position: relative; }
+  .zeros .micro { font-size: .75rem; line-height: 1.45; letter-spacing: .12em; color: var(--ink-2); } /* legenda é frase: 12px, acima dos .59rem do DS */
+  /* rabisco solto ao lado do primeiro zero, sem ocupar lugar (as legendas ficam alinhadas) */
+  .rabisco { position: absolute; left: 100%; top: 50%; translate: 0 -50%; margin-left: .35rem; width: 38px; height: 38px; color: var(--accent); }
+  .rabisco :global(svg) { width: 100%; height: 100%; }
+
+  .bom-saber { display: flex; gap: 1.2rem; padding: 1.5rem; }
+  .bom-saber .kicker { margin-bottom: .5rem; }
+  .bom-saber .h4 { font-size: 1.35rem; margin-bottom: .6rem; }
+
+  .alergenos { display: flex; flex-direction: column; align-items: flex-start; gap: .8rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .alergenos .link-r { margin-top: .6rem; }
+
+  /* ---------- "O que entra": cartões que viram (DS · .flip) ---------- */
+  .entram { margin-top: clamp(3rem, 6vw, 5rem); }
+  .entram .t-bold-s { margin-bottom: 1.4rem; }
+  .flips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem; }
+  .flip { display: block; width: 100%; height: 320px; perspective: 1000px; text-align: left; }
+  .flip-in { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .8s var(--e-flip); }
+  .flip.is-flipped .flip-in, .flip:focus-visible .flip-in { transform: rotateY(180deg); }
+  @media (hover: hover) { .flip:hover .flip-in { transform: rotateY(180deg); } }
+  .flip:focus-visible { outline: none; }
+  .flip:focus-visible .flip-in { box-shadow: 0 0 0 2px var(--accent); border-radius: var(--r-lg); }
+  .flip-f, .flip-b { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; border-radius: var(--r-lg); -webkit-backface-visibility: hidden; backface-visibility: hidden; overflow: hidden; }
+  .flip-f { color: #FBF3E6; }
+  .flip-f .n { font-family: var(--serif); font-style: italic; font-size: 1.1rem; opacity: .8; }
+  .flip-f::after { content: ''; position: absolute; inset: 0; background: var(--grain-img); opacity: .14; mix-blend-mode: overlay; pointer-events: none; }
+  .flip-b { transform: rotateY(180deg); justify-content: flex-start; gap: .8rem; background: var(--surface); border: 1px solid var(--line); }
+  .fl-1 .flip-f { background: #3A2418; }
+  .fl-2 .flip-f { background: #A8652A; }
+  .fl-3 .flip-f { background: #7A2835; }
+  .fl-4 .flip-f { background: #5B6B34; }
+
+  @media (max-width: 1024px) { .flips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 860px) {
+    /* zeros empilhados, com divisória fina (.hair) entre eles */
+    .zeros { grid-template-columns: 1fr; gap: 0; }
+    .zeros li { display: grid; grid-template-columns: 6rem 1fr; align-items: center; padding: 1rem 0; }
+    .num { justify-self: start; }
+    .zeros li + li { border-top: 1px solid var(--line); }
+    .bom-saber { width: 100%; }
+  }
+  @media (max-width: 640px) {
+    /* uma coluna com rolagem lateral (intencional) e encaixe */
+    .flips { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(var(--pad) * -1); padding: .25rem var(--pad) 1rem; scroll-padding-inline: var(--pad); }
+    .flips li { flex: 0 0 82%; scroll-snap-align: start; }
+    .bom-saber { flex-direction: column; }
+  }
+
+  /* movimento reduzido: sem giro; frente e verso trocam com fade */
+  @media (prefers-reduced-motion: reduce) {
+    .flip .flip-in { transform: none !important; }
+    .flip-b { transform: none; opacity: 0; }
+    .flip-f, .flip-b { transition: opacity .4s !important; }
+    .flip.is-flipped .flip-f, .flip:focus-visible .flip-f { opacity: 0; }
+    .flip.is-flipped .flip-b, .flip:focus-visible .flip-b { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) and (hover: hover) {
+    .flip:hover .flip-f { opacity: 0; }
+    .flip:hover .flip-b { opacity: 1; }
+  }
+</style>
+
+<script>
+  // toque (e clique) vira o cartão; aria-pressed diz se o verso está à mostra
+  document.querySelectorAll<HTMLButtonElement>('.flips .flip').forEach((b) =>
+    b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.classList.toggle('is-flipped')))),
+  );
+</script>

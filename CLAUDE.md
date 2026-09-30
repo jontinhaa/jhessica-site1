@@ -19,9 +19,11 @@ src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
   styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…),
                          .tag, .link-r, placeholder .ph e o revelar [data-rv]
-  data/site.ts           marca, seo, contato/redes, regrasPedido, secoes (ordem da home) e menu
+  data/site.ts           marca, seo, contato/redes, regrasPedido, compromisso (+ textoAcucar/textoCozinha), rotulosAlergenos,
+                         secoes (ordem da home) e menu
   data/cardapio.ts       categorias (nome, tipo, chamada) e produtos (variantes, adicionais, opções), precoMinimo, formatarPreco
   assets/images/cardapio/  fotos da vitrine ({categoria}.jpg|webp) + FONTES-PROVISORIAS.md
+  assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading
@@ -43,6 +45,9 @@ src/
 - Seção nova da home: item em `secoes` (site.ts) + componente em `pages/index.astro`. Número do sobretítulo = posição.
   Links internos sempre `/#id` (funcionam fora da home). Produto e preço só em `data/cardapio.ts`.
 - Toda animação precisa respeitar `prefers-reduced-motion`.
+- Promessa ao cliente (sem glúten, sem leite, sem açúcar…) só aparece se o dado estiver confirmado em `compromisso`;
+  null = não afirmar.
+- Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
 - Entrada de bloco: `data-rv` (sobe 44px e aparece em 1.2s, cascata de 80ms; só fade com movimento reduzido). É CSS +
   IntersectionObserver no BaseLayout, sem GSAP. `data-seat` do DS ainda não foi portado.
 - Foto de produto: `<Image />` de `astro:assets` a partir de `src/assets/images/…`; se o arquivo faltar, o bloco usa
@@ -62,6 +67,11 @@ src/
 
 ### Pendências de lançamento (não publicar sem resolver)
 
+- **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
+  `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
+- Confirmar com a cliente os dados de `compromisso` (site.ts): cozinha sem glúten/sem leite, açúcar refinado e a lista
+  "O que entra". Enquanto forem null, a seção não afirma nada sobre eles. O numeral "0 conservantes" é fixo no
+  componente e também precisa de confirmação.
 - **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver
   `src/assets/images/cardapio/FONTES-PROVISORIAS.md`): substituir pelas fotos reais da Jhessica e ajustar os `alt`.
 - Página /design-system não pode ir para produção (já garantido: a rota só existe no dev).
