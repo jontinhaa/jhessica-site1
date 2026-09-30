@@ -48,6 +48,8 @@ src/
 - Promessa ao cliente (sem glúten, sem leite, sem açúcar…) só aparece se o dado estiver confirmado em `compromisso`;
   null = não afirmar.
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
+- Recorte que abre (Padrão E): `data-clip` na figura; a foto sai de inset(42%) até a borda enquanto sobe. Combina com
+  `data-par` na mesma foto. CSS preso à rolagem; com movimento reduzido a foto já aparece aberta.
 - Entrada de bloco: `data-rv` (sobe 44px e aparece em 1.2s, cascata de 80ms; só fade com movimento reduzido). É CSS +
   IntersectionObserver no BaseLayout, sem GSAP. `data-seat` do DS ainda não foi portado.
 - Foto de produto: `<Image />` de `astro:assets` a partir de `src/assets/images/…`; se o arquivo faltar, o bloco usa

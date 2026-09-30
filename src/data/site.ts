@@ -83,7 +83,7 @@ const nbsp = String.fromCharCode(160);
 export const secoes: Secao[] = [
   { id: 'cardapio', rotulo: 'Cardápio', titulo: 'Do café da manhã', tituloDestaque: `à${nbsp}sobremesa.`, noMenu: true },
   { id: 'bento-cake', rotulo: 'Bento Cake', titulo: 'Conta pra gente', tituloDestaque: 'a festa.', noMenu: false },
-  { id: 'ingredientes', rotulo: 'Ingredientes', titulo: 'O que entra', tituloDestaque: 'e o que fica de fora.', noMenu: false },
+  { id: 'ingredientes', rotulo: 'Ingredientes', titulo: 'O que entra', tituloDestaque: `e${nbsp}o${nbsp}que fica de fora.`, noMenu: false },
   { id: 'como-pedir', rotulo: 'Como pedir', titulo: 'Do forno à mesa,', tituloDestaque: 'em quatro tempos.', noMenu: true },
   { id: 'sobre', rotulo: 'Nossa história', titulo: 'Uma cozinha', tituloDestaque: 'que nasceu em casa.', noMenu: true, rotuloMenu: 'Sobre' },
   { id: 'depoimentos', rotulo: 'Depoimentos', titulo: 'Sobrou', tituloDestaque: 'só a forminha.', noMenu: true },
