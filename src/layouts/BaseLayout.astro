@@ -22,13 +22,19 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <!-- Tema antes do primeiro paint: escolha salva > preferência do sistema -->
+    <!-- Tema antes do primeiro paint: escolha salva > preferência do sistema.
+         Reaplicado quando a página volta do cache de voltar/avançar (o script não roda de novo) e quando outra aba troca o tema. -->
     <script is:inline>
       (function () {
-        var t = null;
-        try { t = localStorage.getItem('theme'); } catch (e) {}
-        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', t);
+        function aplicar() {
+          var t = null;
+          try { t = localStorage.getItem('theme'); } catch (e) {}
+          if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        }
+        aplicar();
+        addEventListener('pageshow', function (e) { if (e.persisted) aplicar(); });
+        addEventListener('storage', function (e) { if (e.key === 'theme') aplicar(); });
         document.documentElement.classList.add('rv-on');
       })();
     </script>
