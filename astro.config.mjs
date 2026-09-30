@@ -6,6 +6,7 @@ const google = fontProviders.google();
 
 // /design-system (referência com produtos, preços e avaliação fictícios) só existe em `astro dev`:
 // a rota é injetada apenas nesse comando, então o build nem a conhece (sem página, sem sitemap).
+/** @type {import('astro').AstroIntegration} */
 const designSystemSoEmDev = {
   name: 'design-system-so-em-dev',
   hooks: {
