@@ -55,10 +55,11 @@ const pesosPao: Variante[] = [
 ];
 const fatia: Variante[] = [{ id: 'fatia', rotulo: 'Fatia', preco: 30 }];
 
-// Padrão dos produtos (respostas da cliente); os brigadeiros sobrescrevem alérgenos e permiteSemOvo.
+// Padrão dos produtos (respostas da cliente); os brigadeiros sobrescrevem os alérgenos.
+// Versão sem ovos só no bolo de chocolate, no Chocolate Matilda e nos pães (permiteSemOvo: true em cada um).
 const base = {
   alergenos: { contem: ['ovo', 'castanhas'], podeConter: ['soja', 'gluten', 'leite'] } as Produto['alergenos'],
-  permiteSemOvo: true, // versão sem ovos pelo mesmo preço. TODO: confirmar se muda o prazo
+  permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço. TODO: confirmar se muda o prazo
   disponivel: true,
 };
 
@@ -67,25 +68,25 @@ export const produtos: Produto[] = [
   // leva leite de coco
   { ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), variantes: bolo500(40), adicionais: cobertura, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'coco'] } },
   { ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'), variantes: bolo500(40), adicionais: cobertura },
-  { ...base, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'), variantes: bolo500(45), maisPedido: true },
+  { ...base, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'), variantes: bolo500(45), maisPedido: true },
   { ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'), variantes: bolo500(45) },
   {
     ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
     variantes: bolo500(40), adicionais: [{ id: 'cobertura-geleia', rotulo: 'Cobertura de geleia', preco: 10 }],
   },
 
-  { ...base, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true },
-  { ...base, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao },
-  { ...base, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao },
+  { ...base, permiteSemOvo: true, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true },
+  { ...base, permiteSemOvo: true, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao },
+  { ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao },
 
   { ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia },
-  { ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
+  { ...base, permiteSemOvo: true, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
   { ...base, id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), variantes: fatia },
 
   {
     ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 ou 12 brigadeiros, com sabores misturados.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
     // brigadeiro não leva ovo (selo "sem ovo"). TODO: confirmar se leva castanha ou amêndoa (por ora só "pode conter")
-    alergenos: { contem: [], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] }, permiteSemOvo: false,
+    alergenos: { contem: [], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
     variantes: [
       { id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30, unidades: 6 },
       { id: 'caixa-12', rotulo: 'Caixa com 12', preco: 55, unidades: 12 },
