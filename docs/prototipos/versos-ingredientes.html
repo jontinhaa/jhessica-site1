@@ -1,0 +1,366 @@
+<title>Versos dos ingredientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;500;600&family=La+Belle+Aurore&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,500;1,6..72,300;1,6..72,400&display=swap">
+<style>
+/* Layout: grade de 6 versos de card (3 / 2 / 1 colunas); cada verso = texto em cima, cena em rabisco stop-motion embaixo. Tokens do design system "receita nº 2". */
+:root{
+  --bg:#F6EFE4; --surface:#FBF6EE; --ink:#2B1D17; --ink-2:#5A4338; --muted:#78624F;
+  --accent:#B8742F; --accent-ink:#8F5520; --line:rgba(43,29,23,.14);
+  --serif:"Newsreader", Georgia, "Times New Roman", serif;
+  --sans:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --hand:"La Belle Aurore", "Segoe Script", cursive;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#140D0A; --surface:#1E1410; --ink:#F5EADB; --ink-2:rgba(245,234,219,.74); --muted:rgba(245,234,219,.55);
+    --accent:#D9A45B; --accent-ink:#E4B774; --line:rgba(245,234,219,.12); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#140D0A; --surface:#1E1410; --ink:#F5EADB; --ink-2:rgba(245,234,219,.74); --muted:rgba(245,234,219,.55);
+  --accent:#D9A45B; --accent-ink:#E4B774; --line:rgba(245,234,219,.12); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.6;padding-inline:clamp(16px,5vw,64px);padding-block:clamp(2rem,6vh,4rem)}
+.wrap{max-width:1180px;margin-inline:auto;display:flex;flex-direction:column;gap:2.5rem}
+
+.intro{display:flex;flex-direction:column;gap:.9rem;max-width:62ch}
+.eyebrow{display:flex;align-items:center;gap:1rem}
+.eyebrow i{width:48px;height:1px;background:var(--accent);flex:none}
+.eyebrow span{font-size:.625rem;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font-family:var(--serif);font-weight:300;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:1.04;letter-spacing:-.015em;margin:0;text-wrap:balance}
+h1 em{font-style:italic;font-weight:400;color:var(--accent)}
+.lead{margin:0;color:var(--ink-2);font-size:clamp(1rem,1.2vw,1.1rem);max-width:56ch}
+
+.controls{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.btn{font:600 .6875rem/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;height:40px;padding:0 1.1rem;border-radius:100px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;transition:border-color .3s,background-color .3s}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.seg{display:inline-flex;gap:.35rem;padding:.25rem;border:1px solid var(--line);border-radius:100px}
+.seg .btn{border-color:transparent;height:32px}
+
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
+@media (max-width:1023px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.card{position:relative;display:flex;flex-direction:column;min-height:360px;border-radius:18px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.card-text{display:flex;flex-direction:column;gap:.55rem;padding:1.5rem 1.5rem 0}
+.kicker{margin:0;font-size:.625rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--accent-ink)}
+.why{margin:0;font-size:.95rem;line-height:1.55;color:var(--ink-2);max-width:34ch}
+.hand{margin:auto 1.5rem 0;font-family:var(--hand);font-size:1.25rem;line-height:1.2;color:var(--accent);text-align:right}
+.stage{margin-top:.35rem}
+
+/* ---------- Cenas: traço dos rabiscos da casa ---------- */
+.scene{display:block;width:100%;height:auto;color:var(--accent);fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.scene *{vector-effect:non-scaling-stroke}
+.scene .solid{fill:var(--surface)}
+.scene .halo{stroke:var(--surface);stroke-width:7}
+.scene .faint{opacity:.42}
+.scene .dot{stroke-width:2.6}
+
+/* fervura stop-motion (mesma receita do .boil do DS, via propriedades individuais para somar com outros movimentos) */
+.boil{transform-box:fill-box;transform-origin:center;animation:boil .5s steps(1) infinite;animation-delay:var(--bd,0s)}
+@keyframes boil{0%{translate:0 0;rotate:0deg}33%{translate:.6px -.4px;rotate:-1.6deg}66%{translate:-.5px .5px;rotate:1.3deg}}
+.boil-w{animation:boilw .5s steps(1) infinite;animation-delay:var(--bd,0s)}
+@keyframes boilw{0%{translate:0 0}33%{translate:.6px -.4px}66%{translate:-.5px .5px}}
+
+/* passos do personagem: 2 quadros */
+.fa{animation:fa .5s steps(1) infinite}
+.fb{opacity:0;animation:fb .5s steps(1) infinite}
+@keyframes fa{0%{opacity:1}50%{opacity:0}}
+@keyframes fb{0%{opacity:0}50%{opacity:1}}
+
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 1.5s steps(1) infinite;animation-delay:var(--d,0s)}
+@keyframes sway{0%{rotate:-2.5deg}50%{rotate:2.5deg}}
+
+.org{transform-box:view-box;transform-origin:0 0}
+
+/* 01 arroz: vai e volta com a cesta */
+.walk1{animation:walk1 14s steps(28) infinite}
+@keyframes walk1{0%{transform:translateX(-102px)}50%{transform:translateX(118px)}100%{transform:translateX(-102px)}}
+.face1{animation:face1 14s step-end infinite}
+@keyframes face1{0%{transform:scaleX(1)}50%{transform:scaleX(-1)}100%{transform:scaleX(-1)}}
+.grab{animation:grab 14s step-end infinite}
+@keyframes grab{0%,18%,26%,68%,76%,100%{opacity:0}19%,25%,69%,75%{opacity:1}}
+
+/* 02 aveia: moinho e vento */
+.blades{animation:spin 4.8s steps(8) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wind{animation:wind 3.2s steps(6) infinite;animation-delay:var(--d,0s)}
+@keyframes wind{0%{transform:translateX(0);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(64px);opacity:0}}
+
+/* 03 caju: cai na cesta e brota de novo */
+.caju{transform-box:fill-box;transform-origin:50% 0;animation:caju 5s infinite}
+@keyframes caju{
+  0%{transform:translateY(0) scale(.25);opacity:1;animation-timing-function:steps(3)}
+  24%{transform:translateY(0) scale(1);animation-timing-function:step-end}
+  46%{transform:translateY(0) scale(1);animation-timing-function:steps(6)}
+  64%{transform:translateY(60px) scale(1);opacity:1;animation-timing-function:step-end}
+  66%{transform:translateY(60px) scale(1);opacity:0}
+  100%{transform:translateY(60px) scale(1);opacity:0}
+}
+.plim{opacity:0;animation:plim 5s step-end infinite}
+@keyframes plim{0%{opacity:0}64%{opacity:1}76%{opacity:0}}
+.hop{animation:hop 5s step-end infinite}
+@keyframes hop{0%{transform:translateY(0)}64%{transform:translateY(1.5px)}70%{transform:translateY(0)}}
+
+/* 04 coco: gotas enchem o copo */
+.palm{transform-box:view-box;transform-origin:40px 124px;animation:palm 1.8s steps(1) infinite}
+@keyframes palm{0%{rotate:-1.6deg}50%{rotate:1.6deg}}
+.drop{animation:drop 1.4s steps(5) infinite;animation-delay:var(--d,0s)}
+@keyframes drop{0%{transform:translateY(0);opacity:1}90%{opacity:1}100%{transform:translateY(38px);opacity:0}}
+.milk{animation:milk 7s step-end infinite}
+@keyframes milk{0%{transform:translateY(0)}25%{transform:translateY(-8px)}50%{transform:translateY(-16px)}75%{transform:translateY(-24px)}}
+
+/* 05 cana: carrinho de mão atravessando */
+.walk5{animation:walk5 16s steps(40) infinite}
+@keyframes walk5{0%{transform:translateX(-205px)}100%{transform:translateX(195px)}}
+.wheel{transform-box:fill-box;transform-origin:center;animation:spin .8s steps(4) infinite}
+
+/* 06 girassol: as flores seguem o sol */
+.sun{animation:sun 12s infinite}
+@keyframes sun{
+  0%{transform:translate(-116px,22px);opacity:1;animation-timing-function:steps(3)}
+  20%{transform:translate(-62px,4px);animation-timing-function:steps(3)}
+  40%{transform:translate(0,-6px);animation-timing-function:steps(3)}
+  60%{transform:translate(62px,4px);animation-timing-function:steps(3)}
+  79%{transform:translate(116px,22px);opacity:1;animation-timing-function:step-end}
+  80%{opacity:0}
+  100%{transform:translate(116px,22px);opacity:0}
+}
+.moon{opacity:0;animation:moon 12s step-end infinite}
+@keyframes moon{0%{opacity:0}82%{opacity:1}98%{opacity:0}}
+.head{animation:head 12s infinite;animation-delay:var(--d,0s)}
+@keyframes head{
+  0%{transform:rotate(-26deg);animation-timing-function:steps(12)}
+  79%{transform:rotate(26deg);animation-timing-function:steps(4)}
+  100%{transform:rotate(-26deg)}
+}
+
+.is-off .scene *, .paused .scene *{animation-play-state:paused}
+@media (prefers-reduced-motion: reduce){ .scene *{animation:none!important} }
+
+.note{margin:0;font-size:.75rem;line-height:1.55;color:var(--muted);max-width:70ch}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <div class="eyebrow"><i></i><span>Ingredientes · verso dos cards</span></div>
+    <h1>O que entra, <em>contado em rabisco.</em></h1>
+    <p class="lead">Protótipo do verso dos seis cards da seção de ingredientes. Cada cena é desenhada no traço dos rabiscos da casa e anima em stop-motion: poucos quadros, sem suavizar.</p>
+    <div class="controls">
+      <button class="btn" id="pause" type="button" aria-pressed="false">Pausar cenas</button>
+      <div class="seg" role="group" aria-label="Tema">
+        <button class="btn" type="button" data-theme-set="" aria-pressed="true">Sistema</button>
+        <button class="btn" type="button" data-theme-set="light" aria-pressed="false">Dia</button>
+        <button class="btn" type="button" data-theme-set="dark" aria-pressed="false">Noite</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="grid" id="grid" aria-label="Versos dos cards de ingredientes"></section>
+
+  <p class="note">As cenas ilustram de onde vem cada ingrediente; não dizem que a cozinha colhe ou produz a matéria-prima. Fora da tela e com “reduzir movimento” ligado, as animações ficam paradas.</p>
+</div>
+
+<script>
+(function(){
+  /* ---------- peças reutilizáveis ---------- */
+  function figure(item, walking){
+    var legs = walking
+      ? '<g class="fa"><path d="M0 -12 L-6 0 M0 -12 L6 0"/></g><g class="fb"><path d="M0 -12 L-1 0 M0 -12 L2.5 0"/></g>'
+      : '<path d="M0 -12 L-2.5 0 M0 -12 L3 0"/>';
+    var arms = '', extra = '';
+    if (item === 'basket'){
+      arms = '<path d="M0 -24 L-6 -15"/><path d="M0 -24 L7 -17"/>';
+      extra = '<path class="solid" d="M5 -18 H16 L14 -9 H7 Z"/><path d="M6.5 -14 H14.5"/>';
+    }
+    if (item === 'basket-up'){
+      arms = '<path d="M0 -24 L-6 -15"/><path d="M0 -24 L6 -22"/>';
+      extra = '<path d="M7 -25 c2 -3 6 -3 7 0 c-2 2 -5 2 -7 0"/><path d="M11 -27 c2 -3 6 -3 7 0 c-2 2 -5 2 -7 0"/><path class="solid" d="M4 -24 H19 L17 -14 H6 Z"/><path d="M5.5 -19.5 H17.5"/>';
+    }
+    if (item === 'push'){
+      arms = '<path d="M0 -24 L12 -17"/><path d="M-1 -22.5 L11 -15.5"/>';
+      extra = '<path d="M11 -16 L24 -11"/>'
+        + '<path class="solid" d="M21 -19 L46 -19 L40 -7 L25 -7 Z"/>'
+        + '<path d="M26 -7 L24 0"/>'
+        + '<path d="M25 -19 L33 -34 M30 -19 L40 -35 M36 -19 L45 -32"/>'
+        + '<path d="M28 -25 l2.5 1 M35 -28 l2.5 1 M41 -25 l2.5 1"/>'
+        + '<g class="wheel"><circle class="solid" cx="40" cy="-4" r="4"/><path d="M40 -8 V0 M36 -4 H44"/></g>';
+    }
+    var body = '<path class="solid" d="M-15 -37 L-1 -49.5 L15 -36.5 Z"/>'
+      + '<circle class="solid" cx="0.5" cy="-32" r="5"/>'
+      + '<path d="M0 -27 C1 -21 0 -17 0 -12"/>' + arms + legs + extra;
+    return '<g class="halo">' + body + '</g><g class="ink">' + body + '</g>';
+  }
+  function ground(y, cls){ return '<path class="' + (cls||'boil-w') + '" d="M4 ' + y + ' q 34 -3 68 0 t 68 0 t 68 0 t 68 0"/>'; }
+  function rice(x, h, d){
+    var t = 124 - h;
+    return '<g class="sway" style="--d:' + d + 's">'
+      + '<path d="M' + x + ' 124 Q' + (x+2) + ' ' + (124-h/2) + ' ' + (x+1) + ' ' + t + '"/>'
+      + '<path d="M' + (x+1) + ' ' + t + ' q7 0 9 9"/>'
+      + '<path class="dot" d="M' + (x+4) + ' ' + (t+1) + ' l1 2.5 M' + (x+7) + ' ' + (t+3) + ' l1.2 2.5 M' + (x+9.5) + ' ' + (t+7) + ' l.8 2.5"/>'
+      + '<path d="M' + x + ' ' + (124-h*0.35) + ' q -8 -5 -12 -3"/>'
+      + '</g>';
+  }
+  function oat(x, h, d){
+    var t = 124 - h, s = '<g class="sway" style="--d:' + d + 's"><path d="M' + x + ' 124 Q' + (x-2) + ' ' + (124-h/2) + ' ' + x + ' ' + t + '"/>';
+    for (var k = 0; k < 5; k++){
+      var sy = t + k*6.5, side = k % 2 ? 1 : -1;
+      s += '<path d="M' + x + ' ' + sy + ' q ' + (side*5) + ' 1 ' + (side*7) + ' 6"/>'
+        + '<ellipse cx="' + (x + side*7) + '" cy="' + (sy + 9) + '" rx="1.8" ry="3"/>';
+    }
+    return s + '<path d="M' + x + ' ' + (124-h*0.3) + ' q 9 -6 14 -2"/></g>';
+  }
+  function cane(x, h, d){
+    var base = 106, t = base - h, s = '<g class="sway" style="--d:' + d + 's"><path d="M' + x + ' ' + base + ' L' + (x+1) + ' ' + t + '"/>';
+    for (var y = base - 12; y > t + 4; y -= 12){ s += '<path d="M' + (x-2) + ' ' + y + ' h4.5"/>'; }
+    s += '<path d="M' + (x+1) + ' ' + (base - h*0.55) + ' q 10 -8 18 -4"/>'
+      + '<path d="M' + x + ' ' + (base - h*0.3) + ' q -10 -7 -17 -2"/>'
+      + '<path d="M' + (x+1) + ' ' + t + ' q 6 -6 12 -5 M' + (x+1) + ' ' + t + ' q -5 -7 -11 -6"/>';
+    return s + '</g>';
+  }
+  function sunflower(x, top, d){
+    var petals = '';
+    for (var a = 0; a < 360; a += 30){
+      petals += '<path d="M0 -7.5 Q 3 -11 0 -14.5 Q -3 -11 0 -7.5" transform="translate(0 -11) rotate(' + a + ')"/>';
+    }
+    return '<path d="M' + x + ' 124 Q' + (x-3) + ' ' + ((124+top)/2) + ' ' + x + ' ' + top + '"/>'
+      + '<path d="M' + x + ' ' + (top + (124-top)*0.55) + ' q 10 -7 16 -2 q -8 5 -16 2"/>'
+      + '<path d="M' + x + ' ' + (top + (124-top)*0.35) + ' q -10 -6 -15 -1 q 8 4 15 1"/>'
+      + '<g transform="translate(' + x + ' ' + top + ')"><g class="org head" style="--d:' + d + 's"><g class="boil" style="--bd:' + d + 's">'
+      + petals + '<circle class="solid" cx="0" cy="-11" r="7"/>'
+      + '<path class="dot" d="M-3 -12 h.1 M2 -14 h.1 M1.5 -9 h.1 M-2 -8 h.1 M3.5 -11 h.1 M-1 -15 h.1"/>'
+      + '</g></g></g>';
+  }
+  function svg(inner, label){
+    return '<svg class="scene" viewBox="0 0 280 140" role="img" aria-label="' + label + '">' + inner + '</svg>';
+  }
+
+  /* ---------- as seis cenas ---------- */
+  var scenes = [];
+
+  // 01 farinha de arroz: arrozal alagado, colhedor indo e voltando com a cesta
+  (function(){
+    var field = '';
+    [14,30,48,66,84,104,124,146,166,186,206,226,246,264].forEach(function(x,i){
+      field += rice(x, 26 + (i*7)%14, (i%5)*0.3);
+    });
+    var water = '<g class="boil-w faint" style="--bd:.2s"><path d="M10 131 h12 M40 133 h16 M76 131 h10 M112 133 h14 M150 131 h12 M188 133 h16 M226 131 h12 M256 133 h10"/></g>';
+    var sun = '<g class="boil" style="--bd:.15s"><circle class="solid" cx="246" cy="22" r="7"/><path d="M246 10 v-4 M246 34 v4 M234 22 h-4 M258 22 h4 M254.5 13.5 l3 -3 M237.5 30.5 l-3 3"/></g>';
+    var walker = '<g transform="translate(140 124)"><g class="org walk1"><g class="org face1"><g class="boil" style="--bd:.3s">'
+      + figure('basket', true)
+      + '<g class="grab"><path class="dot" d="M12 -24 h.1 M15 -27 h.1"/></g>'
+      + '</g></g></g></g>';
+    scenes.push(svg(sun + field + ground(124) + water + walker, 'Colhedor de chapéu de palha atravessa o arrozal com uma cesta pequena'));
+  })();
+
+  // 02 farinha de aveia: aveia ao vento, moinho girando
+  (function(){
+    var field = '';
+    [16,32,50,68,88,108,128,150,170].forEach(function(x,i){ field += oat(x, 46 + (i*9)%18, (i%4)*0.35); });
+    var mill = '<g class="boil" style="--bd:.25s"><path class="solid" d="M200 124 L207 70 L223 70 L230 124 Z"/><path d="M203 70 L215 58 L227 70"/><path d="M211 124 v-10 a4 4 0 0 1 8 0 v10"/><path d="M212 92 h6 v6 h-6 z"/></g>'
+      + '<g transform="translate(215 64)"><g class="org blades">'
+      + [0,90,180,270].map(function(a){ return '<g transform="rotate(' + a + ')"><path d="M0 0 L0 -34"/><path d="M2 -9 L9 -11 L9 -31 L2 -33"/><path d="M2.5 -17 H9 M2.5 -24 H9"/></g>'; }).join('')
+      + '<circle class="solid" r="3"/></g></g>';
+    var wind = '<g class="wind" style="--d:0s"><path class="faint" d="M14 34 q 8 -4 16 0 t 16 0"/></g><g class="wind" style="--d:1.4s"><path class="faint" d="M60 52 q 7 -3 14 0 t 14 0"/></g>';
+    scenes.push(svg(wind + field + mill + ground(124), 'Espigas de aveia balançam ao vento ao lado de um moinho que gira'));
+  })();
+
+  // 03 amêndoas e castanha de caju: caju cai do pé direto na cesta
+  (function(){
+    var branch = '<g class="boil-w" style="--bd:.1s"><path d="M-2 16 C 60 8 120 26 180 14 S 250 4 284 12"/>'
+      + '<ellipse class="solid" cx="38" cy="10" rx="12" ry="4.5" transform="rotate(-14 38 10)"/>'
+      + '<ellipse class="solid" cx="92" cy="20" rx="11" ry="4.5" transform="rotate(18 92 20)"/>'
+      + '<ellipse class="solid" cx="128" cy="14" rx="12" ry="4.5" transform="rotate(-20 128 14)"/>'
+      + '<ellipse class="solid" cx="214" cy="6" rx="12" ry="4.5" transform="rotate(10 214 6)"/>'
+      + '<ellipse class="solid" cx="252" cy="14" rx="11" ry="4.5" transform="rotate(-12 252 14)"/>'
+      + '<path d="M161 18 v7"/></g>';
+    var caju = '<g class="caju"><g class="boil" style="--bd:.2s">'
+      + '<path class="solid" d="M157 25 C150 32 151 42 161 44 C171 42 172 32 165 25 Z"/>'
+      + '<path class="solid" d="M158 44 c-4 3 -2 9 3 8 c4 -1 3 -5 0 -5"/>'
+      + '</g></g>';
+    var plim = '<g class="plim"><path d="M152 98 l-4 -4 M161 95 v-5 M170 98 l4 -4"/></g>';
+    var man = '<g transform="translate(150 124)"><g class="org hop"><g class="boil" style="--bd:.35s">' + figure('basket-up', false) + '</g></g></g>';
+    var nuts = '<g class="boil" style="--bd:.4s"><path d="M30 121 c3 -4 7 -3 8 0 c-2 3 -6 3 -8 0"/><path d="M44 122 c3 -4 7 -3 8 0 c-2 3 -6 3 -8 0"/><path d="M232 121 c-3 -2 -2 -6 2 -6 c3 0 3 3 1 3"/></g>';
+    scenes.push(svg(branch + caju + plim + man + nuts + ground(124), 'Um caju cai do galho direto na cesta do colhedor'));
+  })();
+
+  // 04 leites vegetais: coqueiro balança, coco derrama gotas e o copo enche
+  (function(){
+    var palm = '<g class="palm"><g class="boil-w" style="--bd:.1s">'
+      + '<path d="M40 124 C 36 100 34 80 44 58"/><path d="M36 112 h5 M35 100 h5 M35 88 h5 M37 76 h5 M40 66 h5"/>'
+      + '<path d="M44 58 C 30 50 18 54 10 64 M44 58 C 34 44 22 40 12 42 M44 58 C 52 44 64 42 74 46 M44 58 C 58 52 70 58 76 68 M44 58 C 44 46 48 38 56 32"/>'
+      + '<circle class="solid" cx="40" cy="63" r="4"/><circle class="solid" cx="48" cy="64" r="4"/>'
+      + '</g></g>';
+    var half = '<g class="boil" style="--bd:.25s"><g transform="translate(200 40) rotate(28)"><path class="solid" d="M-14 0 A14 14 0 0 0 14 0 Z"/><path d="M-10 1.5 A10 10 0 0 0 10 1.5"/></g></g>';
+    var drops = '<g class="drop" style="--d:0s"><path class="solid" d="M212 51 q -3 5 0 7 q 3 -2 0 -7 Z"/></g>'
+      + '<g class="drop" style="--d:.7s"><path class="solid" d="M212 51 q -3 5 0 7 q 3 -2 0 -7 Z"/></g>';
+    var glass = '<g class="boil" style="--bd:.3s"><path d="M196 82 L200 124 L222 124 L226 82"/></g>'
+      + '<g class="milk"><path d="M201 118 q 5 -2 10 0 t 10 0"/></g>';
+    scenes.push(svg(palm + half + drops + glass + ground(124), 'Coqueiro balança enquanto o leite de coco pinga e enche um copo'));
+  })();
+
+  // 05 açúcar demerara: canavial e carrinho de mão cheio de cana
+  (function(){
+    var field = '';
+    [18,40,62,86,110,134,158,182,206,230,254].forEach(function(x,i){ field += cane(x, 44 + (i*11)%26, (i%4)*0.3); });
+    var sun = '<g class="boil" style="--bd:.15s"><circle class="solid" cx="34" cy="18" r="7"/><path d="M34 6 v-4 M34 30 v4 M22 18 h-4 M46 18 h4"/></g>';
+    var walker = '<g transform="translate(140 124)"><g class="org walk5"><g class="boil" style="--bd:.3s">' + figure('push', true) + '</g></g></g>';
+    scenes.push(svg(sun + '<g class="faint">' + field + ground(106,'') + '</g>' + ground(124) + walker, 'Colhedor empurra um carrinho de mão cheio de cana pelo canavial'));
+  })();
+
+  // 06 óleo de girassol: o sol atravessa o céu e as flores acompanham
+  (function(){
+    var sun = '<g transform="translate(140 24)"><g class="org sun"><g class="boil"><circle class="solid" r="7"/><path d="M0 -11 v-4 M0 11 v4 M-11 0 h-4 M11 0 h4 M8 -8 l3 -3 M-8 8 l-3 3 M8 8 l3 3 M-8 -8 l-3 -3"/></g></g></g>';
+    var moon = '<g class="moon"><g class="boil"><path class="solid" d="M144 12 a 10 10 0 1 0 0 18 a 8 8 0 1 1 0 -18 Z"/><path class="dot" d="M118 18 h.1 M168 26 h.1 M186 14 h.1"/></g></g>';
+    var flowers = sunflower(52, 70, 0) + sunflower(108, 56, .15) + sunflower(170, 66, .3) + sunflower(228, 52, .45);
+    scenes.push(svg(sun + moon + flowers + ground(124), 'Girassóis viram a cabeça acompanhando o sol que atravessa o céu'));
+  })();
+
+  /* ---------- conteúdo dos versos ---------- */
+  var cards = [
+    ['01', 'Farinha de arroz', 'A base leve das massas, no lugar do trigo.', 'colhido grão por grão'],
+    ['02', 'Farinha de aveia', 'Textura macia e sabor de bolo caseiro.', 'do campo pro moinho'],
+    ['03', 'Amêndoas e castanha de caju', 'Dão corpo, umidade e um sabor amanteigado, sem manteiga.', 'caju no pé, castanha na cesta'],
+    ['04', 'Leites vegetais', 'De amêndoas, de caju ou de coco, no lugar do leite em massas, cremes e recheios.', 'do coco pro copo'],
+    ['05', 'Açúcar demerara', 'No lugar do refinado. Em algumas receitas de chocolate, mascavo.', 'da cana pro açúcar'],
+    ['06', 'Óleo de girassol', 'Deixa a massa macia, no lugar da manteiga.', 'o girassol segue o sol']
+  ];
+  var grid = document.getElementById('grid');
+  grid.innerHTML = cards.map(function(c, i){
+    return '<article class="card">'
+      + '<div class="card-text"><p class="kicker">' + c[0] + ' · ' + c[1] + '</p><p class="why">' + c[2] + '</p></div>'
+      + '<p class="hand" aria-hidden="true">' + c[3] + '</p>'
+      + '<div class="stage">' + scenes[i] + '</div>'
+      + '</article>';
+  }).join('');
+
+  /* pausa fora da tela */
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ e.target.classList.toggle('is-off', !e.isIntersecting); });
+    }, {threshold: 0.15});
+    Array.prototype.forEach.call(document.querySelectorAll('.card'), function(el){ io.observe(el); });
+  }
+
+  /* controles */
+  var pause = document.getElementById('pause');
+  pause.addEventListener('click', function(){
+    var on = document.body.classList.toggle('paused');
+    pause.setAttribute('aria-pressed', String(on));
+    pause.textContent = on ? 'Animar cenas' : 'Pausar cenas';
+  });
+  var themeBtns = document.querySelectorAll('[data-theme-set]');
+  Array.prototype.forEach.call(themeBtns, function(b){
+    b.addEventListener('click', function(){
+      var v = b.getAttribute('data-theme-set');
+      if (v) document.documentElement.setAttribute('data-theme', v);
+      else document.documentElement.removeAttribute('data-theme');
+      Array.prototype.forEach.call(themeBtns, function(o){ o.setAttribute('aria-pressed', String(o === b)); });
+    });
+  });
+})();
+</script>
