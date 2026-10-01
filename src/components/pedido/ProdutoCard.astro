@@ -74,11 +74,12 @@ const semOvo = !p.alergenos.contem.includes('ovo');
   .produto.is-out .produto-pic img { filter: grayscale(.85) brightness(.9); }
   .produto.is-out .add-bar { transform: none; background: rgba(var(--ink-rgb), .6); cursor: not-allowed; }
 
-  /* mouse: sobe, aproxima a foto e mostra a barra no hover e no foco do teclado */
+  /* mouse: sobe, aproxima a foto e mostra a barra no hover e no foco do TECLADO (:focus-visible; com :focus-within,
+     o foco devolvido ao fechar o painel deixava a barra presa em pé) */
   @media (hover: hover) and (pointer: fine) {
     .produto:hover { translate: 0 -6px; box-shadow: var(--shadow-2); border-color: rgba(var(--accent-rgb), .42); }
     .produto:hover .produto-pic img { scale: 1.08; }
-    .produto:hover .add-bar, .produto:focus-within .add-bar { transform: none; }
+    .produto:hover .add-bar, .produto:has(:focus-visible) .add-bar { transform: none; }
   }
   /* toque: barra sempre à vista, sem tilt */
   @media not ((hover: hover) and (pointer: fine)) {

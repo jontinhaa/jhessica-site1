@@ -284,6 +284,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
   const celular = matchMedia('(max-width: 859px)');
   const paineis = new Map<string, HTMLDialogElement>();
   let origem: HTMLElement | null = null;
+  let porPonteiro = false; // aberto com mouse/toque (click.detail > 0) ou pelo teclado (detail 0)
   let fechandoPeloHistorico = false;
 
   const urlCom = (id: string | null) => {
@@ -423,7 +424,11 @@ const brigadeiros = p.categoria === 'brigadeiros';
     alca.addEventListener('pointercancel', soltar);
 
     d.addEventListener('close', () => {
-      origem?.focus();
+      // o foco volta ao botão de origem; aberto com mouse/toque, volta sem anel (senão a barra do card fica em pé)
+      if (origem) {
+        origem.focus({ preventScroll: true, focusVisible: !porPonteiro } as FocusOptions);
+        if (porPonteiro && origem.matches(':focus-visible')) origem.blur();
+      }
       origem = null;
       if (fechandoPeloHistorico) { fechandoPeloHistorico = false; return; }
       if (history.state?.painel) history.back(); // tira a entrada que o abrir criou
@@ -439,6 +444,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
     const b = (e.target as Element).closest<HTMLElement>('[data-abrir]');
     if (!b) return;
     origem = b;
+    porPonteiro = (e as MouseEvent).detail > 0;
     abrir(b.dataset.abrir!);
   });
 
