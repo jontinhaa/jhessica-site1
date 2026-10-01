@@ -52,6 +52,9 @@ export const conservacao = {
   observacaoCongelados: 'Para descongelar, deixe na geladeira, dentro da embalagem.',
 };
 
+/** Rabisco do cartão em "O que entra" (nomes do mapa de Doodle.astro). */
+export type RabiscoIngrediente = 'arroz' | 'aveia' | 'castanhas' | 'leite' | 'acucar' | 'girassol';
+
 // O que a seção Ingredientes pode afirmar. null = não confirmado: a frase correspondente não promete nada.
 export const compromisso = {
   cozinhaSemGluten: false as boolean | null,
@@ -59,13 +62,13 @@ export const compromisso = {
   semAcucarRefinado: true as boolean | null, // true = nenhum produto usa; false ou null = "evitamos"
   // TODO: revisar textos com a cliente
   ingredientesQueEntram: [
-    { nome: 'Farinha de arroz', porque: 'A base leve das massas, no lugar do trigo.' },
-    { nome: 'Farinha de aveia', porque: 'Textura macia e sabor de bolo caseiro.' },
-    { nome: 'Amêndoas e castanha de caju', porque: 'Dão corpo, umidade e um sabor amanteigado, sem manteiga.' },
-    { nome: 'Leites vegetais', porque: 'De amêndoas, de caju ou de coco, no lugar do leite em massas, cremes e recheios.' },
-    { nome: 'Açúcar demerara', porque: 'No lugar do refinado. Em algumas receitas de chocolate, mascavo.' },
-    { nome: 'Óleo de girassol', porque: 'Deixa a massa macia, no lugar da manteiga.' },
-  ] as { nome: string; porque: string }[],
+    { nome: 'Farinha de arroz', rabisco: 'arroz', porque: 'A base leve das massas, no lugar do trigo.' },
+    { nome: 'Farinha de aveia', rabisco: 'aveia', porque: 'Textura macia e sabor de bolo caseiro.' },
+    { nome: 'Amêndoas e castanha de caju', rabisco: 'castanhas', porque: 'Dão corpo, umidade e um sabor amanteigado, sem manteiga.' },
+    { nome: 'Leites vegetais', rabisco: 'leite', porque: 'De amêndoas, de caju ou de coco, no lugar do leite em massas, cremes e recheios.' },
+    { nome: 'Açúcar demerara', rabisco: 'acucar', porque: 'No lugar do refinado. Em algumas receitas de chocolate, mascavo.' },
+    { nome: 'Óleo de girassol', rabisco: 'girassol', porque: 'Deixa a massa macia, no lugar da manteiga.' },
+  ] as { nome: string; rabisco: RabiscoIngrediente; porque: string }[],
 };
 
 type Cozinha = Pick<typeof compromisso, 'cozinhaSemGluten' | 'cozinhaSemLeite'>;

@@ -81,19 +81,33 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
 
       {entram.length > 0 && (
         <div class="entram">
-          <h3 class="t-bold-s">O que entra</h3>
+          <div class="entram-top">
+            <h3 class="t-bold-s">O que entra</h3>
+            {/* dica conforme o aparelho: mouse, toque em grade (tablet) ou toque no carrossel (celular) */}
+            <p class="dica">
+              <span class="hand"><span class="d-mouse">passe o mouse para ver o porquê</span><span class="d-toque">toque para virar</span><span class="d-arraste">arraste e toque para virar</span></span>
+              <Doodle name="seta" boil={false} />
+            </p>
+          </div>
           <ul class="flips">
             {entram.map((item, i) => (
               <li data-rv>
-                <button class={`flip fl-${(i % 4) + 1}`} type="button" aria-pressed="false">
+                <button class={`flip fl-${(i % 4) + 1}`} type="button" aria-pressed="false" style={`--i:${i}`}>
                   <span class="flip-in">
-                    <span class="flip-f"><span class="n">{String(i + 1).padStart(2, '0')}</span><span class="h4">{item.nome}</span></span>
+                    <span class="flip-f">
+                      <span class="n">{String(i + 1).padStart(2, '0')}</span>
+                      <span class="rab"><Doodle name={item.rabisco} boil={false} /></span>
+                      <span class="pe"><span class="h4">{item.nome}</span><span class="micro porque">por quê? <Icon name="solar:refresh-linear" /></span></span>
+                    </span>
                     <span class="flip-b"><span class="kicker">Por que entra</span><span class="t-m">{item.porque}</span></span>
                   </span>
                 </button>
               </li>
             ))}
           </ul>
+          <div class="dots-nav">
+            {entram.map((item, i) => <button type="button" class:list={[i === 0 && 'is-on']} aria-label={`Ir para ${item.nome}`} aria-current={i === 0 ? 'true' : undefined}></button>)}
+          </div>
         </div>
       )}
     </div>
@@ -129,8 +143,15 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
 
   /* ---------- "O que entra": cartões que viram (DS · .flip) ---------- */
   .entram { margin-top: clamp(3rem, 6vw, 5rem); }
-  .entram .t-bold-s { margin-bottom: 1.4rem; }
-  .flips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem; }
+  .entram-top { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .2rem 1.4rem; margin-bottom: 1.6rem; }
+  .dica { display: flex; align-items: flex-end; gap: .3rem; }
+  .dica .hand { font-size: 1.5rem; line-height: 1; }
+  .dica :global(.doodle) { width: 44px; height: 33px; color: var(--accent); translate: 0 .9rem; }
+  .d-toque, .d-arraste { display: none; }
+  @media (hover: none) { .d-mouse { display: none; } .d-toque { display: inline; } }
+  @media (hover: none) and (max-width: 639px) { .d-toque { display: none; } .d-arraste { display: inline; } }
+
+  .flips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
   .flip { display: block; width: 100%; height: 320px; perspective: 1000px; text-align: left; }
   .flip-in { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .8s var(--e-flip); }
   .flip.is-flipped .flip-in, .flip:focus-visible .flip-in { transform: rotateY(180deg); }
@@ -139,15 +160,30 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
   .flip:focus-visible .flip-in { box-shadow: 0 0 0 2px var(--accent); border-radius: var(--r-lg); }
   .flip-f, .flip-b { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; border-radius: var(--r-lg); -webkit-backface-visibility: hidden; backface-visibility: hidden; overflow: hidden; }
   .flip-f { color: #FBF3E6; }
-  .flip-f .n { font-family: var(--serif); font-style: italic; font-size: 1.1rem; opacity: .8; }
+  .flip-f .n { font-family: var(--serif); font-style: italic; font-size: 1.1rem; opacity: .9; }
+  .pe { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  .porque { display: inline-flex; align-items: center; gap: .35em; flex: none; color: inherit; font-size: .625rem; }
+
+  /* rabisco do ingrediente: desenha uma vez ao entrar (.desenhou, em cascata) e só ferve (.boil, posto pelo script)
+     no cartão em foco: hover/Tab no desktop, cartão central do carrossel no celular */
+  .rab { position: absolute; top: 1.1rem; right: 1.1rem; width: 72px; height: 72px; color: var(--on-band); opacity: .9; }
+  .rab :global(.doodle) { width: 100%; height: 100%; }
+  .rv-on .rab :global(path) { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .9s var(--e-flip) calc(var(--i) * 120ms); }
+  .rv-on .flips.desenhou .rab :global(path) { stroke-dashoffset: 0; }
+  .rab :global(.boil) { animation-delay: calc(var(--i) * -.17s); } /* vizinhos nunca tremem juntos */
+
+  /* piscadinha do 1º cartão no celular, uma vez por visita */
+  .flip.espia .flip-in { animation: espia .9s var(--e-flip) .5s; }
+  @keyframes espia { 45% { transform: rotateY(-35deg); } }
   .flip-f::after { content: ''; position: absolute; inset: 0; background: var(--grain-img); opacity: .14; mix-blend-mode: overlay; pointer-events: none; }
   .flip-b { transform: rotateY(180deg); justify-content: flex-start; gap: .8rem; background: var(--surface); border: 1px solid var(--line); }
   .fl-1 .flip-f { background: #3A2418; }
-  .fl-2 .flip-f { background: #A8652A; }
+  .fl-2 .flip-f { background: #9A5A22; } /* DS: #A8652A; um tom abaixo para o texto claro passar de 4,5:1 */
   .fl-3 .flip-f { background: #7A2835; }
   .fl-4 .flip-f { background: #5B6B34; }
 
-  @media (max-width: 1024px) { .flips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .dots-nav { display: none; }
+  @media (max-width: 1023px) { .flips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 860px) {
     /* zeros empilhados, com divisória fina (.hair) entre eles */
     .zeros { grid-template-columns: 1fr; gap: 0; }
@@ -157,15 +193,29 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
     .bom-saber { width: 100%; }
   }
   @media (max-width: 640px) {
-    /* uma coluna com rolagem lateral (intencional) e encaixe */
-    .flips { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(var(--pad) * -1); padding: .25rem var(--pad) 1rem; scroll-padding-inline: var(--pad); }
-    .flips li { flex: 0 0 82%; scroll-snap-align: start; }
     .bom-saber { gap: 1rem; padding: 1.25rem; }
     .bom-saber .well { width: 40px; height: 40px; font-size: 16px; }
   }
 
-  /* movimento reduzido: sem giro; frente e verso trocam com fade */
+  @media (max-width: 639px) {
+    /* carrossel: ~1,15 cartão à vista, rolagem lateral (intencional) com encaixe */
+    .flips { position: relative; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(var(--pad) * -1); padding: .25rem var(--pad) .5rem; scroll-padding-inline: var(--pad); }
+    .flips li { flex: 0 0 87%; scroll-snap-align: start; }
+    .rv-on .flips [data-rv] { opacity: 1; translate: none; } /* fora da tela na horizontal, o revelar chegaria atrasado; a entrada é o desenho */
+    .rab { width: 64px; height: 64px; }
+    /* DS .dots-nav (traço de 3px); o botão tem 24px de altura para o dedo acertar */
+    .dots-nav { display: flex; gap: .5rem; margin-top: .9rem; }
+    .dots-nav button { width: 22px; height: 24px; display: grid; align-items: center; transition: width .4s var(--e-out); }
+    .dots-nav button::before { content: ''; height: 3px; border-radius: 2px; background: var(--line-2); transition: background-color .3s; }
+    .dots-nav button.is-on { width: 40px; }
+    .dots-nav button.is-on::before { background: var(--accent); }
+  }
+
+  /* movimento reduzido: sem giro; frente e verso trocam com fade; rabisco já desenhado e parado */
   @media (prefers-reduced-motion: reduce) {
+    .rv-on .rab :global(path) { stroke-dashoffset: 0; transition: none; }
+    .rab :global(.boil) { animation: none; }
+    .flip.espia .flip-in { animation: none; }
     .flip .flip-in { transform: none !important; }
     .flip-b { transform: none; opacity: 0; }
     .flip-f, .flip-b { transition: opacity .4s !important; }
@@ -179,8 +229,63 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
 </style>
 
 <script>
-  // toque (e clique) vira o cartão; aria-pressed diz se o verso está à mostra
-  document.querySelectorAll<HTMLButtonElement>('.flips .flip').forEach((b) =>
-    b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.classList.toggle('is-flipped')))),
-  );
+  const reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const comMouse = matchMedia('(hover: hover)');
+  const carrossel = matchMedia('(max-width: 639px)');
+
+  document.querySelectorAll<HTMLElement>('.entram').forEach((bloco) => {
+    const trilho = bloco.querySelector<HTMLElement>('.flips')!;
+    const cartas = [...trilho.querySelectorAll<HTMLButtonElement>('.flip')];
+    const pontos = [...bloco.querySelectorAll<HTMLButtonElement>('.dots-nav button')];
+    const ferver = (b: HTMLElement, on: boolean) => { if (!reduz) b.querySelector('.doodle')?.classList.toggle('boil', on); };
+
+    // toque vira (aria-pressed); arrastar o carrossel não vira
+    cartas.forEach((b) => {
+      let x0 = 0, y0 = 0, arrastou = false;
+      b.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; arrastou = false; });
+      b.addEventListener('pointermove', (e) => { if (Math.hypot(e.clientX - x0, e.clientY - y0) > 10) arrastou = true; });
+      b.addEventListener('click', () => {
+        if (arrastou) return;
+        b.setAttribute('aria-pressed', String(b.classList.toggle('is-flipped')));
+      });
+      // desktop: ferve no hover e no foco pelo teclado
+      b.addEventListener('pointerenter', (e) => { if (comMouse.matches && e.pointerType === 'mouse') ferver(b, true); });
+      b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && b !== document.activeElement) ferver(b, false); });
+      b.addEventListener('focus', () => { if (b.matches(':focus-visible')) ferver(b, true); });
+      b.addEventListener('blur', () => ferver(b, false));
+    });
+
+    // desenha os rabiscos uma vez; no celular, a piscadinha do 1º cartão (uma vez por visita)
+    new IntersectionObserver((es, io) => {
+      if (!es[0].isIntersecting) return;
+      io.disconnect();
+      trilho.classList.add('desenhou');
+      if (reduz || !carrossel.matches) return;
+      try {
+        if (sessionStorage.getItem('espiou')) return;
+        sessionStorage.setItem('espiou', '1');
+      } catch { /* sem storage: pisca mesmo assim */ }
+      cartas[0].classList.add('espia');
+      cartas[0].addEventListener('animationend', () => cartas[0].classList.remove('espia'), { once: true });
+    }, { threshold: .3 }).observe(trilho);
+
+    // carrossel: o cartão central (≥ 60% à vista) ferve e acende o ponto
+    const visivel = new Map<Element, number>();
+    const io = new IntersectionObserver((es) => {
+      if (!carrossel.matches) return;
+      es.forEach((e) => visivel.set(e.target, e.intersectionRatio));
+      cartas.forEach((b, i) => {
+        const on = (visivel.get(b.parentElement!) ?? 0) >= .6;
+        ferver(b, on);
+        if (on) pontos.forEach((p, j) => { p.classList.toggle('is-on', j === i); p.toggleAttribute('aria-current', j === i); });
+      });
+    }, { root: trilho, threshold: [0, .6, 1] });
+    cartas.forEach((b) => io.observe(b.parentElement!));
+
+    // tocar num ponto rola até o cartão
+    pontos.forEach((p, i) => p.addEventListener('click', () => {
+      const li = cartas[i].parentElement!, primeiro = cartas[0].parentElement!;
+      trilho.scrollTo({ left: li.offsetLeft - primeiro.offsetLeft, behavior: reduz ? 'auto' : 'smooth' });
+    }));
+  });
 </script>
