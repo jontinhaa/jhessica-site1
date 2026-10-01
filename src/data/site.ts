@@ -37,6 +37,9 @@ export const regrasPedido = {
   prazoEspecialDias: 7,
   categoriasPrazoEspecial: ['bento'] as CategoriaId[],
   limiteBrigadeirosUnidades: 15,
+  // pedido depois de horaCorte ou no fim de semana: o prazo conta do próximo dia útil (seg–sex)
+  contarDoProximoDiaUtil: true, // TODO: confirmar com a cliente
+  horaCorte: 18,
   diasEntrega: [0], // só aos domingos (0 = domingo)
   entrega: { gratisNoBairro: 'Cidade Jardim', demaisBairros: 'taxa combinada pelo WhatsApp' },
 };

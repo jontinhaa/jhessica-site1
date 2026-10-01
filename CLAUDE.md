@@ -30,7 +30,11 @@ src/
   scripts/checar-fotos.mjs  npm run fotos: confere as fotos esperadas
   components/pedido/     ProdutoCard (card .produto) e ProdutoPainel (<dialog> "Detalhes", um por produto, abre com
                          [data-abrir="{id}"] ou ?produto={id}; o voltar do navegador fecha)
-  scripts/tilt.ts        tilt 3D com reflexo (Hero e cards)  ·  scripts/sacola.ts  sacola PROVISÓRIA em memória (11a)
+  components/pedido/Sacola.astro  sacola em <dialog class="folha"> (comanda → como receber → enviado), barra do celular
+  lib/pedido/            lógica pura e testada: itens (chave), precos (sempre do cardápio), prazos (datas), mensagem (WhatsApp)
+  scripts/sacola.ts      estado da sacola no localStorage "jhessica:sacola:v1" (só itens e nome; endereço nunca)
+  scripts/folha.ts       tocar fora / arrastar a alça para fechar os <dialog class="folha">  ·  scripts/tilt.ts  tilt 3D
+  tests/                 npm test (node:test, importa os .ts direto; Node ≥ 23.6)
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra"),
@@ -59,6 +63,9 @@ src/
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
 - Cena fixada (Como pedir): CSS nativo, sem GSAP/Lenis: `position: sticky` + `animation-timeline` (view-timeline no
   contêiner alto). Sem suporte ou com movimento reduzido, vira grade estática.
+- `[hidden]` sempre esconde (`display: none !important` no reset): não precisa de regra por componente.
+- Elementos criados por script não recebem o escopo do Astro: estilize-os com `:global(...)` preso a um pai do componente.
+- Pedido: preço SEMPRE recalculado de cardapio.ts (lib/pedido/precos); mudou regra de prazo ou mensagem, rode `npm test`.
 - Recorte que abre (Padrão E): `data-clip` na figura; a foto sai de inset(42%) até a borda enquanto sobe. Combina com
   `data-par` na mesma foto. CSS preso à rolagem; com movimento reduzido a foto já aparece aberta.
 - Entrada de bloco: `data-rv` (sobe 44px e aparece em 1.2s, cascata de 80ms; só fade com movimento reduzido). É CSS +

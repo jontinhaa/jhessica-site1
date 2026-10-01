@@ -1,12 +1,13 @@
 ---
 // /pedido · cardápio completo (etapa 11a): topo compacto, barra de categorias fixa, uma seção por categoria com os cards
-// e um painel "Detalhes" por produto. A sacola ainda é provisória (src/scripts/sacola.ts); a real é a etapa 11b.
+// e um painel "Detalhes" por produto; a sacola (folha com os 3 passos até o WhatsApp) em components/pedido/Sacola.astro.
 // As âncoras #bolos, #paes, #fatias, #brigadeiros e #bento são os ids das seções (a vitrine da home aponta para elas).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import Icon from '../components/ui/Icon.astro';
 import ProdutoCard from '../components/pedido/ProdutoCard.astro';
 import ProdutoPainel from '../components/pedido/ProdutoPainel.astro';
+import Sacola from '../components/pedido/Sacola.astro';
 import { marca, regrasPedido } from '../data/site';
 import { categorias, getProdutosPorCategoria, produtos } from '../data/cardapio';
 ---
@@ -42,7 +43,9 @@ import { categorias, getProdutosPorCategoria, produtos } from '../data/cardapio'
 
   {produtos.map((p) => <ProdutoPainel produto={p} />)}
 
-  <div class="toast" id="toast" role="status" aria-live="polite"><Icon name="solar:check-circle-bold" /><span data-toast-texto></span></div>
+  <Sacola />
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><Icon name="solar:check-circle-bold" /><span data-toast-texto></span><button type="button" data-toast-acao hidden></button></div>
 </BaseLayout>
 
 <style>

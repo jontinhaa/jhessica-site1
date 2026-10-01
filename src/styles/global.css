@@ -9,6 +9,7 @@ img, svg, video, canvas { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; background: none; border: 0; }
 button { cursor: pointer; }
+[hidden] { display: none !important; } /* o atributo vence o display de qualquer componente */
 ul, ol { list-style: none; }
 ::selection { background: var(--accent); color: var(--on-accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
@@ -147,3 +148,56 @@ ul, ol { list-style: none; }
   .rv-on [data-rv] { translate: none; transition: opacity .7s var(--e-zoom) !important; }
   [data-par], [data-clip], [data-clip] img { animation: none !important; }
 }
+
+/* ---------- folha (celular) / painel lateral (desktop) em <dialog>: Detalhes do produto e sacola ----------
+   Comportamento (tocar fora, arrastar a .alca) em src/scripts/folha.ts. */
+.folha {
+  --fora: 0 100%;
+  position: fixed; inset: auto 0 0 0; margin: 0; padding: 0; border: 0; width: 100%; max-width: 100vw; max-height: 92dvh;
+  border-radius: 22px 22px 0 0; overflow: hidden; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-2);
+  translate: var(--fora);
+  transition: translate .45s var(--e-out), opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete;
+}
+.folha[open] { display: flex; flex-direction: column; translate: 0 0; }
+@starting-style { .folha[open] { translate: var(--fora); } }
+.folha::backdrop { background: rgba(20, 13, 10, .55); opacity: 0; transition: opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete; }
+.folha[open]::backdrop { opacity: 1; }
+@starting-style { .folha[open]::backdrop { opacity: 0; } }
+@media (min-width: 860px) {
+  .folha { --fora: 100% 0; inset: 0 0 0 auto; width: min(480px, 100vw); height: 100dvh; max-height: 100dvh; border-radius: 22px 0 0 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .folha { --fora: 0 0; opacity: 0; }
+  .folha[open] { opacity: 1; }
+  @starting-style { .folha[open] { opacity: 0; } }
+}
+html:has(dialog.folha[open]) { overflow: hidden; } /* página parada atrás */
+.folha-in { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.alca { flex: none; display: grid; place-items: center; height: 26px; touch-action: none; cursor: grab; }
+.alca i { width: 44px; height: 5px; border-radius: 3px; background: var(--line-2); }
+@media (min-width: 860px) { .alca { display: none; } }
+.folha-fechar {
+  position: absolute; top: .9rem; right: .9rem; z-index: 3; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px;
+  color: #FBF3E6; background: rgba(20, 13, 10, .45); border: 1px solid rgba(255, 255, 255, .25); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+@media (max-width: 859px) { .folha-fechar { top: 2.2rem; } }
+.folha-fechar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.folha-corpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 0 1.5rem 1.8rem; }
+.folha-pe { flex: none; padding: .9rem 1.5rem calc(.9rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
+
+/* ---------- escolhas do DS: .seg (radio em pílula) e .stepper (quantidade) — painel de Detalhes e sacola ---------- */
+  .seg { display: inline-flex; padding: 4px; border-radius: var(--r-pill); border: 1px solid var(--line-2); background: var(--field); }
+  .seg--solta { flex-wrap: wrap; border-radius: var(--r-lg); }
+  .seg label { position: relative; cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: grid; place-items: center; height: 40px; min-width: 56px; padding: 0 1rem; border-radius: var(--r-pill); font-size: .75rem; font-weight: 500; color: var(--ink-2); transition: all .35s var(--e-out); }
+  .seg input:checked + span { background: var(--ink); color: var(--bg); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .stepper { display: inline-flex; align-items: center; height: 48px; padding: 3px; border-radius: var(--r-pill); border: 1px solid var(--line-2); background: var(--field); }
+  .stepper button { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--ink-2); transition: background-color .3s, color .3s, opacity .3s; }
+  .stepper button:hover:not(:disabled) { background: rgba(var(--accent-rgb), .14); color: var(--accent-ink); }
+  .stepper button:disabled { opacity: .35; cursor: not-allowed; }
+  .stepper button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .stepper output { min-width: 3ch; text-align: center; font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
+.toast.com-acao { pointer-events: auto; }
+.toast [data-toast-acao] { margin-left: .3rem; font-weight: 600; color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }

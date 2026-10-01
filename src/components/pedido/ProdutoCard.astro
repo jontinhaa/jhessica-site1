@@ -26,7 +26,7 @@ const semOvo = !p.alergenos.contem.includes('ovo');
     {!p.disponivel ? (
       <button class="add-bar" type="button" disabled>Esgotado nesta semana</button>
     ) : direto ? (
-      <button class="add-bar" type="button" data-add={p.id} data-nome={p.nome} data-variante={p.variantes[0].rotulo} data-preco={p.variantes[0].preco}>
+      <button class="add-bar" type="button" data-add={p.id} data-variante={p.variantes[0].id}>
         <span class="add-longo">Adicionar à sacola</span><span class="add-curto">Adicionar</span><Icon name="solar:bag-4-linear" />
       </button>
     ) : (
@@ -111,7 +111,7 @@ const semOvo = !p.alergenos.contem.includes('ovo');
 
   // produto sem escolhas: entra direto na sacola com a única variante
   document.querySelectorAll<HTMLButtonElement>('.add-bar[data-add]').forEach((b) => b.addEventListener('click', () => {
-    adicionar({ id: b.dataset.add!, nome: b.dataset.nome!, variante: b.dataset.variante!, adicionais: [], opcoes: {}, sabores: {}, semOvo: false, quantidade: 1, preco: Number(b.dataset.preco) });
+    adicionar({ id: b.dataset.add!, variante: b.dataset.variante!, adicionais: [], opcoes: {}, sabores: {}, semOvo: false, quantidade: 1 });
     b.classList.add('is-added');
     setTimeout(() => b.classList.remove('is-added'), 1400);
   }));

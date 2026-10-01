@@ -1,0 +1,441 @@
+---
+// Sacola do /pedido em <dialog class="folha">: 1) a comanda com os itens, 2) como receber (nome, retirada/entrega,
+// data, bairro/endereço, observações), 3) pedido enviado. Abre pela barra do celular, pelo Encomendar do header
+// (evento "sacola:abrir") ou por ?sacola=1; o voltar do navegador fecha.
+// A lógica (preços, prazos, datas, mensagem) é pura, em src/lib/pedido; o estado salvo, em src/scripts/sacola.ts.
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import Doodle from '../ui/Doodle.astro';
+import { produtos } from '../../data/cardapio';
+import { contato } from '../../data/site';
+
+// o cardápio vai para o navegador como dados (sem as fotos): preços e nomes da sacola saem daqui, não do que ficou salvo
+const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
+---
+
+<script type="application/json" id="cardapio-dados" set:html={JSON.stringify(dados)} />
+
+<div class="barra-sacola" data-barra-sacola hidden>
+  <Button block data-sacola-abrir><Icon name="solar:bag-4-linear" />Ver sacola · <span data-barra-qtd></span> · <span data-barra-total></span></Button>
+</div>
+
+<dialog class="folha sacola" id="sacola" aria-labelledby="sacola-titulo">
+  <div class="folha-in">
+    <div class="alca" aria-hidden="true"><i></i></div>
+    <header class="sacola-topo">
+      <button class="voltar" type="button" data-voltar hidden aria-label="Voltar"><Icon name="solar:arrow-left-linear" /></button>
+      <h2 class="h4" id="sacola-titulo" tabindex="-1">Sua sacola</h2>
+      <button class="fechar" type="button" data-fechar aria-label="Fechar sacola"><Icon name="solar:close-linear" /></button>
+    </header>
+
+    <div class="folha-corpo">
+      <!-- 1 · sacola -->
+      <section data-passo="1">
+        <div class="vazia" data-vazia hidden>
+          <span class="rabisco"><Doodle name="forminha" /></span>
+          <p class="t-l">Sua sacola está vazia.</p>
+          <button class="link-r" type="button" data-fechar>Ver o cardápio<Icon name="solar:arrow-right-linear" /></button>
+        </div>
+        <div class="comanda" data-comanda>
+          <div class="comanda-top"><span class="kicker">Comanda</span><span class="t-s" data-qtd-itens></span></div>
+          <ul class="lista" data-lista></ul>
+          <div class="picote" aria-hidden="true"></div>
+          <div class="comanda-total"><span class="kicker">Subtotal</span><output class="price" aria-live="polite" data-subtotal></output></div>
+        </div>
+      </section>
+
+      <!-- 2 · como receber -->
+      <form data-passo="2" hidden novalidate>
+        <div class="field" data-campo="nome">
+          <label class="label" for="s-nome">Seu nome</label>
+          <input class="input" id="s-nome" name="nome" autocomplete="name" />
+          <span class="help" data-erro></span>
+        </div>
+        <fieldset class="campo">
+          <legend class="label">Como você quer receber</legend>
+          <div class="seg">
+            <label><input type="radio" name="modalidade" value="retirada" checked /><span>Retirada</span></label>
+            <label><input type="radio" name="modalidade" value="entrega" /><span>Entrega</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field" data-campo="data">
+          <legend class="label">Data</legend>
+          <p class="t-s regra" data-regra aria-live="polite"></p>
+          <div class="chips" data-chips></div>
+          <button class="mais-datas" type="button" data-mais-datas>Ver mais datas</button>
+          <span class="help" data-erro></span>
+        </fieldset>
+        <p class="t-s" data-so="retirada">Retirada no {contato.bairroRetirada}, horário combinado pelo WhatsApp.</p>
+        <div class="entrega" data-so="entrega" hidden>
+          <div class="field" data-campo="bairro">
+            <label class="label" for="s-bairro">Bairro</label>
+            <input class="input" id="s-bairro" name="bairro" autocomplete="address-level3" />
+            <span class="help" data-erro></span>
+            <span class="tag tag--pista" data-gratis hidden>Entrega grátis</span>
+            <span class="t-s" data-taxa hidden>Taxa combinada pelo WhatsApp.</span>
+          </div>
+          <div class="field" data-campo="endereco">
+            <label class="label" for="s-endereco">Endereço</label>
+            <input class="input" id="s-endereco" name="endereco" autocomplete="street-address" placeholder="Rua, número e complemento" />
+            <span class="help" data-erro></span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="s-obs">Observações</label>
+          <textarea class="input" id="s-obs" name="obs" placeholder="Alguma alergia ou restrição? Conte aqui."></textarea>
+        </div>
+        <p class="t-s">Pagamento por Pix, depois que a Jhessica confirmar o pedido.</p>
+        <p class="t-s">Seus dados não ficam salvos no site: vão direto na mensagem para a Jhessica.</p>
+      </form>
+
+      <!-- 3 · enviado -->
+      <section class="enviado" data-passo="3" hidden>
+        <span class="kicker">Pedido nº</span>
+        <p class="numero" data-numero></p>
+        <p class="t-m">Pedido enviado? <a href="#" data-reabrir target="_blank" rel="noopener">Se o WhatsApp não abriu, toque aqui.</a></p>
+        <div class="acoes">
+          <Button block data-limpar>Já enviei, limpar sacola</Button>
+          <Button block variant="linha" data-editar>Voltar e editar</Button>
+        </div>
+      </section>
+    </div>
+
+    <footer class="folha-pe pe" data-pe>
+      <div class="total"><span class="t-s">Subtotal</span><output class="price" data-pe-total></output></div>
+      <Button data-continuar>Continuar<Icon name="solar:arrow-right-linear" /></Button>
+      <Button data-enviar hidden><Icon name="simple-icons:whatsapp" />Enviar pelo WhatsApp</Button>
+    </footer>
+
+    <div class="toast" role="status" aria-live="polite"><Icon name="solar:check-circle-bold" /><span data-toast-texto></span><button type="button" data-toast-acao hidden></button></div>
+  </div>
+</dialog>
+
+<template id="tpl-item">
+  <li class="item">
+    <div class="item-linha"><span class="item-nome"></span><i aria-hidden="true"></i><b class="item-preco"></b></div>
+    <p class="t-s item-det"></p>
+    <div class="item-acoes">
+      <div class="stepper">
+        <button type="button" data-menos><Icon name="solar:minus-linear" /></button>
+        <output aria-live="polite"></output>
+        <button type="button" data-mais><Icon name="solar:add-linear" /></button>
+      </div>
+      <button class="remover" type="button" data-remover><Icon name="solar:trash-bin-minimalistic-linear" /></button>
+    </div>
+  </li>
+</template>
+
+<style>
+  /* barra do celular e tablet (até 1180px, onde o Encomendar do header vai para a gaveta) */
+  .barra-sacola { display: none; }
+  @media (max-width: 1180px) {
+    .barra-sacola:not([hidden]) { position: fixed; left: 1rem; right: 1rem; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 80; display: block; max-width: 560px; margin-inline: auto; }
+    .barra-sacola :global(.btn) { box-shadow: 0 12px 26px -14px rgba(168, 101, 42, .9), var(--shadow-2); letter-spacing: .12em; }
+    :global(html.tem-sacola main) { padding-bottom: calc(52px + 28px + env(safe-area-inset-bottom)); }
+  }
+
+  .sacola-topo { position: relative; display: flex; align-items: center; gap: .6rem; padding: .4rem 4.5rem 1rem 1.5rem; }
+  .sacola-topo .h4 { outline: none; }
+  @media (min-width: 860px) { .sacola-topo { padding-top: 1.6rem; } }
+  .voltar, .fechar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; color: var(--ink-2); border: 1px solid var(--line-2); }
+  .voltar:hover, .fechar:hover { color: var(--accent-ink); border-color: var(--accent); }
+  .voltar:focus-visible, .fechar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .fechar { position: absolute; right: 1.2rem; top: 50%; translate: 0 -50%; }
+  .sacola-topo:has(.voltar:not([hidden])) { padding-left: 1rem; }
+
+  /* 1 · comanda (DS · .comanda + .picote): papel com borda de baixo em zigue-zague e pontilhado entre nome e preço */
+  .comanda {
+    position: relative; padding: 1.5rem 1.3rem 2.2rem; background: var(--surface-2); border-radius: var(--r-md) var(--r-md) 0 0; box-shadow: var(--shadow-1);
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 18px 100%;
+  }
+  .comanda-top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: .6rem; }
+  .lista { display: flex; flex-direction: column; }
+  .item { display: flex; flex-direction: column; gap: .35rem; padding: .9rem 0; }
+  .item + .item { border-top: 1px solid var(--line); }
+  .item-linha { display: flex; align-items: baseline; gap: .6rem; font-size: .95rem; color: var(--ink); }
+  .item-nome { font-family: var(--serif); font-size: 1.1rem; }
+  .item-linha i { flex: 1; min-width: 1rem; border-bottom: 1px dotted var(--line-2); }
+  .item-linha b { font-weight: 500; white-space: nowrap; }
+  .item-acoes { display: flex; align-items: center; justify-content: space-between; margin-top: .3rem; }
+  .item-acoes .stepper { height: 42px; }
+  .item-acoes .stepper button { width: 34px; height: 34px; }
+  .remover { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-size: 19px; color: var(--muted); }
+  .remover:hover { color: var(--danger); background: rgba(var(--danger-rgb), .1); }
+  .remover:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .picote { position: relative; height: 1px; margin: 1.1rem -1.3rem; background: repeating-linear-gradient(90deg, var(--line-2) 0 7px, transparent 7px 13px); }
+  .picote::before, .picote::after { content: ''; position: absolute; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); }
+  .picote::before { left: -9px; }
+  .picote::after { right: -9px; }
+  .comanda-total { display: flex; justify-content: space-between; align-items: baseline; }
+
+  .vazia { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2.5rem 0; text-align: center; }
+  .vazia .rabisco { width: 72px; height: 72px; color: var(--accent); }
+  .vazia .rabisco :global(svg) { width: 100%; height: 100%; }
+
+  /* 2 · formulário (DS · .field/.input/.help, .chip) */
+  form[data-passo] { display: flex; flex-direction: column; gap: 1.4rem; }
+  .field { display: flex; flex-direction: column; gap: .5rem; min-width: 0; border: 0; margin: 0; padding: 0; }
+  .campo { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .label { font-size: .625rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); padding: 0; margin-bottom: .1rem; }
+  .campo .label { display: block; margin-bottom: .6rem; }
+  .input { width: 100%; height: 50px; padding: 0 1rem; border-radius: var(--r-md); border: 1px solid var(--line-2); background: var(--field); font-size: 1rem; color: var(--ink); transition: border-color .3s, box-shadow .3s; }
+  .input::placeholder { color: var(--muted); opacity: .85; }
+  .input:hover { border-color: rgba(var(--accent-rgb), .55); }
+  .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), .16); }
+  textarea.input { height: auto; min-height: 96px; padding: .85rem 1rem; line-height: 1.5; resize: vertical; }
+  .help { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--muted); }
+  .help:empty { display: none; }
+  .field.is-error .input { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(var(--danger-rgb), .14); }
+  .field.is-error .help { color: var(--danger); }
+  .field.is-error .chips { outline: 1px solid var(--danger); outline-offset: 6px; border-radius: var(--r-md); }
+  .regra { margin-bottom: .2rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+  /* os chips são criados pelo script (sem o atributo de escopo do Astro): regras em :global, presas a .chips */
+  .chips :global(.chip) { position: relative; display: inline-flex; align-items: center; gap: .4rem; height: 40px; padding: 0 1rem; border-radius: var(--r-pill); background: rgba(var(--ink-rgb), .05); font-size: .8rem; font-weight: 500; color: var(--ink-2); border: 1px solid transparent; cursor: pointer; transition: all .3s; }
+  .chips :global(.chip:hover) { border-color: var(--line-2); color: var(--ink); }
+  .chips :global(.chip input) { position: absolute; opacity: 0; pointer-events: none; }
+  .chips :global(.chip:has(input:checked)) { background: var(--ink); color: var(--bg); }
+  .chips :global(.chip:has(input:checked)::before) { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .chips :global(.chip:has(input:focus-visible)) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mais-datas { align-self: flex-start; font-size: .8rem; font-weight: 500; color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
+  .entrega { display: flex; flex-direction: column; gap: 1.4rem; }
+  .entrega .tag { align-self: flex-start; }
+
+  /* 3 · enviado */
+  .enviado { display: flex; flex-direction: column; gap: .8rem; padding-top: 1rem; }
+  .numero { font-family: var(--serif); font-size: clamp(2.2rem, 8vw, 3rem); line-height: 1; color: var(--accent-ink); }
+  .enviado a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
+  .acoes { display: flex; flex-direction: column; gap: .8rem; margin-top: 1rem; }
+
+  .pe { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; }
+  .total { display: flex; flex-direction: column; gap: .15rem; }
+  .pe :global(.btn) { flex: 1; max-width: 300px; }
+
+  /* aviso dentro da folha (fora dela o <dialog> modal deixaria o "Desfazer" inerte) */
+  .sacola .toast { position: absolute; bottom: 6.5rem; z-index: 4; }
+</style>
+
+<script>
+  import type { Produto } from '../../data/cardapio';
+  import { contato, regrasPedido } from '../../data/site';
+  import { chaveItem, partesItem } from '../../lib/pedido/itens';
+  import { formatarReais, precoItem } from '../../lib/pedido/precos';
+  import { contagemAdiada, datasValidas, deIsoDia, diaCurto, isoDia, prazoDoPedido, type Modalidade } from '../../lib/pedido/prazos';
+  import { entregaGratis, linkWhatsApp, montarMensagem, numeroPedido } from '../../lib/pedido/mensagem';
+  import * as sacola from '../../scripts/sacola';
+  import { prepararFolha } from '../../scripts/folha';
+
+  const produtos = JSON.parse(document.getElementById('cardapio-dados')!.textContent!) as Produto[];
+  const d = document.getElementById('sacola') as HTMLDialogElement;
+  const $ = <T extends Element = HTMLElement>(s: string, raiz: ParentNode = d) => raiz.querySelector<T>(s)!;
+  const form = $<HTMLFormElement>('form[data-passo="2"]');
+  const titulo = $('#sacola-titulo');
+  const tpl = document.getElementById('tpl-item') as HTMLTemplateElement;
+  const barra = document.querySelector<HTMLElement>('[data-barra-sacola]')!;
+  const plural = (n: number) => `${n} ${n === 1 ? 'item' : 'itens'}`;
+
+  let passo = 1;
+  let datasMostradas = 6;
+  let enviado: { numero: string; link: string } | null = null;
+
+  // ---------- passo 1: a comanda ----------
+  function desenharLista() {
+    const itens = sacola.listar(), total = sacola.totalItens(), valor = formatarReais(sacola.valorTotal());
+    // guarda o foco (o stepper/remover que o usuário estava usando) para devolver depois de redesenhar
+    const ativo = document.activeElement as HTMLElement | null;
+    const focoChave = ativo?.closest<HTMLElement>('.item')?.dataset.chave, focoAcao = ativo && ['data-mais', 'data-menos', 'data-remover'].find((a) => ativo.hasAttribute(a));
+    $('[data-lista]').replaceChildren(...itens.map((i) => {
+      const li = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const p = partesItem(i, produtos);
+      li.dataset.chave = chaveItem(i);
+      $('.item-nome', li).textContent = `${i.quantidade}× ${p.nome}`;
+      $('.item-preco', li).textContent = formatarReais(precoItem(i, produtos));
+      const det = [p.variante, ...p.adicionais.map((a) => `com ${a}`), ...p.opcoes, p.sabores.join(', '), p.semOvo ? 'sem ovos' : ''].filter(Boolean);
+      $('.item-det', li).textContent = det.join(' · ');
+      $('.item-det', li).hidden = !det.length;
+      $<HTMLOutputElement>('output', li).value = String(i.quantidade);
+      $<HTMLButtonElement>('[data-menos]', li).setAttribute('aria-label', `Diminuir quantidade de ${p.nome}`);
+      $<HTMLButtonElement>('[data-menos]', li).disabled = i.quantidade <= 1;
+      $<HTMLButtonElement>('[data-mais]', li).setAttribute('aria-label', `Aumentar quantidade de ${p.nome}`);
+      $<HTMLButtonElement>('[data-mais]', li).disabled = i.quantidade >= 20;
+      $('[data-remover]', li).setAttribute('aria-label', `Remover ${p.nome}`);
+      return li;
+    }));
+    if (focoChave && focoAcao) (d.querySelector<HTMLElement>(`.item[data-chave='${CSS.escape(focoChave)}'] [${focoAcao}]`) ?? titulo).focus();
+    $('[data-vazia]').hidden = itens.length > 0;
+    $('[data-comanda]').hidden = !itens.length;
+    $('[data-qtd-itens]').textContent = plural(total);
+    $<HTMLOutputElement>('[data-subtotal]').value = valor;
+    $<HTMLOutputElement>('[data-pe-total]').value = valor;
+    $<HTMLButtonElement>('[data-continuar]').disabled = !itens.length;
+    if (passo === 1) $('[data-pe]').hidden = !itens.length; // sacola vazia: sem rodapé
+    if (!itens.length && passo === 2) irPara(1);
+    // barra do celular
+    barra.hidden = total === 0;
+    document.documentElement.classList.toggle('tem-sacola', total > 0);
+    $('[data-barra-qtd]', barra).textContent = plural(total);
+    $('[data-barra-total]', barra).textContent = valor;
+  }
+
+  $('[data-lista]').addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    const chave = b?.closest<HTMLElement>('.item')?.dataset.chave;
+    if (!b || !chave || b.disabled) return;
+    const atual = sacola.listar().find((i) => chaveItem(i) === chave)!;
+    if (b.hasAttribute('data-mais')) sacola.alterarQuantidade(chave, atual.quantidade + 1);
+    if (b.hasAttribute('data-menos')) sacola.alterarQuantidade(chave, atual.quantidade - 1);
+    if (b.hasAttribute('data-remover')) sacola.remover(chave);
+  });
+
+  // ---------- passo 2: como receber ----------
+  const modalidade = () => (form.querySelector<HTMLInputElement>('input[name=modalidade]:checked')!.value as Modalidade);
+
+  function desenharDatas() {
+    const agora = new Date(), itens = sacola.listar(), mod = modalidade();
+    const escolhida = form.querySelector<HTMLInputElement>('input[name=data]:checked')?.value;
+    const datas = datasValidas(mod, itens, agora, { produtos, quantidade: datasMostradas });
+    $('[data-chips]').replaceChildren(...datas.map((dt) => {
+      const l = document.createElement('label');
+      l.className = 'chip';
+      l.innerHTML = `<input type="radio" name="data" value="${isoDia(dt)}"><span>${diaCurto(dt)}</span>`;
+      l.querySelector('input')!.checked = isoDia(dt) === escolhida;
+      return l;
+    }));
+    // a regra que está valendo, em uma frase
+    const prazo = prazoDoPedido(itens, produtos);
+    let regra = prazo.motivo === 'bento' ? `Seu pedido tem Bento Cake: precisamos de ${prazo.dias} dias.`
+      : prazo.motivo === 'brigadeiros' ? `Seu pedido tem ${regrasPedido.limiteBrigadeirosUnidades} brigadeiros ou mais: precisamos de ${prazo.dias} dias.`
+      : `Pedidos com ${prazo.dias} dias de antecedência.`;
+    if (contagemAdiada(agora)) regra += ` Depois das ${regrasPedido.horaCorte}h e no fim de semana, a contagem começa no próximo dia útil.`;
+    if (mod === 'entrega') regra += ' Entregas aos domingos.';
+    $('[data-regra]').textContent = regra;
+    form.querySelectorAll<HTMLElement>('[data-so]').forEach((el) => { el.hidden = el.dataset.so !== mod; });
+  }
+
+  function desenharBairro() {
+    const b = form.bairro.value.trim();
+    $('[data-gratis]').hidden = !b || !entregaGratis(b);
+    $('[data-taxa]').hidden = !b || entregaGratis(b);
+  }
+
+  form.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'modalidade') desenharDatas();
+    if (t.name === 'data') marcarErro('data', '');
+  });
+  form.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'nome') sacola.guardarNome(t.value);
+    if (t.name === 'bairro') desenharBairro();
+    if (t.value.trim()) marcarErro(t.name, '');
+  });
+  form.addEventListener('submit', (e) => e.preventDefault());
+  $('[data-mais-datas]').addEventListener('click', () => { datasMostradas += 6; desenharDatas(); });
+
+  function marcarErro(campo: string, msg: string) {
+    const f = form.querySelector<HTMLElement>(`[data-campo="${campo}"]`);
+    if (!f) return;
+    f.classList.toggle('is-error', !!msg);
+    $('[data-erro]', f).textContent = msg;
+    const alvo = f.querySelector<HTMLInputElement>('input');
+    if (alvo && alvo.type !== 'radio') alvo.setAttribute('aria-invalid', String(!!msg));
+  }
+
+  function validar() {
+    const mod = modalidade();
+    const erros: [string, string][] = [];
+    if (!form.nome.value.trim()) erros.push(['nome', 'Informe seu nome']);
+    if (!form.querySelector('input[name=data]:checked')) erros.push(['data', 'Escolha uma data']);
+    if (mod === 'entrega' && !form.bairro.value.trim()) erros.push(['bairro', 'Informe o bairro']);
+    if (mod === 'entrega' && !form.endereco.value.trim()) erros.push(['endereco', 'Informe o endereço']);
+    ['nome', 'data', 'bairro', 'endereco'].forEach((c) => marcarErro(c, erros.find(([x]) => x === c)?.[1] ?? ''));
+    if (erros.length) {
+      const primeiro = form.querySelector<HTMLElement>(`[data-campo="${erros[0][0]}"]`)!;
+      (primeiro.querySelector<HTMLElement>('input') ?? primeiro).focus();
+      primeiro.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    return !erros.length;
+  }
+
+  $('[data-enviar]').addEventListener('click', () => {
+    if (!validar()) return;
+    const mod = modalidade();
+    const numero = numeroPedido(new Date());
+    const texto = montarMensagem({
+      numero, itens: sacola.listar(), modalidade: mod, data: deIsoDia(form.querySelector<HTMLInputElement>('input[name=data]:checked')!.value),
+      nome: form.nome.value, bairro: mod === 'entrega' ? form.bairro.value : undefined, endereco: mod === 'entrega' ? form.endereco.value : undefined,
+      observacoes: form.obs.value,
+    }, produtos);
+    enviado = { numero, link: linkWhatsApp(texto, contato.whatsapp) };
+    irPara(3);
+    // celular: abre o app pelo mesmo endereço; desktop: nova aba (o site continua aberto)
+    if (matchMedia('(hover: none)').matches) setTimeout(() => { location.href = enviado!.link; }, 60);
+    else window.open(enviado.link, '_blank', 'noopener');
+  });
+
+  // ---------- passo 3: enviado ----------
+  $('[data-limpar]').addEventListener('click', () => {
+    sacola.limpar();
+    enviado = null;
+    form.reset();
+    form.nome.value = sacola.lerNome();
+    irPara(1);
+    d.close();
+    sacola.aviso('Sacola limpa. Obrigada pelo pedido!');
+  });
+  $('[data-editar]').addEventListener('click', () => { enviado = null; irPara(2); });
+
+  // ---------- passos, abrir e fechar ----------
+  function irPara(n: number) {
+    passo = n;
+    d.querySelectorAll<HTMLElement>('[data-passo]').forEach((s) => { s.hidden = s.dataset.passo !== String(n); });
+    $('[data-voltar]').hidden = n !== 2;
+    $('[data-pe]').hidden = n === 3 || (n === 1 && !sacola.listar().length);
+    $('[data-continuar]').hidden = n !== 1;
+    $('[data-enviar]').hidden = n !== 2;
+    titulo.textContent = n === 1 ? 'Sua sacola' : n === 2 ? 'Como você quer receber' : 'Pedido enviado';
+    if (n === 2) { form.nome.value ||= sacola.lerNome(); desenharDatas(); desenharBairro(); }
+    if (n === 3 && enviado) { $('[data-numero]').textContent = enviado.numero; $<HTMLAnchorElement>('[data-reabrir]').href = enviado.link; }
+    $('.folha-corpo').scrollTop = 0;
+    if (d.open) titulo.focus({ preventScroll: true });
+  }
+  $('[data-continuar]').addEventListener('click', () => irPara(2));
+  $('[data-voltar]').addEventListener('click', () => irPara(1));
+  d.querySelectorAll('[data-fechar]').forEach((b) => b.addEventListener('click', () => d.close()));
+
+  let origem: HTMLElement | null = null, fechandoPeloHistorico = false;
+  const urlCom = (aberta: boolean) => { const u = new URL(location.href); if (aberta) u.searchParams.set('sacola', '1'); else u.searchParams.delete('sacola'); return u; };
+
+  function abrir(empurrar = true) {
+    if (d.open) return;
+    irPara(enviado ? 3 : 1);
+    d.showModal();
+    titulo.focus({ preventScroll: true });
+    if (empurrar) history.pushState({ sacola: true }, '', urlCom(true));
+  }
+  d.addEventListener('close', () => {
+    origem?.focus({ preventScroll: true });
+    origem = null;
+    if (fechandoPeloHistorico) { fechandoPeloHistorico = false; return; }
+    if (history.state?.sacola) history.back();
+    else history.replaceState(null, '', urlCom(false));
+  });
+  addEventListener('popstate', () => {
+    const quer = new URL(location.href).searchParams.has('sacola');
+    if (!quer && d.open) { fechandoPeloHistorico = true; d.close(); }
+    if (quer && !d.open) abrir(false);
+  });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-sacola-abrir]');
+    if (!b) return;
+    origem = b;
+    abrir();
+  });
+  addEventListener('sacola:abrir', () => { origem = document.activeElement as HTMLElement; abrir(); });
+  addEventListener('sacola:mudou', desenharLista);
+  prepararFolha(d);
+
+  sacola.iniciarSacola(produtos);
+  if (new URL(location.href).searchParams.has('sacola')) abrir(false);
+</script>

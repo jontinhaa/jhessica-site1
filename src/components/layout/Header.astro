@@ -16,7 +16,7 @@ import Icon from '../ui/Icon.astro';
   </nav>
   <div class="nav-r">
     <ThemeSwitch />
-    <Button variant="linha" size="sm" href={pedido.href} class="nav-cta">{pedido.rotulo}<span class="conta" data-sacola-conta hidden></span></Button>
+    <Button variant="linha" size="sm" href={pedido.href} class="nav-cta" data-sacola-link>{pedido.rotulo}<span class="conta" data-sacola-conta hidden></span></Button>
     <button class="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="drawer">
       <span class="i-open"><Icon name="solar:hamburger-menu-linear" /></span>
       <span class="i-close"><Icon name="solar:close-circle-linear" /></span>
@@ -30,7 +30,7 @@ import Icon from '../ui/Icon.astro';
     {menu.map((l, i) => <a href={l.href}><em>{String(i + 1).padStart(2, '0')}</em>{l.rotulo}</a>)}
   </nav>
   <div class="foot">
-    <Button href={pedido.href}><Icon name="solar:bag-4-linear" />{pedido.rotulo}<span class="conta" data-sacola-conta hidden></span></Button>
+    <Button href={pedido.href} data-sacola-link><Icon name="solar:bag-4-linear" />{pedido.rotulo}<span class="conta" data-sacola-conta hidden></span></Button>
     <ThemeSwitch />
   </div>
 </div>
@@ -81,6 +81,7 @@ import Icon from '../ui/Icon.astro';
 </style>
 
 <script>
+  import { totalSalvo } from '../../scripts/sacola';
   const nav = document.getElementById('nav')!;
   const prog = nav.querySelector<HTMLElement>('.prog')!;
   const drawer = document.getElementById('drawer')!;
@@ -133,13 +134,20 @@ import Icon from '../ui/Icon.astro';
     if (s) spy.observe(s);
   });
 
-  // contador da sacola no Encomendar (header e gaveta)
-  addEventListener('sacola:mudou', (e) => {
-    const total = (e as CustomEvent<{ total: number }>).detail.total;
-    document.querySelectorAll<HTMLElement>('[data-sacola-conta]').forEach((c) => {
-      c.textContent = String(total);
-      c.hidden = total === 0;
-      c.setAttribute('aria-label', `${total} ${total === 1 ? 'item' : 'itens'} na sacola`);
-    });
+  // Encomendar com contador da sacola: no /pedido abre a sacola; nas outras páginas leva a /pedido?sacola=1 se houver itens
+  const noPedido = location.pathname.startsWith('/pedido');
+  const contar = (total: number) => document.querySelectorAll<HTMLElement>('[data-sacola-conta]').forEach((c) => {
+    c.textContent = String(total);
+    c.hidden = total === 0;
+    c.setAttribute('aria-label', `${total} ${total === 1 ? 'item' : 'itens'} na sacola`);
+    const link = c.closest<HTMLAnchorElement>('[data-sacola-link]');
+    if (link && !noPedido) link.href = total ? '/pedido?sacola=1' : '/pedido';
   });
+  contar(totalSalvo());
+  addEventListener('sacola:mudou', (e) => contar((e as CustomEvent<{ total: number }>).detail.total));
+  document.querySelectorAll<HTMLAnchorElement>('[data-sacola-link]').forEach((a) => a.addEventListener('click', (e) => {
+    if (!noPedido) return;
+    e.preventDefault();
+    dispatchEvent(new Event('sacola:abrir'));
+  }));
 </script>
