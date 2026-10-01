@@ -28,7 +28,7 @@ src/
   assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
-  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading
+  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra")
   components/sections/   Hero + uma seção por item de `secoes` (hoje esqueletos com título e âncora)
   pages/index.astro      Hero + seções percorrendo `secoes`
   pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)
@@ -42,7 +42,8 @@ src/
 - Fontes pela API de fontes do Astro (`astro.config.mjs`), variáveis `--font-serif/-sans/-poster/-hand`.
   Serif é a Newsreader: a Cormorant solta o circunflexo (ê, â, ô), não voltar para ela.
 - Ícones: `<Icon name="solar:…" />` (Solar Linear) ou `simple-icons:…` para redes. SVG gerado no build.
-- Rabiscos: `<Doodle name="batedor" />`, no máximo um por dobra de tela.
+- Rabiscos: `<Doodle name="batedor" />`, no máximo um por dobra de tela (exceção: os cartões de "O que entra").
+- Keyframes têm nome GLOBAL no Astro: prefixe os de componente (as cenas usam `c-`) para não colidir com `boil`, `spin`…
 - Conteúdo repetido (produtos, depoimentos) vem de dados, não escrito à mão no markup.
 - Seção nova da home: item em `secoes` (site.ts) + componente em `pages/index.astro`. Número do sobretítulo = posição.
   Links internos sempre `/#id` (funcionam fora da home). Produto e preço só em `data/cardapio.ts`.

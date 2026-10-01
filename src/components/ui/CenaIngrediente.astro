@@ -1,0 +1,250 @@
+---
+// Cena do verso dos cartões "O que entra": rabisco em stop-motion (viewBox 280 × 140), gerado no build.
+// Portado de docs/prototipos/versos-ingredientes.html (as mesmas peças: figure, rice, oat, cane, sunflower, svg).
+// As animações nascem pausadas; o cartão as liga com a classe .cena-viva (ver o script de Ingredientes.astro).
+// Keyframes com prefixo c-: no Astro o nome de @keyframes é global, e "boil"/"spin" já existem (Doodle, Hero).
+import type { IngredienteId } from '../../data/site';
+
+interface Props { cena: IngredienteId }
+const { cena } = Astro.props;
+
+/* ---------- peças reutilizáveis ---------- */
+function figure(item: 'basket' | 'basket-up' | 'push', walking: boolean) {
+  const legs = walking
+    ? '<g class="fa"><path d="M0 -12 L-6 0 M0 -12 L6 0"/></g><g class="fb"><path d="M0 -12 L-1 0 M0 -12 L2.5 0"/></g>'
+    : '<path d="M0 -12 L-2.5 0 M0 -12 L3 0"/>';
+  let arms = '', extra = '';
+  if (item === 'basket') {
+    arms = '<path d="M0 -24 L-6 -15"/><path d="M0 -24 L7 -17"/>';
+    extra = '<path class="solid" d="M5 -18 H16 L14 -9 H7 Z"/><path d="M6.5 -14 H14.5"/>';
+  }
+  if (item === 'basket-up') {
+    arms = '<path d="M0 -24 L-6 -15"/><path d="M0 -24 L6 -22"/>';
+    extra = '<path d="M7 -25 c2 -3 6 -3 7 0 c-2 2 -5 2 -7 0"/><path d="M11 -27 c2 -3 6 -3 7 0 c-2 2 -5 2 -7 0"/><path class="solid" d="M4 -24 H19 L17 -14 H6 Z"/><path d="M5.5 -19.5 H17.5"/>';
+  }
+  if (item === 'push') {
+    arms = '<path d="M0 -24 L12 -17"/><path d="M-1 -22.5 L11 -15.5"/>';
+    extra = '<path d="M11 -16 L24 -11"/>'
+      + '<path class="solid" d="M21 -19 L46 -19 L40 -7 L25 -7 Z"/>'
+      + '<path d="M26 -7 L24 0"/>'
+      + '<path d="M25 -19 L33 -34 M30 -19 L40 -35 M36 -19 L45 -32"/>'
+      + '<path d="M28 -25 l2.5 1 M35 -28 l2.5 1 M41 -25 l2.5 1"/>'
+      + '<g class="wheel"><circle class="solid" cx="40" cy="-4" r="4"/><path d="M40 -8 V0 M36 -4 H44"/></g>';
+  }
+  const body = '<path class="solid" d="M-15 -37 L-1 -49.5 L15 -36.5 Z"/>'
+    + '<circle class="solid" cx="0.5" cy="-32" r="5"/>'
+    + '<path d="M0 -27 C1 -21 0 -17 0 -12"/>' + arms + legs + extra;
+  // .halo: o mesmo desenho em traço grosso na cor da superfície, por baixo, para o boneco se destacar do fundo
+  return '<g class="halo">' + body + '</g><g class="ink">' + body + '</g>';
+}
+const ground = (y: number, cls = 'boil-w') => `<path class="${cls}" d="M4 ${y} q 34 -3 68 0 t 68 0 t 68 0 t 68 0"/>`;
+function rice(x: number, h: number, d: number) {
+  const t = 124 - h;
+  return `<g class="sway" style="--d:${d}s">`
+    + `<path d="M${x} 124 Q${x + 2} ${124 - h / 2} ${x + 1} ${t}"/>`
+    + `<path d="M${x + 1} ${t} q7 0 9 9"/>`
+    + `<path class="dot" d="M${x + 4} ${t + 1} l1 2.5 M${x + 7} ${t + 3} l1.2 2.5 M${x + 9.5} ${t + 7} l.8 2.5"/>`
+    + `<path d="M${x} ${124 - h * 0.35} q -8 -5 -12 -3"/>`
+    + '</g>';
+}
+function oat(x: number, h: number, d: number) {
+  const t = 124 - h;
+  let s = `<g class="sway" style="--d:${d}s"><path d="M${x} 124 Q${x - 2} ${124 - h / 2} ${x} ${t}"/>`;
+  for (let k = 0; k < 5; k++) {
+    const sy = t + k * 6.5, side = k % 2 ? 1 : -1;
+    s += `<path d="M${x} ${sy} q ${side * 5} 1 ${side * 7} 6"/>`
+      + `<ellipse cx="${x + side * 7}" cy="${sy + 9}" rx="1.8" ry="3"/>`;
+  }
+  return s + `<path d="M${x} ${124 - h * 0.3} q 9 -6 14 -2"/></g>`;
+}
+function cane(x: number, h: number, d: number) {
+  const base = 106, t = base - h;
+  let s = `<g class="sway" style="--d:${d}s"><path d="M${x} ${base} L${x + 1} ${t}"/>`;
+  for (let y = base - 12; y > t + 4; y -= 12) s += `<path d="M${x - 2} ${y} h4.5"/>`;
+  s += `<path d="M${x + 1} ${base - h * 0.55} q 10 -8 18 -4"/>`
+    + `<path d="M${x} ${base - h * 0.3} q -10 -7 -17 -2"/>`
+    + `<path d="M${x + 1} ${t} q 6 -6 12 -5 M${x + 1} ${t} q -5 -7 -11 -6"/>`;
+  return s + '</g>';
+}
+function sunflower(x: number, top: number, d: number) {
+  let petals = '';
+  for (let a = 0; a < 360; a += 30) petals += `<path d="M0 -7.5 Q 3 -11 0 -14.5 Q -3 -11 0 -7.5" transform="translate(0 -11) rotate(${a})"/>`;
+  return `<path d="M${x} 124 Q${x - 3} ${(124 + top) / 2} ${x} ${top}"/>`
+    + `<path d="M${x} ${top + (124 - top) * 0.55} q 10 -7 16 -2 q -8 5 -16 2"/>`
+    + `<path d="M${x} ${top + (124 - top) * 0.35} q -10 -6 -15 -1 q 8 4 15 1"/>`
+    + `<g transform="translate(${x} ${top})"><g class="org head" style="--d:${d}s"><g class="boil" style="--bd:${d}s">`
+    + petals + '<circle class="solid" cx="0" cy="-11" r="7"/>'
+    + '<path class="dot" d="M-3 -12 h.1 M2 -14 h.1 M1.5 -9 h.1 M-2 -8 h.1 M3.5 -11 h.1 M-1 -15 h.1"/>'
+    + '</g></g></g>';
+}
+
+/* ---------- as seis cenas: [desenho, descrição para leitor de tela] ---------- */
+const cenas: Record<IngredienteId, () => [string, string]> = {
+  // 01 farinha de arroz: arrozal alagado, colhedor indo e voltando com a cesta
+  arroz: () => {
+    const field = [14, 30, 48, 66, 84, 104, 124, 146, 166, 186, 206, 226, 246, 264].map((x, i) => rice(x, 26 + (i * 7) % 14, (i % 5) * 0.3)).join('');
+    const water = '<g class="boil-w faint" style="--bd:.2s"><path d="M10 131 h12 M40 133 h16 M76 131 h10 M112 133 h14 M150 131 h12 M188 133 h16 M226 131 h12 M256 133 h10"/></g>';
+    const sun = '<g class="boil" style="--bd:.15s"><circle class="solid" cx="246" cy="22" r="7"/><path d="M246 10 v-4 M246 34 v4 M234 22 h-4 M258 22 h4 M254.5 13.5 l3 -3 M237.5 30.5 l-3 3"/></g>';
+    const walker = '<g transform="translate(140 124)"><g class="org walk1"><g class="org face1"><g class="boil" style="--bd:.3s">'
+      + figure('basket', true)
+      + '<g class="grab"><path class="dot" d="M12 -24 h.1 M15 -27 h.1"/></g>'
+      + '</g></g></g></g>';
+    return [sun + field + ground(124) + water + walker, 'Colhedor de chapéu de palha atravessa o arrozal com uma cesta pequena'];
+  },
+  // 02 farinha de aveia: aveia ao vento, moinho girando
+  aveia: () => {
+    const field = [16, 32, 50, 68, 88, 108, 128, 150, 170].map((x, i) => oat(x, 46 + (i * 9) % 18, (i % 4) * 0.35)).join('');
+    const mill = '<g class="boil" style="--bd:.25s"><path class="solid" d="M200 124 L207 70 L223 70 L230 124 Z"/><path d="M203 70 L215 58 L227 70"/><path d="M211 124 v-10 a4 4 0 0 1 8 0 v10"/><path d="M212 92 h6 v6 h-6 z"/></g>'
+      + '<g transform="translate(215 64)"><g class="org blades">'
+      + [0, 90, 180, 270].map((a) => `<g transform="rotate(${a})"><path d="M0 0 L0 -34"/><path d="M2 -9 L9 -11 L9 -31 L2 -33"/><path d="M2.5 -17 H9 M2.5 -24 H9"/></g>`).join('')
+      + '<circle class="solid" r="3"/></g></g>';
+    const wind = '<g class="wind" style="--d:0s"><path class="faint" d="M14 34 q 8 -4 16 0 t 16 0"/></g><g class="wind" style="--d:1.4s"><path class="faint" d="M60 52 q 7 -3 14 0 t 14 0"/></g>';
+    return [wind + field + mill + ground(124), 'Espigas de aveia balançam ao vento ao lado de um moinho que gira'];
+  },
+  // 03 amêndoas e castanha de caju: caju cai do pé direto na cesta
+  castanhas: () => {
+    const branch = '<g class="boil-w" style="--bd:.1s"><path d="M-2 16 C 60 8 120 26 180 14 S 250 4 284 12"/>'
+      + '<ellipse class="solid" cx="38" cy="10" rx="12" ry="4.5" transform="rotate(-14 38 10)"/>'
+      + '<ellipse class="solid" cx="92" cy="20" rx="11" ry="4.5" transform="rotate(18 92 20)"/>'
+      + '<ellipse class="solid" cx="128" cy="14" rx="12" ry="4.5" transform="rotate(-20 128 14)"/>'
+      + '<ellipse class="solid" cx="214" cy="6" rx="12" ry="4.5" transform="rotate(10 214 6)"/>'
+      + '<ellipse class="solid" cx="252" cy="14" rx="11" ry="4.5" transform="rotate(-12 252 14)"/>'
+      + '<path d="M161 18 v7"/></g>';
+    const caju = '<g class="caju"><g class="boil" style="--bd:.2s">'
+      + '<path class="solid" d="M157 25 C150 32 151 42 161 44 C171 42 172 32 165 25 Z"/>'
+      + '<path class="solid" d="M158 44 c-4 3 -2 9 3 8 c4 -1 3 -5 0 -5"/>'
+      + '</g></g>';
+    const plim = '<g class="plim"><path d="M152 98 l-4 -4 M161 95 v-5 M170 98 l4 -4"/></g>';
+    const man = '<g transform="translate(150 124)"><g class="org hop"><g class="boil" style="--bd:.35s">' + figure('basket-up', false) + '</g></g></g>';
+    const nuts = '<g class="boil" style="--bd:.4s"><path d="M30 121 c3 -4 7 -3 8 0 c-2 3 -6 3 -8 0"/><path d="M44 122 c3 -4 7 -3 8 0 c-2 3 -6 3 -8 0"/><path d="M232 121 c-3 -2 -2 -6 2 -6 c3 0 3 3 1 3"/></g>';
+    return [branch + caju + plim + man + nuts + ground(124), 'Um caju cai do galho direto na cesta do colhedor'];
+  },
+  // 04 leites vegetais: coqueiro balança, coco derrama gotas e o copo enche
+  leite: () => {
+    const palm = '<g class="palm"><g class="boil-w" style="--bd:.1s">'
+      + '<path d="M40 124 C 36 100 34 80 44 58"/><path d="M36 112 h5 M35 100 h5 M35 88 h5 M37 76 h5 M40 66 h5"/>'
+      + '<path d="M44 58 C 30 50 18 54 10 64 M44 58 C 34 44 22 40 12 42 M44 58 C 52 44 64 42 74 46 M44 58 C 58 52 70 58 76 68 M44 58 C 44 46 48 38 56 32"/>'
+      + '<circle class="solid" cx="40" cy="63" r="4"/><circle class="solid" cx="48" cy="64" r="4"/>'
+      + '</g></g>';
+    const half = '<g class="boil" style="--bd:.25s"><g transform="translate(200 40) rotate(28)"><path class="solid" d="M-14 0 A14 14 0 0 0 14 0 Z"/><path d="M-10 1.5 A10 10 0 0 0 10 1.5"/></g></g>';
+    const drops = '<g class="drop" style="--d:0s"><path class="solid" d="M212 51 q -3 5 0 7 q 3 -2 0 -7 Z"/></g>'
+      + '<g class="drop" style="--d:.7s"><path class="solid" d="M212 51 q -3 5 0 7 q 3 -2 0 -7 Z"/></g>';
+    const glass = '<g class="boil" style="--bd:.3s"><path d="M196 82 L200 124 L222 124 L226 82"/></g>'
+      + '<g class="milk"><path d="M201 118 q 5 -2 10 0 t 10 0"/></g>';
+    return [palm + half + drops + glass + ground(124), 'Coqueiro balança enquanto o leite de coco pinga e enche um copo'];
+  },
+  // 05 açúcar demerara: canavial e carrinho de mão cheio de cana
+  acucar: () => {
+    const field = [18, 40, 62, 86, 110, 134, 158, 182, 206, 230, 254].map((x, i) => cane(x, 44 + (i * 11) % 26, (i % 4) * 0.3)).join('');
+    const sun = '<g class="boil" style="--bd:.15s"><circle class="solid" cx="34" cy="18" r="7"/><path d="M34 6 v-4 M34 30 v4 M22 18 h-4 M46 18 h4"/></g>';
+    const walker = '<g transform="translate(140 124)"><g class="org walk5"><g class="boil" style="--bd:.3s">' + figure('push', true) + '</g></g></g>';
+    return [sun + '<g class="faint">' + field + ground(106, '') + '</g>' + ground(124) + walker, 'Colhedor empurra um carrinho de mão cheio de cana pelo canavial'];
+  },
+  // 06 óleo de girassol: o sol atravessa o céu e as flores acompanham
+  girassol: () => {
+    const sun = '<g transform="translate(140 24)"><g class="org sun"><g class="boil"><circle class="solid" r="7"/><path d="M0 -11 v-4 M0 11 v4 M-11 0 h-4 M11 0 h4 M8 -8 l3 -3 M-8 8 l-3 3 M8 8 l3 3 M-8 -8 l-3 -3"/></g></g></g>';
+    const moon = '<g class="moon"><g class="boil"><path class="solid" d="M144 12 a 10 10 0 1 0 0 18 a 8 8 0 1 1 0 -18 Z"/><path class="dot" d="M118 18 h.1 M168 26 h.1 M186 14 h.1"/></g></g>';
+    const flowers = sunflower(52, 70, 0) + sunflower(108, 56, .15) + sunflower(170, 66, .3) + sunflower(228, 52, .45);
+    return [sun + moon + flowers + ground(124), 'Girassóis viram a cabeça acompanhando o sol que atravessa o céu'];
+  },
+};
+const [desenho, descricao] = cenas[cena]();
+---
+
+<svg class="cena" viewBox="0 0 280 140" role="img" aria-label={descricao} set:html={desenho} />
+
+<style is:global>
+  /* traço dos rabiscos da casa; tudo prefixado por .cena (o desenho entra por set:html e não recebe o escopo do Astro) */
+  .cena { display: block; width: 100%; height: auto; color: var(--accent); fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cena * { vector-effect: non-scaling-stroke; }
+  /* nasce pausada; !important porque cada atalho `animation:` abaixo devolveria play-state a running */
+  .cena * { animation-play-state: paused !important; }
+  .cena-viva .cena * { animation-play-state: running !important; }
+  .cena .solid { fill: var(--surface); }
+  .cena .halo { stroke: var(--surface); stroke-width: 7; }
+  .cena .faint { opacity: .42; }
+  .cena .dot { stroke-width: 2.6; }
+
+  /* fervura: a receita do .boil da casa (3 quadros a cada .5s), mas com translate/rotate individuais,
+     que somam com os transform das caminhadas; o .boil dos rabiscos (Doodle) continua com o seu keyframe */
+  .cena .boil { transform-box: fill-box; transform-origin: center; animation: c-boil .5s steps(1) infinite; animation-delay: var(--bd, 0s); }
+  @keyframes c-boil { 0% { translate: 0 0; rotate: 0deg; } 33% { translate: .6px -.4px; rotate: -1.6deg; } 66% { translate: -.5px .5px; rotate: 1.3deg; } }
+  .cena .boil-w { animation: c-boilw .5s steps(1) infinite; animation-delay: var(--bd, 0s); }
+  @keyframes c-boilw { 0% { translate: 0 0; } 33% { translate: .6px -.4px; } 66% { translate: -.5px .5px; } }
+
+  /* passos do personagem: 2 quadros */
+  .cena .fa { animation: c-fa .5s steps(1) infinite; }
+  .cena .fb { opacity: 0; animation: c-fb .5s steps(1) infinite; }
+  @keyframes c-fa { 0% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes c-fb { 0% { opacity: 0; } 50% { opacity: 1; } }
+
+  .cena .sway { transform-box: fill-box; transform-origin: 50% 100%; animation: c-sway 1.5s steps(1) infinite; animation-delay: var(--d, 0s); }
+  @keyframes c-sway { 0% { rotate: -2.5deg; } 50% { rotate: 2.5deg; } }
+
+  .cena .org { transform-box: view-box; transform-origin: 0 0; }
+
+  /* 01 arroz: vai e volta com a cesta */
+  .cena .walk1 { animation: c-walk1 14s steps(28) infinite; }
+  @keyframes c-walk1 { 0% { transform: translateX(-102px); } 50% { transform: translateX(118px); } 100% { transform: translateX(-102px); } }
+  .cena .face1 { animation: c-face1 14s step-end infinite; }
+  @keyframes c-face1 { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 100% { transform: scaleX(-1); } }
+  .cena .grab { animation: c-grab 14s step-end infinite; }
+  @keyframes c-grab { 0%, 18%, 26%, 68%, 76%, 100% { opacity: 0; } 19%, 25%, 69%, 75% { opacity: 1; } }
+
+  /* 02 aveia: moinho e vento */
+  .cena .blades { animation: c-spin 4.8s steps(8) infinite; }
+  @keyframes c-spin { to { transform: rotate(360deg); } }
+  .cena .wind { animation: c-wind 3.2s steps(6) infinite; animation-delay: var(--d, 0s); }
+  @keyframes c-wind { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateX(64px); opacity: 0; } }
+
+  /* 03 caju: cai na cesta e brota de novo */
+  .cena .caju { transform-box: fill-box; transform-origin: 50% 0; animation: c-caju 5s infinite; }
+  @keyframes c-caju {
+    0% { transform: translateY(0) scale(.25); opacity: 1; animation-timing-function: steps(3); }
+    24% { transform: translateY(0) scale(1); animation-timing-function: step-end; }
+    46% { transform: translateY(0) scale(1); animation-timing-function: steps(6); }
+    64% { transform: translateY(60px) scale(1); opacity: 1; animation-timing-function: step-end; }
+    66% { transform: translateY(60px) scale(1); opacity: 0; }
+    100% { transform: translateY(60px) scale(1); opacity: 0; }
+  }
+  .cena .plim { opacity: 0; animation: c-plim 5s step-end infinite; }
+  @keyframes c-plim { 0% { opacity: 0; } 64% { opacity: 1; } 76% { opacity: 0; } }
+  .cena .hop { animation: c-hop 5s step-end infinite; }
+  @keyframes c-hop { 0% { transform: translateY(0); } 64% { transform: translateY(1.5px); } 70% { transform: translateY(0); } }
+
+  /* 04 coco: gotas enchem o copo */
+  .cena .palm { transform-box: view-box; transform-origin: 40px 124px; animation: c-palm 1.8s steps(1) infinite; }
+  @keyframes c-palm { 0% { rotate: -1.6deg; } 50% { rotate: 1.6deg; } }
+  .cena .drop { animation: c-drop 1.4s steps(5) infinite; animation-delay: var(--d, 0s); }
+  @keyframes c-drop { 0% { transform: translateY(0); opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(38px); opacity: 0; } }
+  .cena .milk { animation: c-milk 7s step-end infinite; }
+  @keyframes c-milk { 0% { transform: translateY(0); } 25% { transform: translateY(-8px); } 50% { transform: translateY(-16px); } 75% { transform: translateY(-24px); } }
+
+  /* 05 cana: carrinho de mão atravessando */
+  .cena .walk5 { animation: c-walk5 16s steps(40) infinite; }
+  @keyframes c-walk5 { 0% { transform: translateX(-205px); } 100% { transform: translateX(195px); } }
+  .cena .wheel { transform-box: fill-box; transform-origin: center; animation: c-spin .8s steps(4) infinite; }
+
+  /* 06 girassol: as flores seguem o sol */
+  .cena .sun { animation: c-sun 12s infinite; }
+  @keyframes c-sun {
+    0% { transform: translate(-116px, 22px); opacity: 1; animation-timing-function: steps(3); }
+    20% { transform: translate(-62px, 4px); animation-timing-function: steps(3); }
+    40% { transform: translate(0, -6px); animation-timing-function: steps(3); }
+    60% { transform: translate(62px, 4px); animation-timing-function: steps(3); }
+    79% { transform: translate(116px, 22px); opacity: 1; animation-timing-function: step-end; }
+    80% { opacity: 0; }
+    100% { transform: translate(116px, 22px); opacity: 0; }
+  }
+  .cena .moon { opacity: 0; animation: c-moon 12s step-end infinite; }
+  @keyframes c-moon { 0% { opacity: 0; } 82% { opacity: 1; } 98% { opacity: 0; } }
+  .cena .head { animation: c-head 12s infinite; animation-delay: var(--d, 0s); }
+  @keyframes c-head {
+    0% { transform: rotate(-26deg); animation-timing-function: steps(12); }
+    79% { transform: rotate(26deg); animation-timing-function: steps(4); }
+    100% { transform: rotate(-26deg); }
+  }
+
+  /* movimento reduzido: sem animação, cada peça na pose central (a posição de base do desenho) */
+  @media (prefers-reduced-motion: reduce) { .cena * { animation: none !important; } }
+</style>

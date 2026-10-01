@@ -8,6 +8,7 @@ import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Icon from '../ui/Icon.astro';
 import Doodle from '../ui/Doodle.astro';
+import CenaIngrediente from '../ui/CenaIngrediente.astro';
 import { compromisso, redes, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
@@ -99,7 +100,12 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
                       <span class="rab"><Doodle name={item.rabisco} boil={false} /></span>
                       <span class="pe"><span class="h4">{item.nome}</span><span class="micro porque">por quê? <Icon name="solar:refresh-linear" /></span></span>
                     </span>
-                    <span class="flip-b"><span class="kicker">Por que entra</span><span class="t-m">{item.porque}</span></span>
+                    <span class="flip-b">
+                      <span class="kicker">{String(i + 1).padStart(2, '0')} · {item.nome}</span>
+                      <span class="t-m">{item.porque}</span>
+                      <span class="lenda" aria-hidden="true">{item.legenda}</span>
+                      <CenaIngrediente cena={item.cena} />
+                    </span>
                   </span>
                 </button>
               </li>
@@ -152,7 +158,9 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
   @media (hover: none) and (max-width: 639px) { .d-toque { display: none; } .d-arraste { display: inline; } }
 
   .flips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
-  .flip { display: block; width: 100%; height: 320px; perspective: 1000px; text-align: left; }
+  /* altura = cena (metade da largura do cartão, 280 × 140) + texto do verso */
+  .flips li { container-type: inline-size; }
+  .flip { display: block; width: 100%; height: 360px; height: calc(50cqi + 10rem); perspective: 1000px; text-align: left; }
   .flip-in { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .8s var(--e-flip); }
   .flip.is-flipped .flip-in, .flip:focus-visible .flip-in { transform: rotateY(180deg); }
   @media (hover: hover) { .flip:hover .flip-in { transform: rotateY(180deg); } }
@@ -176,7 +184,11 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
   .flip.espia .flip-in { animation: espia .9s var(--e-flip) .5s; }
   @keyframes espia { 45% { transform: rotateY(-35deg); } }
   .flip-f::after { content: ''; position: absolute; inset: 0; background: var(--grain-img); opacity: .14; mix-blend-mode: overlay; pointer-events: none; }
-  .flip-b { transform: rotateY(180deg); justify-content: flex-start; gap: .8rem; background: var(--surface); border: 1px solid var(--line); }
+  .flip-b { transform: rotateY(180deg); justify-content: flex-start; gap: .55rem; padding-bottom: 0; background: var(--surface); border: 1px solid var(--line); }
+  .flip-b .t-m { max-width: 34ch; }
+  /* legenda à mão: accent-ink (e não accent) para passar de 4,5:1 nesse tamanho */
+  .lenda { margin-top: auto; font-family: var(--hand); font-size: 1.3rem; line-height: 1.2; color: var(--accent-ink); text-align: right; }
+  .flip-b .cena { flex: none; width: calc(100% + 3rem); margin: .35rem -1.5rem 0; } /* encostada nas bordas e na base */
   .fl-1 .flip-f { background: #3A2418; }
   .fl-2 .flip-f { background: #9A5A22; } /* DS: #A8652A; um tom abaixo para o texto claro passar de 4,5:1 */
   .fl-3 .flip-f { background: #7A2835; }
@@ -239,6 +251,19 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
     const pontos = [...bloco.querySelectorAll<HTMLButtonElement>('.dots-nav button')];
     const ferver = (b: HTMLElement, on: boolean) => { if (!reduz) b.querySelector('.doodle')?.classList.toggle('boil', on); };
 
+    // cena do verso: só anima com o cartão virado (toque, hover ou Tab) E na tela
+    const estado = new Map(cartas.map((b) => [b, { tela: false, mouse: false, foco: false }]));
+    const cena = (b: HTMLButtonElement) => {
+      const e = estado.get(b)!;
+      b.classList.toggle('cena-viva', !reduz && e.tela && (b.getAttribute('aria-pressed') === 'true' || e.mouse || e.foco));
+    };
+    const naTela = new IntersectionObserver((es) => es.forEach((e) => {
+      const b = e.target as HTMLButtonElement;
+      estado.get(b)!.tela = e.isIntersecting;
+      cena(b);
+    }), { threshold: .15 });
+    cartas.forEach((b) => naTela.observe(b));
+
     // toque vira (aria-pressed); arrastar o carrossel não vira
     cartas.forEach((b) => {
       let x0 = 0, y0 = 0, arrastou = false;
@@ -247,12 +272,22 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
       b.addEventListener('click', () => {
         if (arrastou) return;
         b.setAttribute('aria-pressed', String(b.classList.toggle('is-flipped')));
+        cena(b);
       });
       // desktop: ferve no hover e no foco pelo teclado
-      b.addEventListener('pointerenter', (e) => { if (comMouse.matches && e.pointerType === 'mouse') ferver(b, true); });
-      b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && b !== document.activeElement) ferver(b, false); });
-      b.addEventListener('focus', () => { if (b.matches(':focus-visible')) ferver(b, true); });
-      b.addEventListener('blur', () => ferver(b, false));
+      const e = estado.get(b)!;
+      b.addEventListener('pointerenter', (ev) => {
+        if (!comMouse.matches || ev.pointerType !== 'mouse') return;
+        ferver(b, true); e.mouse = true; cena(b);
+      });
+      b.addEventListener('pointerleave', (ev) => {
+        if (ev.pointerType !== 'mouse') return;
+        if (b !== document.activeElement) ferver(b, false);
+        e.mouse = false; cena(b);
+      });
+      // foco pelo teclado (:focus-visible) é o que vira o cartão; clique de mouse não conta
+      b.addEventListener('focus', () => { if (b.matches(':focus-visible')) { ferver(b, true); e.foco = true; cena(b); } });
+      b.addEventListener('blur', () => { ferver(b, false); e.foco = false; cena(b); });
     });
 
     // desenha os rabiscos uma vez; no celular, a piscadinha do 1º cartão (uma vez por visita)
