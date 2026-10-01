@@ -20,7 +20,7 @@ export const contato = {
   instagram: 'jhessica.em.cozinha.saudavel', // sem @
   bairroRetirada: 'Cidade Jardim',
   cidade: 'Marabá',
-  retirada: 'a combinar',
+  retirada: { dias: [1, 2, 3, 4, 5], texto: 'Retirada de segunda a sexta, com horário combinado' },
   // dias como em Date.getDay(): 0 = domingo … 6 = sábado
   atendimento: { dias: [1, 2, 3, 4, 5], texto: 'Segunda a sexta, das 8h às 18h', textoCurto: 'Seg a sex · 8h às 18h' },
 };
@@ -37,12 +37,12 @@ export const regrasPedido = {
   prazoEspecialDias: 7,
   categoriasPrazoEspecial: ['bento'] as CategoriaId[],
   limiteBrigadeirosUnidades: 15,
-  diasEntrega: [0], // TODO: confirmar se entrega continua só aos domingos (0 = domingo)
+  diasEntrega: [0], // só aos domingos (0 = domingo)
   entrega: { gratisNoBairro: 'Cidade Jardim', demaisBairros: 'taxa combinada pelo WhatsApp' },
 };
 
 // Entrega: o texto público só cita o dia depois de confirmado.
-export const entregaConfirmada = { diasEntrega: [0], confirmado: false }; // TODO: confirmar com a cliente
+export const entregaConfirmada = { diasEntrega: [0], confirmado: true }; // confirmado com a cliente: só aos domingos
 
 /** "seg a sex", a partir de contato.atendimento.dias. */
 // ponytail: supõe dias seguidos (1–5); se a cliente atender em dias salteados, listar os nomes
@@ -60,8 +60,9 @@ export const passosPedido: PassoPedido[] = [
   { n: 'três', verbo: 'confirmar', titulo: 'Ela confirma e manda o Pix.', texto: 'Ela confere a disponibilidade e a data, combina a entrega e envia a chave para o pagamento.', icone: 'solar:check-circle-linear' },
   {
     n: 'quatro', verbo: 'receber', titulo: 'Retire ou receba.', icone: 'solar:delivery-linear',
-    texto: `Retirada no ${contato.bairroRetirada}, com horário combinado. Entrega grátis no bairro; para outros bairros, a taxa é combinada pelo WhatsApp.`
-      + (entregaConfirmada.confirmado ? ' Entregas aos domingos.' : ''),
+    texto: `Retirada de segunda a sexta no ${contato.bairroRetirada}, com horário combinado. `
+      + (entregaConfirmada.confirmado ? 'Entregas aos domingos: peça até sexta. Grátis no bairro' : 'Entrega grátis no bairro')
+      + '; para outros bairros, a taxa é combinada pelo WhatsApp.',
   },
 ];
 

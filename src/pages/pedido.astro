@@ -19,6 +19,7 @@ import { categorias, emBreve, formatarPreco, getProdutosPorCategoria } from '../
             {getProdutosPorCategoria(cat.id).map((p) => (
               <li>
                 <strong>{p.nome}</strong>
+                {!p.alergenos.contem.includes('ovo') && <span class="tag tag--pista">sem ovo</span>}
                 {' · '}{emBreve(p) ? 'Em breve' : p.variantes.map((v) => `${v.rotulo} ${v.preco === null ? 'em breve' : formatarPreco(v.preco)}`).join(' · ')}
                 {p.adicionais?.map((a) => ` · ${a.rotulo} +${formatarPreco(a.preco)}`)}
                 {p.opcoes?.map((o) => <span class="t-s">{o.rotulo}: {o.valores.map((v) => v.nome).join(', ')}</span>)}

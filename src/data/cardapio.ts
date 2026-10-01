@@ -52,26 +52,28 @@ const pesosPao: Variante[] = [
 ];
 const fatia: Variante[] = [{ id: 'fatia', rotulo: 'Fatia', preco: 30 }];
 
-// Padrão de todos os produtos (respostas da cliente). TODO: confirmar se brigadeiro leva ovo.
+// Padrão dos produtos (respostas da cliente); os brigadeiros sobrescrevem alérgenos e permiteSemOvo.
 const base = {
   alergenos: { contem: ['ovo', 'castanhas'], podeConter: ['soja', 'gluten', 'leite'] } as Produto['alergenos'],
-  permiteSemOvo: true, // TODO: confirmar se a opção sem ovos muda preço ou prazo
+  permiteSemOvo: true, // versão sem ovos pelo mesmo preço. TODO: confirmar se muda o prazo
   disponivel: true,
 };
 
 // TODO: descrições finais com a cliente; as de agora só repetem o que já foi combinado.
 export const produtos: Produto[] = [
-  { ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), variantes: bolo500(40), adicionais: cobertura },
+  // leva leite de coco
+  { ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), variantes: bolo500(40), adicionais: cobertura, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'coco'] } },
   { ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'), variantes: bolo500(40), adicionais: cobertura },
   { ...base, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'), variantes: bolo500(45), maisPedido: true },
   { ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'), variantes: bolo500(45) },
-  // TODO: preço com a cliente
-  { ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g.', imagem: img('bolo-de-maracuja'), variantes: bolo500(null) },
+  {
+    ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
+    variantes: bolo500(40), adicionais: [{ id: 'cobertura-geleia', rotulo: 'Cobertura de geleia', preco: 10 }],
+  },
 
   { ...base, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true },
   { ...base, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao },
-  // TODO: preços com a cliente
-  { ...base, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao.map((v) => ({ ...v, preco: null })) },
+  { ...base, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao },
 
   { ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia },
   { ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
@@ -79,13 +81,15 @@ export const produtos: Produto[] = [
 
   {
     ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 ou 12 brigadeiros, com sabores misturados.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
+    // brigadeiro não leva ovo (selo "sem ovo"). TODO: confirmar se leva castanha ou amêndoa (por ora só "pode conter")
+    alergenos: { contem: [], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] }, permiteSemOvo: false,
     variantes: [
       { id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30, unidades: 6 },
       { id: 'caixa-12', rotulo: 'Caixa com 12', preco: 55, unidades: 12 },
     ],
     opcoes: [{ id: 'sabor', rotulo: 'Sabor', valores: [
       { nome: 'Cacau' },
-      { nome: 'Paçoca', contem: ['amendoim'] }, // TODO: confirmar com a cliente
+      { nome: 'Paçoca', contem: ['amendoim'] },
       { nome: 'Beijinho', contem: ['coco'] },
     ] }],
   },
@@ -118,11 +122,11 @@ export function precoMinimo(categoriaId: CategoriaId): number | null {
 export const formatarPreco = (valor: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(valor) ? 0 : 2 }).format(valor);
 
-// Fotos por produto: src/assets/images/produtos/{id}/capa.*, corte.*, extra-1.*, extra-2.*…
-const fotosProdutos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/produtos/*/*.{jpg,jpeg,png,webp,avif}', { eager: true });
-
+// Fotos por produto: src/assets/images/produtos/{id}/capa.*, corte.*, extra-1.*, extra-2.*… (ver docs/FOTOS.md)
 /** Fotos de um produto pela convenção de pastas; o que faltar fica undefined (extras: lista vazia). */
 export function getImagensProduto(id: string) {
+  // o glob fica dentro da função para este arquivo poder ser importado fora do Vite (scripts/checar-fotos.mjs)
+  const fotosProdutos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/produtos/*/*.{jpg,jpeg,png,webp}', { eager: true });
   const r: { capa?: ImageMetadata; corte?: ImageMetadata; extras: ImageMetadata[] } = { extras: [] };
   const extras: [number, ImageMetadata][] = [];
   for (const [caminho, mod] of Object.entries(fotosProdutos)) {

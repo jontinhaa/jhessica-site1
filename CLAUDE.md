@@ -77,8 +77,8 @@ src/
 
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
-- Ainda a confirmar com a cliente (TODO nos dados): entrega só aos domingos, se brigadeiro leva ovo, paçoca com
-  amendoim, se "sem ovos" muda preço/prazo, preços de Bolo de maracujá e Pão de cebola, textos de "O que entra".
+- Ainda a confirmar com a cliente (TODO nos dados): se a versão sem ovos muda o prazo, se o brigadeiro leva castanha
+  ou amêndoa, textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
 - **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver

@@ -4,14 +4,17 @@
 // nome em .hand) + faixa de números com contador (Asagiri .numbers) ou interlúdio em parallax.
 import SectionHeading from '../ui/SectionHeading.astro';
 import type { Secao } from '../../data/site';
+import { depoimentosPublicos } from '../../data/depoimentos';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
+// só os autorizados pela cliente; a seção usa esta lista quando for desenvolvida
+const depoimentos = depoimentosPublicos;
 ---
 
 <section class="sec sec--tint" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "Depoimentos" */}</div>
+    <div class="sec-body" data-depoimentos={depoimentos.length}>{/* TODO: conteúdo da etapa "Depoimentos" (lista: depoimentos) */}</div>
   </div>
 </section>
