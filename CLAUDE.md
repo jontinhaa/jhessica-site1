@@ -26,6 +26,8 @@ src/
                          formatarPreco, getImagensProduto (produtos/{id}/capa|corte|extra-N)
   assets/images/cardapio/  fotos da vitrine ({categoria}.jpg|webp) + FONTES-PROVISORIAS.md
   assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
+  assets/images/produtos/{id}/, bento/, sobre/, depoimentos/  fotos por convenção de nome (docs/FOTOS.md)
+  scripts/checar-fotos.mjs  npm run fotos: confere as fotos esperadas
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra"),
@@ -75,6 +77,8 @@ src/
 
 ### Pendências de lançamento (não publicar sem resolver)
 
+- **Antes de publicar, rode `npm run fotos`: nenhuma obrigatória pode faltar e nenhuma provisória pode continuar.**
+  Convenção de pastas e nomes em `docs/FOTOS.md`.
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
 - Ainda a confirmar com a cliente (TODO nos dados): se a versão sem ovos muda o prazo, se o brigadeiro leva castanha

@@ -66,6 +66,9 @@ export const passosPedido: PassoPedido[] = [
   },
 ];
 
+// Fotos da seção Bento: destaque + modelo-1…modelo-N em src/assets/images/bento/ (npm run fotos confere).
+export const fotosBento = { modelos: 3 };
+
 export const conservacao = {
   porCategoria: {
     bolos: 'Conservar bem embalado. Pode congelar.',
