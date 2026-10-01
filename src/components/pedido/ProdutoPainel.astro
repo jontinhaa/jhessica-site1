@@ -177,6 +177,13 @@ const brigadeiros = p.categoria === 'brigadeiros';
 
 <style>
   /* base da folha/painel lateral (.folha, .folha-in, .alca, .folha-fechar, .folha-corpo, .folha-pe): global.css */
+  /* desktop: o painel de Detalhes abre no meio da tela (a base .folha é lateral; a sacola continua assim) */
+  @media (min-width: 860px) {
+    .painel { --fora: 0 32px; inset: 0; margin: auto; width: min(480px, calc(100vw - 4rem)); height: min(860px, calc(100dvh - 4rem)); border-radius: 22px; opacity: 0; }
+    .painel[open] { opacity: 1; }
+    @starting-style { .painel[open] { opacity: 0; } }
+  }
+  @media (min-width: 860px) and (prefers-reduced-motion: reduce) { .painel { --fora: 0 0; } }
 
   /* galeria: fotos em scroll-snap, encostadas nas bordas */
   .galeria-bloco, .galeria.ph { margin-inline: -1.5rem; }
