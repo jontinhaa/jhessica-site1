@@ -3,7 +3,7 @@
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; } /* lugar fixo da barra: travar a rolagem (folha aberta) não empurra a página */
 body { background: transparent; color: var(--ink); font-family: var(--sans); font-weight: 300; font-size: 16px; line-height: 1.65; overflow-x: hidden; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 img, svg, video, canvas { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
@@ -171,7 +171,9 @@ ul, ol { list-style: none; }
   .folha[open] { opacity: 1; }
   @starting-style { .folha[open] { opacity: 0; } }
 }
-html:has(dialog.folha[open]) { overflow: hidden; } /* página parada atrás */
+/* página parada atrás. No PC a barra some e fica o gutter vazio (scrollbar-gutter no html, lá em cima);
+   o ::backdrop não cobre o gutter, então ele ganha a mesma cor do backdrop sobre o --bg. */
+html:has(dialog.folha[open]) { overflow: hidden; background: color-mix(in srgb, rgb(20, 13, 10) 55%, var(--bg)); }
 .folha-in { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .alca { flex: none; display: grid; place-items: center; height: 26px; touch-action: none; cursor: grab; }
 .alca i { width: 44px; height: 5px; border-radius: 3px; background: var(--line-2); }
