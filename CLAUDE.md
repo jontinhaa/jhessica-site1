@@ -19,7 +19,7 @@ src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
   styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…),
                          .tag, .link-r, placeholder .ph e o revelar [data-rv]
-  data/site.ts           marca, seo, contato/redes, regrasPedido, conservacao, compromisso (+ textoAcucar/textoCozinha),
+  data/site.ts           marca, seo, contato/redes, regrasPedido, entregaConfirmada, passosPedido, conservacao, compromisso (+ textoAcucar/textoCozinha),
                          rotulosAlergenos,
                          secoes (ordem da home) e menu
   data/cardapio.ts       categorias e produtos (variantes, opções com alérgenos, contem/podeConter), precoMinimo, emBreve,
@@ -51,6 +51,8 @@ src/
 - Promessa ao cliente (sem glúten, sem leite, sem açúcar…) só aparece se o dado estiver confirmado em `compromisso`;
   null = não afirmar.
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
+- Cena fixada (Como pedir): CSS nativo, sem GSAP/Lenis: `position: sticky` + `animation-timeline` (view-timeline no
+  contêiner alto). Sem suporte ou com movimento reduzido, vira grade estática.
 - Recorte que abre (Padrão E): `data-clip` na figura; a foto sai de inset(42%) até a borda enquanto sobe. Combina com
   `data-par` na mesma foto. CSS preso à rolagem; com movimento reduzido a foto já aparece aberta.
 - Entrada de bloco: `data-rv` (sobe 44px e aparece em 1.2s, cascata de 80ms; só fade com movimento reduzido). É CSS +

@@ -41,6 +41,30 @@ export const regrasPedido = {
   entrega: { gratisNoBairro: 'Cidade Jardim', demaisBairros: 'taxa combinada pelo WhatsApp' },
 };
 
+// Entrega: o texto público só cita o dia depois de confirmado.
+export const entregaConfirmada = { diasEntrega: [0], confirmado: false }; // TODO: confirmar com a cliente
+
+/** "seg a sex", a partir de contato.atendimento.dias. */
+// ponytail: supõe dias seguidos (1–5); se a cliente atender em dias salteados, listar os nomes
+const nomesDias = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+export const faixaAtendimento = () => {
+  const d = contato.atendimento.dias;
+  return `${nomesDias[d[0]]} a ${nomesDias[d[d.length - 1]]}`;
+};
+
+export interface PassoPedido { n: string; verbo: string; titulo: string; texto: string; icone: `solar:${string}` }
+
+export const passosPedido: PassoPedido[] = [
+  { n: 'um', verbo: 'escolher', titulo: 'Monte seu pedido no cardápio.', texto: 'Escolha os produtos, o peso e a quantidade. O total aparece na hora.', icone: 'solar:bag-4-linear' },
+  { n: 'dois', verbo: 'enviar', titulo: 'Mande pelo WhatsApp.', texto: 'O pedido chega organizado no WhatsApp da Jhessica, com tudo o que você escolheu.', icone: 'solar:chat-round-line-linear' },
+  { n: 'três', verbo: 'confirmar', titulo: 'Ela confirma e manda o Pix.', texto: 'Ela confere a disponibilidade e a data, combina a entrega e envia a chave para o pagamento.', icone: 'solar:check-circle-linear' },
+  {
+    n: 'quatro', verbo: 'receber', titulo: 'Retire ou receba.', icone: 'solar:delivery-linear',
+    texto: `Retirada no ${contato.bairroRetirada}, com horário combinado. Entrega grátis no bairro; para outros bairros, a taxa é combinada pelo WhatsApp.`
+      + (entregaConfirmada.confirmado ? ' Entregas aos domingos.' : ''),
+  },
+];
+
 export const conservacao = {
   porCategoria: {
     bolos: 'Conservar bem embalado. Pode congelar.',

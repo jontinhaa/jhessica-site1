@@ -1,18 +1,136 @@
 ---
-// COMO PEDIR · do forno à mesa (antiga seção Processo). Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · 05 Movimento): cena fixada na horizontal "Do forno à mesa"
-// (Asagiri .ritual, faixa .band). Regras (prazo, entrega aos domingos, fechado aos sábados) em
-// regrasPedido (site.ts). Precisa de GSAP + ScrollTrigger + Lenis quando for desenvolvida.
+// COMO PEDIR · os quatro tempos do pedido e os prazos, na faixa escura.
+// Desktop (≥ 1024px): cena fixada horizontal do DS (Asagiri .ritual) feita em CSS nativo: o .palco gruda
+// (position: sticky) e a fileira anda com animation-timeline preso à rolagem do .ritual, sem GSAP/Lenis.
+// Sem suporte a scroll-driven animations ou com movimento reduzido: grade estática de 4 colunas.
+// Celular e tablet: linha do tempo vertical; o fio entre os poços se desenha com a rolagem.
+// Textos em passosPedido; prazos em regrasPedido e contato.atendimento (src/data/site.ts).
 import SectionHeading from '../ui/SectionHeading.astro';
-import type { Secao } from '../../data/site';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import { contato, faixaAtendimento, passosPedido, redes, regrasPedido, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
+
+const limite = regrasPedido.limiteBrigadeirosUnidades;
+const [de, , ate] = faixaAtendimento().split(' ');
+const horario = contato.atendimento.texto.slice(contato.atendimento.texto.indexOf('das '));
 ---
 
-<section class="sec band" id={secao.id}>
-  <div class="wrapx" data-theme="dark">
-    <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} center />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "ComoPedir" */}</div>
+<section class="sec band como" id={secao.id}>
+  <div class="ritual">
+    <div class="palco" data-theme="dark">
+      <div class="wrapx">
+        <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} center />
+      </div>
+      <div class="pista">
+        <ol class="passos">
+          {passosPedido.map((p) => (
+            <li class="passo" data-rv>
+              <span class="fio" aria-hidden="true"></span>
+              <span class="well"><Icon name={p.icone} /></span>
+              <div class="passo-txt">
+                <p class="t-bold-s">{p.n} · {p.verbo}</p>
+                <h3 class="h3">{p.titulo}</h3>
+                <p class="t-l">{p.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div class="wrapx"><div class="barra" aria-hidden="true"><i></i></div></div>
+    </div>
+  </div>
+
+  <div class="wrapx prazos" data-theme="dark">
+    <div class="prazos-lista" data-rv>
+      <p class="hand">encomende com calma</p>
+      <ul class="stat-list">
+        <li><span>bolos, pães, fatias e até {limite - 1} brigadeiros</span><b>{regrasPedido.prazoMinimoDias}<em>dias</em></b></li>
+        <li><span>Bento Cake, bolos de aniversário e a partir de {limite} brigadeiros</span><b>{regrasPedido.prazoEspecialDias}<em>dias</em></b></li>
+        <li><span>atendimento {horario}</span><b>{de}<em> a </em>{ate}</b></li>
+      </ul>
+    </div>
+    <div class="acoes" data-rv>
+      <Button href="/pedido" data-esconde-pilula><Icon name="solar:bag-4-linear" />Montar meu pedido</Button>
+      {redes.whatsapp && (
+        <a class="link-r" href={redes.whatsapp} target="_blank" rel="noopener">
+          <Icon name="simple-icons:whatsapp" />Falar no WhatsApp
+          <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
+        </a>
+      )}
+    </div>
   </div>
 </section>
+
+<style>
+  /* --fundo: a cor da faixa resolvida aqui (dentro de data-theme="dark" o --band muda de valor) */
+  .como { --fundo: var(--band); }
+  .passo-txt { display: flex; flex-direction: column; gap: .7rem; }
+  .passo .h3 { color: var(--on-band); font-size: clamp(1.7rem, 2.4vw, 2.3rem); }
+  .passo .t-l { max-width: 34ch; }
+  .passo .well { width: 56px; height: 56px; font-size: 24px; background: linear-gradient(rgba(var(--accent-rgb), .07), rgba(var(--accent-rgb), .07)), var(--fundo); }
+
+  /* ---------- prazos (DS · .stat-list) ---------- */
+  .prazos { display: grid; grid-template-columns: minmax(0, 40rem) auto; justify-content: space-between; align-items: end; gap: 2.5rem 4rem; padding-top: clamp(3rem, 6vw, 5rem); }
+  .prazos .hand { margin-bottom: .6rem; }
+  .stat-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .stat-list li:last-child { border-bottom: 0; }
+  .stat-list span { font-size: .72rem; font-weight: 500; letter-spacing: .16em; line-height: 1.6; text-transform: uppercase; color: var(--ink-2); }
+  .stat-list b { font-family: var(--serif); font-weight: 400; font-size: 1.8rem; line-height: 1; color: var(--accent-ink); white-space: nowrap; }
+  .stat-list b em { font-size: .55em; font-style: italic; margin-left: .1em; }
+  .acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 2rem; }
+  .barra { display: none; }
+
+  /* ---------- celular e tablet: linha do tempo vertical ---------- */
+  @media (max-width: 1023px) {
+    .pista { margin-top: clamp(2.5rem, 7vw, 3.5rem); }
+    .passos { display: flex; flex-direction: column; gap: 2.6rem; max-width: 40rem; margin-inline: auto; padding-inline: var(--pad); }
+    .passo { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 1.25rem; }
+    .passo .well { position: relative; z-index: 1; }
+    .passo-txt { padding-top: 1.1rem; }
+    /* fio de 1px que liga um poço ao próximo; o poço fica por cima, como marcador */
+    .fio { position: absolute; left: 27.5px; top: 56px; bottom: -2.6rem; width: 1px; background: var(--accent-2); transform-origin: 50% 0; }
+    .passo:last-child .fio { display: none; }
+    .prazos { grid-template-columns: minmax(0, 1fr); max-width: calc(40rem + 2 * var(--pad)); }
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) {
+        .fio { animation: cp-fio linear both; animation-timeline: view(); animation-range: entry 25% cover 50%; }
+      }
+    }
+  }
+  @keyframes cp-fio { from { scale: 1 0; } to { scale: 1 1; } }
+
+  /* ---------- desktop: grade estática (sem suporte ou movimento reduzido)… ---------- */
+  @media (min-width: 1024px) {
+    .pista { margin-top: clamp(2.5rem, 5vw, 4rem); }
+    .passos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.4rem; max-width: var(--max); margin-inline: auto; padding-inline: var(--pad); }
+    .passo { display: flex; flex-direction: column; gap: 1.6rem; padding: 2rem; border: 1px solid var(--line); border-radius: var(--r-lg); background: rgba(245, 234, 219, .025); }
+    .fio { display: none; }
+
+    /* …e a cena fixada, quando o navegador acompanha a rolagem em CSS */
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) {
+        .como { padding-top: 0; }
+        /* altura = tempo preso; o inset tira o header fixo da conta: 0% é quando o palco gruda */
+        .ritual { height: 260svh; view-timeline: --ritual block; view-timeline-inset: var(--nav-h) 0px; }
+        .palco { position: sticky; top: var(--nav-h); height: calc(100svh - var(--nav-h)); display: flex; flex-direction: column; justify-content: center; gap: clamp(1.5rem, 4vh, 3rem); overflow: hidden; }
+        .pista { margin-top: 0; container-type: inline-size; }
+        .passos {
+          display: flex; width: max-content; max-width: none; margin: 0; gap: clamp(1.5rem, 3vw, 3rem);
+          padding-inline: max(var(--pad), calc((100cqw - var(--max)) / 2 + var(--pad)));
+          animation: cp-trilho linear both; animation-timeline: --ritual; animation-range: contain 0% contain 100%;
+        }
+        .passo { width: min(36vw, 500px); min-height: min(42vh, 360px); justify-content: space-between; }
+        .barra { display: block; position: relative; height: 2px; background: var(--band-line); border-radius: 2px; }
+        .barra i { position: absolute; inset: 0; background: var(--calda); border-radius: inherit; transform-origin: 0 50%; animation: cp-barra linear both; animation-timeline: --ritual; animation-range: contain 0% contain 100%; }
+        /* três marcas: os limites entre os quatro passos */
+        .barra::after { content: ''; position: absolute; inset: -3px 0; background: linear-gradient(90deg, transparent calc(33.3% - 1px), var(--on-band-2) 0 calc(33.3% + 1px), transparent 0 calc(66.6% - 1px), var(--on-band-2) 0 calc(66.6% + 1px), transparent 0); }
+      }
+    }
+  }
+  /* pausas curtas no começo e no fim, como o DS (o fim segura 18%) */
+  @keyframes cp-trilho { 0%, 6% { translate: 0 0; } 85%, 100% { translate: calc(-100% + 100cqw) 0; } }
+  @keyframes cp-barra { 0%, 6% { scale: 0 1; } 85%, 100% { scale: 1 1; } }
+</style>
