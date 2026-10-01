@@ -276,6 +276,7 @@ const faixa = [
 </style>
 
 <script>
+  import { podeInclinar, tilt } from '../../scripts/tilt';
   // Vídeo, açúcar e tilt da hero. O vídeo só baixa quando vai tocar (preload="none"):
   // com movimento reduzido ou economia de dados a hero começa pausada e o botão retoma.
   const hero = document.getElementById('top')!;
@@ -348,27 +349,5 @@ const faixa = [
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }).observe(hero);
 
   // ---------- tilt 3D com reflexo nos cards de vidro (só com mouse) ----------
-  if (!reduced && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    hero.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => {
-      const s = { rx: 0, ry: 0, gx: 50, gy: 50, go: 0 }, t = { ...s }, keys = Object.keys(s) as (keyof typeof s)[];
-      let raf = 0;
-      const loop = () => {
-        let busy = false;
-        keys.forEach((k) => { s[k] += (t[k] - s[k]) * .12; if (Math.abs(t[k] - s[k]) > .02) busy = true; });
-        el.style.setProperty('--rx', `${s.rx.toFixed(2)}deg`);
-        el.style.setProperty('--ry', `${s.ry.toFixed(2)}deg`);
-        el.style.setProperty('--gx', `${s.gx.toFixed(1)}%`);
-        el.style.setProperty('--gy', `${s.gy.toFixed(1)}%`);
-        el.style.setProperty('--go', s.go.toFixed(3));
-        raf = busy ? requestAnimationFrame(loop) : 0;
-      };
-      const kick = () => { raf ||= requestAnimationFrame(loop); };
-      el.addEventListener('pointermove', (e) => {
-        const r = el.getBoundingClientRect(), nx = (e.clientX - r.left) / r.width * 2 - 1, ny = (e.clientY - r.top) / r.height * 2 - 1;
-        Object.assign(t, { rx: -ny * 7, ry: nx * 7, gx: (nx + 1) * 50, gy: (ny + 1) * 50, go: 1 });
-        kick();
-      });
-      el.addEventListener('pointerleave', () => { Object.assign(t, { rx: 0, ry: 0, go: 0 }); kick(); });
-    });
-  }
+  if (!reduced && podeInclinar()) hero.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => tilt(el));
 </script>

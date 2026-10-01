@@ -9,8 +9,9 @@ export type Alergeno = 'gluten' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'casta
 export interface Variante { id: string; rotulo: string; preco: number | null; unidades?: number }
 /** Soma ao preço (cobertura). */
 export interface Adicional { id: string; rotulo: string; preco: number }
-/** Escolha que não muda o preço (massa, recheio, sabor). `contem` soma alérgenos aos do produto. */
-export interface Opcao { id: string; rotulo: string; valores: { nome: string; contem?: Alergeno[] }[] }
+/** Escolha que não muda o preço (massa, recheio, sabor). `contem` soma alérgenos aos do produto.
+ *  artigo: para o aviso "Escolha a massa" / "Escolha o recheio". */
+export interface Opcao { id: string; rotulo: string; artigo?: 'a' | 'o'; valores: { nome: string; contem?: Alergeno[] }[] }
 
 export type CategoriaId = 'bolos' | 'paes' | 'fatias' | 'brigadeiros' | 'bento';
 
@@ -27,8 +28,10 @@ export interface Produto {
   permiteSemOvo: boolean;
   disponivel: boolean;
   maisPedido?: boolean;
-  /** Caixa montada pelo cliente com sabores misturados (interface ainda por fazer). */
+  /** Caixa montada pelo cliente com sabores misturados (um contador por valor da opção "sabor"). */
   montarCaixa?: boolean;
+  /** Lista de ingredientes; sem ela, o painel convida a perguntar no WhatsApp. TODO: lista por produto com a cliente */
+  ingredientes?: string[];
   variantes: Variante[];
   adicionais?: Adicional[];
   opcoes?: Opcao[];
@@ -87,7 +90,7 @@ export const produtos: Produto[] = [
       { id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30, unidades: 6 },
       { id: 'caixa-12', rotulo: 'Caixa com 12', preco: 55, unidades: 12 },
     ],
-    opcoes: [{ id: 'sabor', rotulo: 'Sabor', valores: [
+    opcoes: [{ id: 'sabor', rotulo: 'Sabor', artigo: 'o', valores: [
       { nome: 'Cacau' },
       { nome: 'Paçoca', contem: ['amendoim'] },
       { nome: 'Beijinho', contem: ['coco'] },
@@ -98,8 +101,8 @@ export const produtos: Produto[] = [
     ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário pequeno, com massa e recheio à escolha.', imagem: img('bento-cake'),
     variantes: [{ id: 'unico', rotulo: 'Bento Cake', preco: 150 }],
     opcoes: [
-      { id: 'massa', rotulo: 'Massa', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate' }] },
-      { id: 'recheio', rotulo: 'Recheio', valores: [{ nome: 'Maracujá' }, { nome: 'Creme branco com morangos' }, { nome: 'Chocolate' }, { nome: 'Limão siciliano com frutas vermelhas' }] },
+      { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate' }] },
+      { id: 'recheio', rotulo: 'Recheio', artigo: 'o', valores: [{ nome: 'Maracujá' }, { nome: 'Creme branco com morangos' }, { nome: 'Chocolate' }, { nome: 'Limão siciliano com frutas vermelhas' }] },
     ],
   },
 ];

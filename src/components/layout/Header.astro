@@ -16,7 +16,7 @@ import Icon from '../ui/Icon.astro';
   </nav>
   <div class="nav-r">
     <ThemeSwitch />
-    <Button variant="linha" size="sm" href={pedido.href} class="nav-cta">{pedido.rotulo}</Button>
+    <Button variant="linha" size="sm" href={pedido.href} class="nav-cta">{pedido.rotulo}<span class="conta" data-sacola-conta hidden></span></Button>
     <button class="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="drawer">
       <span class="i-open"><Icon name="solar:hamburger-menu-linear" /></span>
       <span class="i-close"><Icon name="solar:close-circle-linear" /></span>
@@ -30,7 +30,7 @@ import Icon from '../ui/Icon.astro';
     {menu.map((l, i) => <a href={l.href}><em>{String(i + 1).padStart(2, '0')}</em>{l.rotulo}</a>)}
   </nav>
   <div class="foot">
-    <Button href={pedido.href}><Icon name="solar:bag-4-linear" />{pedido.rotulo}</Button>
+    <Button href={pedido.href}><Icon name="solar:bag-4-linear" />{pedido.rotulo}<span class="conta" data-sacola-conta hidden></span></Button>
     <ThemeSwitch />
   </div>
 </div>
@@ -66,6 +66,9 @@ import Icon from '../ui/Icon.astro';
      visibility, ainda é hidden e recusa o foco); ao fechar, some só depois de deslizar */
   .drawer.open { transform: none; visibility: visible; transition: transform .6s var(--e-out), visibility 0s; }
   @media (prefers-reduced-motion: reduce) { .drawer.open, .drawer.open :global(*) { transition-duration: 0s !important; } }
+  /* bolinha caramelo com o total de itens da sacola (evento "sacola:mudou") */
+  .conta { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 .35rem; margin-left: .2rem; border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent); font-size: .66rem; font-weight: 700; letter-spacing: 0; }
+  .conta[hidden] { display: none; }
   .drawer nav { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; }
   .drawer nav a { font-family: var(--serif); font-weight: 300; font-size: clamp(2rem, 8vw, 3rem); line-height: 1; letter-spacing: .06em; text-transform: uppercase; }
   .drawer nav em { font-style: italic; color: var(--accent); font-size: .5em; letter-spacing: .1em; margin-right: .6em; vertical-align: .4em; }
@@ -128,5 +131,15 @@ import Icon from '../ui/Icon.astro';
   links.forEach((a) => {
     const s = a.pathname === location.pathname && document.getElementById(a.hash.slice(1));
     if (s) spy.observe(s);
+  });
+
+  // contador da sacola no Encomendar (header e gaveta)
+  addEventListener('sacola:mudou', (e) => {
+    const total = (e as CustomEvent<{ total: number }>).detail.total;
+    document.querySelectorAll<HTMLElement>('[data-sacola-conta]').forEach((c) => {
+      c.textContent = String(total);
+      c.hidden = total === 0;
+      c.setAttribute('aria-label', `${total} ${total === 1 ? 'item' : 'itens'} na sacola`);
+    });
   });
 </script>

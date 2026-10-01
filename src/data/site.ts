@@ -69,6 +69,13 @@ export const passosPedido: PassoPedido[] = [
 // Fotos da seção Bento: destaque + modelo-1…modelo-N em src/assets/images/bento/ (npm run fotos confere).
 export const fotosBento = { modelos: 3 };
 
+/** Prazo de encomenda de um item: o especial (7 dias) para as categorias da lista e para brigadeiros a partir do
+ *  limite de unidades; o mínimo (2 dias) nos demais. O painel do /pedido refaz a conta dos brigadeiros ao vivo. */
+export const prazoDias = (categoria: CategoriaId, unidades = 0) =>
+  regrasPedido.categoriasPrazoEspecial.includes(categoria) || (categoria === 'brigadeiros' && unidades >= regrasPedido.limiteBrigadeirosUnidades)
+    ? regrasPedido.prazoEspecialDias
+    : regrasPedido.prazoMinimoDias;
+
 export const conservacao = {
   porCategoria: {
     bolos: 'Conservar bem embalado. Pode congelar.',

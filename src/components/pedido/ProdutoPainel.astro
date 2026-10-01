@@ -1,0 +1,455 @@
+---
+// Painel "Detalhes" de um produto, em <dialog> nativo. Um por produto, renderizado no build.
+// Celular (< 860px): folha que sobe de baixo (arrasta para fechar). Desktop: painel lateral à direita.
+// Abre por [data-abrir="{id}"] ou por ?produto={id} na URL; o histórico do navegador abre e fecha (pushState/popstate).
+// Escolhas (variante, adicionais, opções, sem ovos, caixa de brigadeiros, quantidade) recalculam preço, prazo e o
+// aviso do que falta; "Adicionar à sacola" usa a sacola provisória (src/scripts/sacola.ts).
+import { Image } from 'astro:assets';
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import { formatarPreco, getImagensProduto, type Produto } from '../../data/cardapio';
+import { conservacao, prazoDias, redes, regrasPedido, rotulosAlergenos } from '../../data/site';
+
+interface Props { produto: Produto }
+const { produto: p } = Astro.props;
+
+const { capa, corte, extras } = getImagensProduto(p.id);
+const fotos = [capa, corte, ...extras].filter((f) => f !== undefined);
+const caixa = p.montarCaixa ? p.opcoes?.find((o) => o.id === 'sabor') : undefined;
+const opcoes = (p.opcoes ?? []).filter((o) => o !== caixa);
+const v0 = p.variantes[0];
+const semOvo = !p.alergenos.contem.includes('ovo');
+const tituloId = `t-painel-${p.id}`;
+
+// alérgenos: os do produto + os que vêm com um sabor/recheio ("Amendoim (paçoca)")
+const rotulos = (lista: string[]) => lista.map((a) => rotulosAlergenos[a as keyof typeof rotulosAlergenos]);
+const dasOpcoes = (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.contem ?? []).map((a) => `${rotulosAlergenos[a]} (${v.nome.toLowerCase()})`)));
+const contem = [...rotulos(p.alergenos.contem), ...dasOpcoes];
+const contemSemOvo = [...rotulos(p.alergenos.contem.filter((a) => a !== 'ovo')), ...dasOpcoes];
+const conserva = conservacao.porCategoria[p.categoria];
+const prazo = prazoDias(p.categoria, v0.unidades);
+const brigadeiros = p.categoria === 'brigadeiros';
+---
+
+<dialog
+  class="painel" id={`painel-${p.id}`} aria-labelledby={tituloId}
+  data-produto={p.id} data-nome={p.nome}
+  data-prazo-min={regrasPedido.prazoMinimoDias} data-prazo-esp={regrasPedido.prazoEspecialDias}
+  data-limite={brigadeiros ? regrasPedido.limiteBrigadeirosUnidades : undefined}
+>
+  <div class="painel-in">
+    <div class="alca" aria-hidden="true"><i></i></div>
+    <button class="fechar" type="button" aria-label="Fechar detalhes" data-fechar><Icon name="solar:close-linear" /></button>
+
+    <form class="painel-corpo" novalidate>
+      {fotos.length ? (
+        <div class="galeria-bloco">
+          <div class="galeria" role="region" aria-roledescription="carrossel" aria-label={`Fotos de ${p.nome}`}>
+            {fotos.map((f, i) => (
+              <div class="slide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${fotos.length}`}>
+                <Image src={f} alt={i === 0 ? p.nome : ''} widths={[480, 960]} sizes="(max-width: 859px) 100vw, 480px" loading="lazy" />
+              </div>
+            ))}
+          </div>
+          {fotos.length > 1 && (
+            <div class="dots-nav">
+              {fotos.map((_, i) => <button type="button" class:list={[i === 0 && 'is-on']} aria-label={`Foto ${i + 1}`}></button>)}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div class="galeria ph ph-empty" data-ph={`produtos/${p.id}/capa`}></div>
+      )}
+
+      <header class="cabeca">
+        {(p.maisPedido || semOvo) && (
+          <div class="tags">
+            {p.maisPedido && <span class="tag tag--caramelo">Mais pedido</span>}
+            {semOvo && <span class="tag tag--pista">Sem ovo</span>}
+          </div>
+        )}
+        <h2 class="h3" id={tituloId} tabindex="-1">{p.nome}</h2>
+        <p class="preco-linha">
+          <output class="price" data-preco-un>{formatarPreco(v0.preco ?? 0)}</output>
+          <span class="t-s" data-escolha>{v0.rotulo}</span>
+        </p>
+      </header>
+
+      <p class="t-m">{p.descricao}</p>
+
+      {p.variantes.length > 1 ? (
+        <fieldset class="campo">
+          <legend class="kicker">{v0.unidades ? 'Tamanho da caixa' : 'Peso'}</legend>
+          <div class="seg">
+            {p.variantes.map((v, i) => (
+              <label><input type="radio" name="variante" value={v.id} data-rotulo={v.rotulo} data-preco={v.preco} data-unidades={v.unidades} checked={i === 0} /><span>{v.rotulo}</span></label>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <input type="hidden" name="variante" value={v0.id} data-rotulo={v0.rotulo} data-preco={v0.preco} data-unidades={v0.unidades} />
+      )}
+
+      {opcoes.map((o) => (
+        <fieldset class="campo" data-opcao data-artigo={o.artigo ?? 'o'} data-nome={o.rotulo.toLowerCase()}>
+          <legend class="kicker">{o.rotulo}</legend>
+          <div class="seg seg--solta">
+            {o.valores.map((v) => <label><input type="radio" name={`opcao-${o.id}`} value={v.nome} data-rotulo={o.rotulo} /><span>{v.nome}</span></label>)}
+          </div>
+        </fieldset>
+      ))}
+
+      {caixa && (
+        <fieldset class="campo caixa">
+          <legend class="kicker">Monte sua caixa</legend>
+          <p class="caixa-conta"><output data-caixa-conta>0 de {v0.unidades}</output> <span class="t-s">brigadeiros escolhidos</span></p>
+          <ul class="sabores">
+            {caixa.valores.map((v) => (
+              <li>
+                <span class="sabor">{v.nome}</span>
+                <div class="stepper" data-sabor={v.nome} data-min="0" data-max="99">
+                  <button type="button" data-menos aria-label={`Menos ${v.nome}`}><Icon name="solar:minus-linear" /></button>
+                  <output aria-live="polite">0</output>
+                  <button type="button" data-mais aria-label={`Mais ${v.nome}`}><Icon name="solar:add-linear" /></button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
+      )}
+
+      {(p.adicionais?.length || p.permiteSemOvo) && (
+        <div class="campo chaves">
+          {p.adicionais?.map((a) => (
+            <label class="switch">
+              <input type="checkbox" name="adicional" value={a.id} data-rotulo={a.rotulo} data-preco={a.preco} />
+              <span class="trk"></span>{a.rotulo} <b>+{formatarPreco(a.preco)}</b>
+            </label>
+          ))}
+          {p.permiteSemOvo && (
+            <div>
+              <label class="switch"><input type="checkbox" name="semovo" /><span class="trk"></span>Quero sem ovos</label>
+              <p class="t-s recuo">Mesmo preço.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      <fieldset class="campo">
+        <legend class="kicker">Quantidade</legend>
+        <div class="stepper" data-qtd data-min="1" data-max="20">
+          <button type="button" data-menos aria-label="Diminuir quantidade"><Icon name="solar:minus-linear" /></button>
+          <output aria-live="polite">1</output>
+          <button type="button" data-mais aria-label="Aumentar quantidade"><Icon name="solar:add-linear" /></button>
+        </div>
+      </fieldset>
+
+      <section class="surface bom-saber" aria-label="Bom saber">
+        <span class="kicker">Bom saber</span>
+        {contem.length > 0 && (
+          <p><b>Contém:</b> <span data-com-ovo>{contem.join(', ')}</span>{contemSemOvo.length !== contem.length && <span data-sem-ovo hidden>{contemSemOvo.join(', ') || '—'}</span>}</p>
+        )}
+        <p><b>Pode conter:</b> {rotulos(p.alergenos.podeConter).join(', ')}</p>
+        <p>{conserva}{/congel/i.test(conserva) && ` ${conservacao.observacaoCongelados}`}</p>
+        <p data-prazo>Encomende com {prazo} dias de antecedência.</p>
+        {brigadeiros && <p class="t-s">A partir de {regrasPedido.limiteBrigadeirosUnidades} brigadeiros no pedido, o prazo é de {regrasPedido.prazoEspecialDias} dias.</p>}
+      </section>
+
+      <section class="ingredientes" aria-label="Ingredientes">
+        {p.ingredientes?.length ? (
+          <>
+            <span class="kicker">Ingredientes</span>
+            <p class="t-m">{p.ingredientes.join(', ')}.</p>
+          </>
+        ) : (
+          <p class="t-s">Quer saber a receita completa? {redes.whatsapp ? <a href={redes.whatsapp} target="_blank" rel="noopener">Pergunte no WhatsApp.</a> : 'Pergunte no WhatsApp.'}</p>
+        )}
+      </section>
+    </form>
+
+    <footer class="painel-pe">
+      <div class="total"><span class="t-s">Total</span><output class="price" data-total>{formatarPreco(v0.preco ?? 0)}</output></div>
+      <Button data-adicionar><Icon name="solar:bag-4-linear" />Adicionar à sacola</Button>
+      <p class="t-s motivo" data-motivo aria-live="polite"></p>
+    </footer>
+  </div>
+</dialog>
+
+<style>
+  /* ---------- o painel: folha de baixo (celular) ou lateral (desktop) ---------- */
+  .painel {
+    --fora: 0 100%;
+    position: fixed; inset: auto 0 0 0; margin: 0; padding: 0; border: 0; width: 100%; max-width: 100vw; max-height: 92dvh;
+    border-radius: 22px 22px 0 0; overflow: hidden; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-2);
+    translate: var(--fora);
+    transition: translate .45s var(--e-out), opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete;
+  }
+  .painel[open] { display: flex; flex-direction: column; translate: 0 0; }
+  @starting-style { .painel[open] { translate: var(--fora); } }
+  .painel::backdrop { background: rgba(20, 13, 10, .55); opacity: 0; transition: opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete; }
+  .painel[open]::backdrop { opacity: 1; }
+  @starting-style { .painel[open]::backdrop { opacity: 0; } }
+  @media (min-width: 860px) {
+    .painel { --fora: 100% 0; inset: 0 0 0 auto; width: min(480px, 100vw); height: 100dvh; max-height: 100dvh; border-radius: 22px 0 0 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .painel { --fora: 0 0; opacity: 0; }
+    .painel[open] { opacity: 1; }
+    @starting-style { .painel[open] { opacity: 0; } }
+  }
+  /* página parada atrás do painel */
+  :global(html:has(dialog.painel[open])) { overflow: hidden; }
+
+  .painel-in { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .alca { flex: none; display: grid; place-items: center; height: 26px; touch-action: none; cursor: grab; }
+  .alca i { width: 44px; height: 5px; border-radius: 3px; background: var(--line-2); }
+  @media (min-width: 860px) { .alca { display: none; } }
+  .fechar {
+    position: absolute; top: .9rem; right: .9rem; z-index: 3; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px;
+    color: #FBF3E6; background: rgba(20, 13, 10, .45); border: 1px solid rgba(255, 255, 255, .25); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  @media (max-width: 859px) { .fechar { top: 2.2rem; } }
+  .fechar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .painel-corpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 0 1.5rem 1.8rem; }
+
+  /* galeria: fotos em scroll-snap, encostadas nas bordas */
+  .galeria-bloco, .galeria.ph { margin-inline: -1.5rem; }
+  .galeria { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; aspect-ratio: 4 / 3; flex: none; }
+  .slide { flex: 0 0 100%; scroll-snap-align: start; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; }
+  .galeria-bloco .dots-nav { display: flex; justify-content: center; gap: .5rem; margin-top: .4rem; }
+  .dots-nav button { width: 22px; height: 24px; display: grid; align-items: center; transition: width .4s var(--e-out); }
+  .dots-nav button::before { content: ''; height: 3px; border-radius: 2px; background: var(--line-2); transition: background-color .3s; }
+  .dots-nav button.is-on { width: 40px; }
+  .dots-nav button.is-on::before { background: var(--accent); }
+  @media (min-width: 860px) { .galeria-bloco, .galeria.ph { margin-top: 0; } }
+
+  .cabeca { display: flex; flex-direction: column; gap: .6rem; }
+  .cabeca .h3 { font-size: clamp(1.8rem, 5vw, 2.3rem); outline: none; }
+  .tags { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .tag--caramelo { border-color: transparent; background: rgba(var(--accent-rgb), .16); color: var(--accent-ink); }
+  .preco-linha { display: flex; align-items: baseline; gap: .7rem; }
+
+  /* escolhas (DS · .seg, .switch, .stepper) */
+  .campo { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .campo legend { margin-bottom: .7rem; padding: 0; }
+  .seg { display: inline-flex; padding: 4px; border-radius: var(--r-pill); border: 1px solid var(--line-2); background: var(--field); }
+  .seg--solta { flex-wrap: wrap; border-radius: var(--r-lg); }
+  .seg label { position: relative; cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: grid; place-items: center; height: 40px; min-width: 56px; padding: 0 1rem; border-radius: var(--r-pill); font-size: .75rem; font-weight: 500; color: var(--ink-2); transition: all .35s var(--e-out); }
+  .seg input:checked + span { background: var(--ink); color: var(--bg); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chaves { display: flex; flex-direction: column; gap: 1rem; }
+  .switch { position: relative; display: inline-flex; align-items: center; gap: .8rem; cursor: pointer; font-size: .875rem; color: var(--ink-2); }
+  .switch b { font-weight: 600; color: var(--accent-ink); }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .trk { position: relative; flex: none; width: 46px; height: 26px; border-radius: var(--r-pill); background: rgba(var(--ink-rgb), .16); transition: background-color .35s; }
+  .trk::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface-2); box-shadow: 0 2px 6px rgba(0, 0, 0, .25); transition: transform .45s var(--e-out); }
+  .switch input:checked + .trk { background: var(--accent); }
+  .switch input:checked + .trk::after { transform: translateX(20px); }
+  .switch input:focus-visible + .trk { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .recuo { margin: .3rem 0 0 calc(46px + .8rem); }
+  .stepper { display: inline-flex; align-items: center; height: 48px; padding: 3px; border-radius: var(--r-pill); border: 1px solid var(--line-2); background: var(--field); }
+  .stepper button { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--ink-2); transition: background-color .3s, color .3s, opacity .3s; }
+  .stepper button:hover:not(:disabled) { background: rgba(var(--accent-rgb), .14); color: var(--accent-ink); }
+  .stepper button:disabled { opacity: .35; cursor: not-allowed; }
+  .stepper button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .stepper output { min-width: 3ch; text-align: center; font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
+
+  .caixa-conta { margin-bottom: .6rem; }
+  .caixa-conta output { font-family: var(--serif); font-size: 1.5rem; font-weight: 500; color: var(--accent-ink); }
+  .sabores { display: flex; flex-direction: column; }
+  .sabores li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+  .sabores li:last-child { border-bottom: 0; }
+  .sabor { font-family: var(--serif); font-size: 1.2rem; }
+
+  .bom-saber { display: flex; flex-direction: column; gap: .55rem; padding: 1.3rem 1.4rem; font-size: .875rem; line-height: 1.55; color: var(--ink-2); }
+  .bom-saber b { font-weight: 600; color: var(--ink); }
+  .ingredientes a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
+
+  /* rodapé fixo: total + adicionar */
+  .painel-pe { flex: none; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .4rem 1.2rem; padding: .9rem 1.5rem calc(.9rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
+  .total { display: flex; flex-direction: column; gap: .15rem; }
+  .painel-pe :global(.btn) { width: 100%; }
+  .motivo { grid-column: 1 / -1; text-align: right; min-height: 1.2em; }
+  .motivo:empty { display: none; }
+</style>
+
+<script>
+  import { adicionar } from '../../scripts/sacola';
+
+  const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(v) ? 0 : 2 }).format(v);
+  const celular = matchMedia('(max-width: 859px)');
+  const paineis = new Map<string, HTMLDialogElement>();
+  let origem: HTMLElement | null = null;
+  let fechandoPeloHistorico = false;
+
+  const urlCom = (id: string | null) => {
+    const u = new URL(location.href);
+    if (id) u.searchParams.set('produto', id); else u.searchParams.delete('produto');
+    return u;
+  };
+
+  function abrir(id: string, empurrar = true) {
+    const d = paineis.get(id);
+    if (!d || d.open) return;
+    d.showModal();
+    d.querySelector('.painel-corpo')!.scrollTop = 0;
+    d.querySelector<HTMLElement>('[tabindex="-1"]')!.focus({ preventScroll: true });
+    if (empurrar) history.pushState({ painel: id }, '', urlCom(id));
+  }
+
+  // ---------- um painel ----------
+  function iniciar(d: HTMLDialogElement) {
+    const form = d.querySelector('form')!;
+    const q = <T extends Element>(s: string) => d.querySelector<T>(s);
+    const valor = (st: Element) => Number(st.querySelector('output')!.value);
+    const definir = (st: Element, n: number) => { st.querySelector('output')!.value = String(n); };
+    const sabores = [...d.querySelectorAll<HTMLElement>('.stepper[data-sabor]')];
+    const qtd = q<HTMLElement>('.stepper[data-qtd]')!;
+    const botao = q<HTMLButtonElement>('[data-adicionar]')!;
+    const motivo = q<HTMLElement>('[data-motivo]')!;
+
+    const variante = () => form.querySelector<HTMLInputElement>('input[name=variante]:checked, input[name=variante][type=hidden]')!;
+    const adicionais = () => [...form.querySelectorAll<HTMLInputElement>('input[name=adicional]:checked')];
+    const unitario = () => Number(variante().dataset.preco) + adicionais().reduce((s, i) => s + Number(i.dataset.preco), 0);
+
+    function atualizar() {
+      const v = variante(), unidades = Number(v.dataset.unidades || 0), n = valor(qtd);
+      q<HTMLOutputElement>('[data-preco-un]')!.value = fmt(unitario());
+      q<HTMLElement>('[data-escolha]')!.textContent = v.dataset.rotulo!;
+      q<HTMLOutputElement>('[data-total]')!.value = fmt(unitario() * n);
+      qtd.querySelector<HTMLButtonElement>('[data-menos]')!.disabled = n <= Number(qtd.dataset.min);
+      qtd.querySelector<HTMLButtonElement>('[data-mais]')!.disabled = n >= Number(qtd.dataset.max);
+
+      let falta = '';
+      for (const fs of d.querySelectorAll<HTMLElement>('fieldset[data-opcao]')) {
+        if (!fs.querySelector('input:checked')) { falta = `Escolha ${fs.dataset.artigo} ${fs.dataset.nome}`; break; }
+      }
+      if (sabores.length) {
+        // caixa menor do que o já escolhido: tira do último sabor para caber
+        let soma = sabores.reduce((s, st) => s + valor(st), 0);
+        for (let i = sabores.length - 1; soma > unidades && i >= 0; i--) {
+          const tirar = Math.min(valor(sabores[i]), soma - unidades);
+          definir(sabores[i], valor(sabores[i]) - tirar);
+          soma -= tirar;
+        }
+        q<HTMLOutputElement>('[data-caixa-conta]')!.value = `${soma} de ${unidades}`;
+        sabores.forEach((st) => {
+          st.querySelector<HTMLButtonElement>('[data-mais]')!.disabled = soma >= unidades;
+          st.querySelector<HTMLButtonElement>('[data-menos]')!.disabled = valor(st) <= 0;
+        });
+        const resto = unidades - soma;
+        if (resto > 0) falta ||= `Faltam ${resto} brigadeiro${resto > 1 ? 's' : ''} para completar a caixa`;
+      }
+      botao.disabled = !!falta;
+      motivo.textContent = falta;
+
+      // brigadeiros: 7 dias a partir do limite de unidades (regra de site.ts, repetida aqui ao vivo)
+      if (d.dataset.limite) {
+        const dias = unidades * n >= Number(d.dataset.limite) ? d.dataset.prazoEsp : d.dataset.prazoMin;
+        q<HTMLElement>('[data-prazo]')!.textContent = `Encomende com ${dias} dias de antecedência.`;
+      }
+      const semOvo = form.querySelector<HTMLInputElement>('input[name=semovo]')?.checked ?? false;
+      const com = q<HTMLElement>('[data-com-ovo]'), sem = q<HTMLElement>('[data-sem-ovo]');
+      if (com && sem) { com.hidden = semOvo; sem.hidden = !semOvo; }
+    }
+
+    form.addEventListener('submit', (e) => e.preventDefault());
+    form.addEventListener('change', atualizar);
+    d.addEventListener('click', (e) => {
+      const t = e.target as Element;
+      if (t === d) { d.close(); return; } // fora do painel (o ::backdrop)
+      if (t.closest('[data-fechar]')) { d.close(); return; }
+      const b = t.closest<HTMLButtonElement>('[data-mais], [data-menos]');
+      if (!b || b.disabled) return;
+      const st = b.closest<HTMLElement>('.stepper')!;
+      const n = valor(st) + (b.hasAttribute('data-mais') ? 1 : -1);
+      definir(st, Math.min(Number(st.dataset.max), Math.max(Number(st.dataset.min), n)));
+      atualizar();
+    });
+
+    botao.addEventListener('click', () => {
+      if (botao.disabled) return;
+      const opcoes: Record<string, string> = {};
+      form.querySelectorAll<HTMLInputElement>('fieldset[data-opcao] input:checked').forEach((i) => { opcoes[i.dataset.rotulo!] = i.value; });
+      const escolhidos: Record<string, number> = {};
+      sabores.forEach((st) => { if (valor(st)) escolhidos[st.dataset.sabor!] = valor(st); });
+      adicionar({
+        id: d.dataset.produto!, nome: d.dataset.nome!, variante: variante().dataset.rotulo!,
+        adicionais: adicionais().map((i) => i.dataset.rotulo!), opcoes, sabores: escolhidos,
+        semOvo: form.querySelector<HTMLInputElement>('input[name=semovo]')?.checked ?? false,
+        quantidade: valor(qtd), preco: unitario(),
+      });
+      d.close();
+    });
+
+    // galeria: o ponto acompanha a foto à vista; tocar no ponto leva até ela
+    const galeria = q<HTMLElement>('.galeria'), pontos = [...d.querySelectorAll<HTMLButtonElement>('.dots-nav button')];
+    if (galeria && pontos.length) {
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (e.intersectionRatio < .6) return;
+        const i = [...galeria.children].indexOf(e.target);
+        pontos.forEach((p, j) => p.classList.toggle('is-on', i === j));
+      }), { root: galeria, threshold: .6 });
+      [...galeria.children].forEach((s) => io.observe(s));
+      pontos.forEach((p, i) => p.addEventListener('click', () => galeria.scrollTo({ left: i * galeria.clientWidth, behavior: 'smooth' })));
+    }
+
+    // celular: arrastar a alça para baixo fecha (limiar 120px); menos que isso, a folha volta
+    const alca = q<HTMLElement>('.alca')!;
+    let y0 = 0, dy = 0, arrastando = false;
+    alca.addEventListener('pointerdown', (e) => {
+      if (!celular.matches) return;
+      arrastando = true; y0 = e.clientY; dy = 0;
+      alca.setPointerCapture(e.pointerId);
+      d.style.transition = 'none';
+    });
+    alca.addEventListener('pointermove', (e) => {
+      if (!arrastando) return;
+      dy = Math.max(0, e.clientY - y0);
+      d.style.translate = `0 ${dy}px`;
+    });
+    const soltar = () => {
+      if (!arrastando) return;
+      arrastando = false;
+      d.style.transition = '';
+      d.style.translate = ''; // a transição leva de onde parou até aberto (volta) ou fechado (some)
+      if (dy > 120) d.close();
+    };
+    alca.addEventListener('pointerup', soltar);
+    alca.addEventListener('pointercancel', soltar);
+
+    d.addEventListener('close', () => {
+      origem?.focus();
+      origem = null;
+      if (fechandoPeloHistorico) { fechandoPeloHistorico = false; return; }
+      if (history.state?.painel) history.back(); // tira a entrada que o abrir criou
+      else history.replaceState(null, '', urlCom(null)); // painel aberto pelo link direto
+    });
+
+    atualizar();
+  }
+
+  document.querySelectorAll<HTMLDialogElement>('dialog.painel').forEach((d) => { paineis.set(d.dataset.produto!, d); iniciar(d); });
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-abrir]');
+    if (!b) return;
+    origem = b;
+    abrir(b.dataset.abrir!);
+  });
+
+  // voltar/avançar do navegador (e do aparelho) fecha ou abre o painel conforme a URL
+  addEventListener('popstate', () => {
+    const id = new URL(location.href).searchParams.get('produto');
+    const aberto = document.querySelector<HTMLDialogElement>('dialog.painel[open]');
+    if (aberto && aberto.dataset.produto !== id) { fechandoPeloHistorico = true; aberto.close(); }
+    if (id && aberto?.dataset.produto !== id) abrir(id, false);
+  });
+
+  const inicial = new URL(location.href).searchParams.get('produto');
+  if (inicial) abrir(inicial, false);
+</script>

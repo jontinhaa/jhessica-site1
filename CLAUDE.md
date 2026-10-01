@@ -28,6 +28,9 @@ src/
   assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
   assets/images/produtos/{id}/, bento/, sobre/, depoimentos/  fotos por convenção de nome (docs/FOTOS.md)
   scripts/checar-fotos.mjs  npm run fotos: confere as fotos esperadas
+  components/pedido/     ProdutoCard (card .produto) e ProdutoPainel (<dialog> "Detalhes", um por produto, abre com
+                         [data-abrir="{id}"] ou ?produto={id}; o voltar do navegador fecha)
+  scripts/tilt.ts        tilt 3D com reflexo (Hero e cards)  ·  scripts/sacola.ts  sacola PROVISÓRIA em memória (11a)
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra"),
