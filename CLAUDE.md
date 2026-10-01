@@ -28,7 +28,8 @@ src/
   assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
-  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra")
+  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra"),
+                         PedidoFlutuante (pílula "Fazer pedido" até 1180px; esconda-a com data-esconde-pilula)
   components/sections/   Hero + uma seção por item de `secoes` (hoje esqueletos com título e âncora)
   pages/index.astro      Hero + seções percorrendo `secoes`
   pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)

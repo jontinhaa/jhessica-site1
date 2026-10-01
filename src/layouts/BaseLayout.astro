@@ -3,6 +3,7 @@ import { Font } from 'astro:assets';
 import { seo } from '../data/site';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import PedidoFlutuante from '../components/ui/PedidoFlutuante.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -50,6 +51,7 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
       <slot />
     </main>
     <Footer />
+    {!Astro.url.pathname.startsWith('/pedido') && <PedidoFlutuante />}
     <script>
       // [data-rv]: revela ao entrar na tela (88%; 94% com movimento reduzido), em cascata de 80ms entre vizinhos
       const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;

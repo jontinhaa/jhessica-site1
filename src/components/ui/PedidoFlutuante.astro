@@ -1,0 +1,50 @@
+---
+// Pílula "Fazer pedido" fixa no rodapé, só até 1180px (quando o Encomendar vai para a gaveta do header).
+// Aparece depois que a hero sai da tela; some com #contato, [data-esconde-pilula] ou o rodapé à vista e com a gaveta aberta.
+// O BaseLayout não a inclui em /pedido.
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { pedido } from '../../data/site';
+---
+
+<div class="pilula" data-pilula>
+  <Button href={pedido.href}><Icon name="solar:bag-4-linear" />Fazer pedido</Button>
+</div>
+
+<style>
+  .pilula { display: none; }
+  @media (max-width: 1180px) {
+    .pilula {
+      position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 80;
+      display: flex; justify-content: center; pointer-events: none;
+      opacity: 0; translate: 0 18px; visibility: hidden;
+      transition: opacity .4s var(--e-out), translate .4s var(--e-out), visibility 0s .4s;
+    }
+    .pilula.on { opacity: 1; translate: none; visibility: visible; transition: opacity .4s var(--e-out), translate .4s var(--e-out), visibility 0s; }
+    /* sombra da calda (DS) + sombra de elevação, para descolar do conteúdo que passa por baixo */
+    .pilula :global(.btn) { pointer-events: auto; box-shadow: 0 12px 26px -14px rgba(168, 101, 42, .9), var(--shadow-2); }
+    /* o fim da página nunca fica escondido atrás da pílula */
+    :global(main) { padding-bottom: calc(52px + 32px + env(safe-area-inset-bottom)); }
+  }
+  @media (prefers-reduced-motion: reduce) { .pilula { translate: none; } }
+</style>
+
+<script>
+  const pilula = document.querySelector<HTMLElement>('[data-pilula]');
+  if (pilula) {
+    const hero = document.getElementById('top');
+    const drawer = document.getElementById('drawer');
+    const avista = new Set<Element>();
+    let heroFora = !hero, gaveta = false;
+    const atualizar = () => pilula.classList.toggle('on', heroFora && !gaveta && avista.size === 0);
+
+    if (hero) new IntersectionObserver(([e]) => { heroFora = !e.isIntersecting; atualizar(); }).observe(hero);
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => (e.isIntersecting ? avista.add(e.target) : avista.delete(e.target)));
+      atualizar();
+    });
+    document.querySelectorAll('#contato, [data-esconde-pilula], body > footer').forEach((el) => io.observe(el));
+    if (drawer) new MutationObserver(() => { gaveta = drawer.classList.contains('open'); atualizar(); }).observe(drawer, { attributes: true, attributeFilter: ['class'] });
+    atualizar();
+  }
+</script>
