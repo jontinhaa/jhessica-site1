@@ -2,7 +2,9 @@
 // BENTO CAKE · o bolo da festa (antiga seção Encomendas). Esqueleto: título e âncora prontos, conteúdo por fazer.
 // Referência (design_system2.html · 03 Componentes): formulário em vidro "Conta pra gente a festa"
 // (.field/.input/.select, .seg retirada|entrega, .switch, .stepper) + .comanda.
-// Massas, recheios e preço do produto "bento-cake" em src/data/cardapio.ts; prazos em regrasPedido (site.ts).
+// Massas, recheios e preço do produto "bento-cake" em src/data/cardapio.ts. Prazo: regrasPedido.prazoEspecialDias (7 dias,
+// Bento está em categoriasPrazoEspecial), nunca o prazo mínimo de 2 dias.
+// .lead combinado: "Um bolo de aniversário pequeno e bonito, com receita sem glúten e sem leite, para a festa inteira dividir."
 import SectionHeading from '../ui/SectionHeading.astro';
 import type { Secao } from '../../data/site';
 

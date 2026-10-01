@@ -8,7 +8,7 @@ import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Icon from '../ui/Icon.astro';
 import Doodle from '../ui/Doodle.astro';
-import { compromisso, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
+import { compromisso, redes, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
@@ -19,6 +19,8 @@ const foto = Object.values(fotos)[0]?.default;
 const zeros = ['ingredientes com glúten', 'com leite ou derivados', 'conservantes'];
 const cozinha = textoCozinha();
 const entram = compromisso.ingredientesQueEntram;
+// glúten e leite já têm o bloco deles; aqui só os "outros"
+const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' && k !== 'leite').map(([, r]) => r);
 ---
 
 <section class="sec sec--tint" id={secao.id}>
@@ -58,12 +60,17 @@ const entram = compromisso.ingredientesQueEntram;
             </div>
           </aside>
 
-          {cozinha && <p class="t-m" data-rv>{cozinha}</p>}
+          {cozinha && (
+            <p class="t-m cozinha" data-rv>
+              {cozinha}
+              {redes.whatsapp && <> <a href={redes.whatsapp} target="_blank" rel="noopener">Falar no WhatsApp</a></>}
+            </p>
+          )}
 
           <div class="alergenos" data-rv>
             <h3 class="t-bold-s">Outros alérgenos</h3>
-            <ul class="tags">{Object.values(rotulosAlergenos).map((r) => <li class="tag">{r}</li>)}</ul>
-            <p class="t-s">Cada produto do cardápio mostra o que contém. Tem alguma alergia? Conte no pedido.</p>
+            <ul class="tags">{outros.map((r) => <li class="tag">{r}</li>)}</ul>
+            <p class="t-s">Todas as receitas levam ovo e oleaginosas (amêndoas ou castanha de caju) e podem conter soja. Tem opção sem ovos: é só pedir.</p>
             <a class="link-r" href="/pedido">
               Ver o cardápio<Icon name="solar:arrow-right-linear" />
               <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
@@ -115,6 +122,7 @@ const entram = compromisso.ingredientesQueEntram;
   .bom-saber .kicker { margin-bottom: .5rem; }
   .bom-saber .h4 { font-size: 1.35rem; margin-bottom: .6rem; }
 
+  .cozinha a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
   .alergenos { display: flex; flex-direction: column; align-items: flex-start; gap: .8rem; }
   .tags { display: flex; flex-wrap: wrap; gap: .5rem; }
   .alergenos .link-r { margin-top: .6rem; }

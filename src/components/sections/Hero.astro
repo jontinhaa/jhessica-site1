@@ -8,6 +8,7 @@ import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import Doodle from '../ui/Doodle.astro';
 import { scallop } from '../ui/mark';
+import { contato, regrasPedido } from '../../data/site';
 
 // Título partido em letras já no build: nada pisca antes do JS e a entrada 3D roda só com CSS.
 let n = 0;
@@ -59,7 +60,7 @@ const faixa = [
       </div>
       <ul class="hero-badges" data-hero style="--i:4">
         <li><Icon name="solar:hand-heart-linear" /><span>Feito à mão</span></li>
-        <li><Icon name="solar:calendar-linear" /><span>Pedidos com 2 dias de antecedência</span></li>
+        <li><Icon name="solar:calendar-linear" /><span>Pedidos com {regrasPedido.prazoMinimoDias} dias de antecedência</span></li>
         <li><Icon name="solar:delivery-linear" /><span>Entrega aos domingos</span></li>
       </ul>
     </div>
@@ -80,7 +81,7 @@ const faixa = [
           <div>
             <span class="kicker">Pensado para</span>
             <p class="hc-mid">Restrições alimentares</p>
-            <p class="micro">Sem deixar ninguém de fora</p>
+            <p class="micro">Sem glúten e sem leite na receita</p>
           </div>
           <div class="well"><Icon name="solar:hand-heart-linear" /></div>
         </div>
@@ -102,7 +103,7 @@ const faixa = [
     </div>
   </div>
 
-  <p class="hero-v">Fechados aos sábados</p>
+  <p class="hero-v">{contato.atendimento.textoCurto}</p>
   <div class="scroll-cue" data-hero style="--i:5" aria-hidden="true"><span class="ln"></span>Role devagar</div>
   <!-- WCAG 2.2.2: vídeo, açúcar e faixa param juntos -->
   <button class="hero-pause" type="button" aria-label="Pausar vídeo">

@@ -9,7 +9,7 @@ import SectionHeading from '../ui/SectionHeading.astro';
 import Icon from '../ui/Icon.astro';
 import Doodle from '../ui/Doodle.astro';
 import type { Secao } from '../../data/site';
-import { categorias, formatarPreco, getProdutosPorCategoria, precoMinimo, type CategoriaId } from '../../data/cardapio';
+import { categorias, formatarPreco, getProdutosPorCategoria, precoMinimo, precosDe, type CategoriaId } from '../../data/cardapio';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
@@ -33,7 +33,7 @@ const vitrine = categorias.map((cat) => {
   const produtos = getProdutosPorCategoria(cat.id);
   const esgotado = produtos.every((p) => !p.disponivel);
   // esgotado: o preço continua visível (menor preço entre todos os produtos da categoria)
-  const precos = produtos.filter((p) => esgotado || p.disponivel).flatMap((p) => p.variantes.map((v) => v.preco));
+  const precos = produtos.filter((p) => esgotado || p.disponivel).flatMap(precosDe);
   const minimo = precoMinimo(cat.id) ?? Math.min(...precos);
   return { ...cat, ...bloco[cat.id], foto: fotoDe(cat.id), esgotado, aPartirDe: new Set(precos).size > 1, preco: formatarPreco(minimo) };
 });
@@ -43,7 +43,7 @@ const vitrine = categorias.map((cat) => {
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
     <div class="sec-body">
-      <p class="lead">Tudo sem glúten e sem leite, feito em pequenas fornadas.</p>
+      <p class="lead">Receitas sem glúten e sem leite, feitas em pequenas fornadas.</p>
 
       <div class="bento">
         {vitrine.map((c) => (

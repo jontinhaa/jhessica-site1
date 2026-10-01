@@ -4,7 +4,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import { marca } from '../data/site';
-import { categorias, formatarPreco, getProdutosPorCategoria } from '../data/cardapio';
+import { categorias, emBreve, formatarPreco, getProdutosPorCategoria } from '../data/cardapio';
 ---
 
 <BaseLayout title={`Cardápio completo · ${marca.nome}`}>
@@ -19,9 +19,9 @@ import { categorias, formatarPreco, getProdutosPorCategoria } from '../data/card
             {getProdutosPorCategoria(cat.id).map((p) => (
               <li>
                 <strong>{p.nome}</strong>
-                {' · '}{p.variantes.map((v) => `${v.rotulo} ${formatarPreco(v.preco)}`).join(' · ')}
+                {' · '}{emBreve(p) ? 'Em breve' : p.variantes.map((v) => `${v.rotulo} ${v.preco === null ? 'em breve' : formatarPreco(v.preco)}`).join(' · ')}
                 {p.adicionais?.map((a) => ` · ${a.rotulo} +${formatarPreco(a.preco)}`)}
-                {p.opcoes?.map((o) => <span class="t-s">{o.rotulo}: {o.valores.join(', ')}</span>)}
+                {p.opcoes?.map((o) => <span class="t-s">{o.rotulo}: {o.valores.map((v) => v.nome).join(', ')}</span>)}
               </li>
             ))}
           </ul>

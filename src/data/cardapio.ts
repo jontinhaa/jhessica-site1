@@ -1,14 +1,16 @@
 // Fonte única dos produtos. A seção Cardápio da home, a página /pedido e o futuro carrinho leem daqui.
-// Preços em reais (número). Imagens ainda são caminhos reservados: os arquivos não existem.
+// Preços em reais (número); null = ainda sem preço: o produto aparece como "Em breve" e fica fora do "a partir de".
+// `imagem` ainda é caminho reservado; as fotos por produto seguem a convenção de getImagensProduto (fim do arquivo).
+import type { ImageMetadata } from 'astro';
 
-export type Alergeno = 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'soja';
+export type Alergeno = 'gluten' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'soja';
 
-/** Muda o preço (peso, tamanho da caixa). */
-export interface Variante { id: string; rotulo: string; preco: number }
+/** Muda o preço (peso, tamanho da caixa). `unidades` conta para o prazo especial dos brigadeiros. */
+export interface Variante { id: string; rotulo: string; preco: number | null; unidades?: number }
 /** Soma ao preço (cobertura). */
 export interface Adicional { id: string; rotulo: string; preco: number }
-/** Escolha que não muda o preço (massa, recheio, sabor). */
-export interface Opcao { id: string; rotulo: string; valores: string[] }
+/** Escolha que não muda o preço (massa, recheio, sabor). `contem` soma alérgenos aos do produto. */
+export interface Opcao { id: string; rotulo: string; valores: { nome: string; contem?: Alergeno[] }[] }
 
 export type CategoriaId = 'bolos' | 'paes' | 'fatias' | 'brigadeiros' | 'bento';
 
@@ -21,8 +23,12 @@ export interface Produto {
   nome: string;
   descricao: string;
   imagem: string;
-  alergenos: Alergeno[];
+  alergenos: { contem: Alergeno[]; podeConter: Alergeno[] };
+  permiteSemOvo: boolean;
   disponivel: boolean;
+  maisPedido?: boolean;
+  /** Caixa montada pelo cliente com sabores misturados (interface ainda por fazer). */
+  montarCaixa?: boolean;
   variantes: Variante[];
   adicionais?: Adicional[];
   opcoes?: Opcao[];
@@ -30,14 +36,14 @@ export interface Produto {
 
 export const categorias: Categoria[] = [
   { id: 'bolos', nome: 'Bolos caseirinhos', tipo: 'Café da tarde', chamada: 'O bolo do café da tarde, em 500 g.' },
-  { id: 'paes', nome: 'Pães artesanais', tipo: 'Pão de todo dia', chamada: 'Batata-doce e integral, de 600 a 800 g.' },
+  { id: 'paes', nome: 'Pães artesanais', tipo: 'Pão de todo dia', chamada: 'Batata-doce e grãos, de 600 a 800 g.' },
   { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.' },
-  { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6.' },
+  { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6 ou 12.' },
   { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem glúten e sem leite, para a festa inteira dividir.' },
 ];
 
 const img = (id: string) => `/images/cardapio/${id}.webp`; // TODO: fotos reais
-const bolo500 = (preco: number): Variante[] => [{ id: '500g', rotulo: '500 g', preco }];
+const bolo500 = (preco: number | null): Variante[] => [{ id: '500g', rotulo: '500 g', preco }];
 const cobertura: Adicional[] = [{ id: 'cobertura', rotulo: 'Cobertura', preco: 10 }];
 const pesosPao: Variante[] = [
   { id: '600g', rotulo: '600 g', preco: 30 },
@@ -46,48 +52,86 @@ const pesosPao: Variante[] = [
 ];
 const fatia: Variante[] = [{ id: 'fatia', rotulo: 'Fatia', preco: 30 }];
 
-// TODO: confirmar alérgenos com a cliente em todos os produtos (paçoca → amendoim? beijinho → coco?).
+// Padrão de todos os produtos (respostas da cliente). TODO: confirmar se brigadeiro leva ovo.
+const base = {
+  alergenos: { contem: ['ovo', 'castanhas'], podeConter: ['soja', 'gluten', 'leite'] } as Produto['alergenos'],
+  permiteSemOvo: true, // TODO: confirmar se a opção sem ovos muda preço ou prazo
+  disponivel: true,
+};
+
 // TODO: descrições finais com a cliente; as de agora só repetem o que já foi combinado.
 export const produtos: Produto[] = [
-  { id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), alergenos: [], disponivel: true, variantes: bolo500(40), adicionais: cobertura },
-  { id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'), alergenos: [], disponivel: true, variantes: bolo500(40), adicionais: cobertura },
-  { id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'), alergenos: [], disponivel: true, variantes: bolo500(45) },
-  { id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'), alergenos: [], disponivel: true, variantes: bolo500(45) },
+  { ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), variantes: bolo500(40), adicionais: cobertura },
+  { ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'), variantes: bolo500(40), adicionais: cobertura },
+  { ...base, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'), variantes: bolo500(45), maisPedido: true },
+  { ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'), variantes: bolo500(45) },
+  // TODO: preço com a cliente
+  { ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g.', imagem: img('bolo-de-maracuja'), variantes: bolo500(null) },
 
-  { id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), alergenos: [], disponivel: true, variantes: pesosPao },
-  // TODO: nome definitivo com a cliente
-  { id: 'pao-integral', categoria: 'paes', nome: 'Pão integral sem glúten', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-integral'), alergenos: [], disponivel: true, variantes: pesosPao },
+  { ...base, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true },
+  { ...base, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao },
+  // TODO: preços com a cliente
+  { ...base, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao.map((v) => ({ ...v, preco: null })) },
 
-  { id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), alergenos: [], disponivel: true, variantes: fatia },
-  { id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), alergenos: [], disponivel: true, variantes: fatia },
-  { id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), alergenos: [], disponivel: true, variantes: fatia },
+  { ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia },
+  { ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
+  { ...base, id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), variantes: fatia },
 
-  // TODO: caixa com 12 quando a cliente definir o preço
   {
-    id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 brigadeiros.', imagem: img('caixa-de-brigadeiros'), alergenos: [], disponivel: true,
-    variantes: [{ id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30 }],
-    opcoes: [{ id: 'sabor', rotulo: 'Sabor', valores: ['Cacau', 'Paçoca', 'Beijinho'] }],
+    ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 ou 12 brigadeiros, com sabores misturados.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
+    variantes: [
+      { id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30, unidades: 6 },
+      { id: 'caixa-12', rotulo: 'Caixa com 12', preco: 55, unidades: 12 },
+    ],
+    opcoes: [{ id: 'sabor', rotulo: 'Sabor', valores: [
+      { nome: 'Cacau' },
+      { nome: 'Paçoca', contem: ['amendoim'] }, // TODO: confirmar com a cliente
+      { nome: 'Beijinho', contem: ['coco'] },
+    ] }],
   },
 
   {
-    id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário pequeno, com massa e recheio à escolha.', imagem: img('bento-cake'), alergenos: [], disponivel: true,
+    ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário pequeno, com massa e recheio à escolha.', imagem: img('bento-cake'),
     variantes: [{ id: 'unico', rotulo: 'Bento Cake', preco: 150 }],
     opcoes: [
-      { id: 'massa', rotulo: 'Massa', valores: ['Baunilha', 'Chocolate'] },
-      // TODO: nome definitivo de "Creme de baunilha com morangos" com a cliente (não usar "Ninho")
-      { id: 'recheio', rotulo: 'Recheio', valores: ['Maracujá', 'Creme de baunilha com morangos', 'Chocolate', 'Limão siciliano com frutas vermelhas'] },
+      { id: 'massa', rotulo: 'Massa', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate' }] },
+      { id: 'recheio', rotulo: 'Recheio', valores: [{ nome: 'Maracujá' }, { nome: 'Creme branco com morangos' }, { nome: 'Chocolate' }, { nome: 'Limão siciliano com frutas vermelhas' }] },
     ],
   },
 ];
 
 export const getProdutosPorCategoria = (categoriaId: CategoriaId) => produtos.filter((p) => p.categoria === categoriaId);
 
+/** Preços definidos das variantes (sem os null de "Em breve"). */
+export const precosDe = (p: Produto) => p.variantes.flatMap((v) => (v.preco === null ? [] : [v.preco]));
+
+/** Sem nenhum preço definido: aparece como "Em breve", sem botão de adicionar. */
+export const emBreve = (p: Produto) => precosDe(p).length === 0;
+
 /** Menor preço entre os produtos disponíveis da categoria ("a partir de"); null se não houver nenhum. */
 export function precoMinimo(categoriaId: CategoriaId): number | null {
-  const precos = getProdutosPorCategoria(categoriaId).filter((p) => p.disponivel).flatMap((p) => p.variantes.map((v) => v.preco));
+  const precos = getProdutosPorCategoria(categoriaId).filter((p) => p.disponivel).flatMap(precosDe);
   return precos.length ? Math.min(...precos) : null;
 }
 
 /** "R$ 30" quando inteiro, "R$ 32,50" quando não. */
 export const formatarPreco = (valor: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(valor) ? 0 : 2 }).format(valor);
+
+// Fotos por produto: src/assets/images/produtos/{id}/capa.*, corte.*, extra-1.*, extra-2.*…
+const fotosProdutos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/produtos/*/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+
+/** Fotos de um produto pela convenção de pastas; o que faltar fica undefined (extras: lista vazia). */
+export function getImagensProduto(id: string) {
+  const r: { capa?: ImageMetadata; corte?: ImageMetadata; extras: ImageMetadata[] } = { extras: [] };
+  const extras: [number, ImageMetadata][] = [];
+  for (const [caminho, mod] of Object.entries(fotosProdutos)) {
+    const [, pasta, nome] = caminho.match(/produtos\/([^/]+)\/([^/]+)\.\w+$/) ?? [];
+    if (pasta !== id) continue;
+    if (nome === 'capa' || nome === 'corte') r[nome] = mod.default;
+    const n = nome.match(/^extra-(\d+)$/)?.[1];
+    if (n) extras.push([Number(n), mod.default]);
+  }
+  r.extras = extras.sort((a, b) => a[0] - b[0]).map(([, img]) => img);
+  return r;
+}

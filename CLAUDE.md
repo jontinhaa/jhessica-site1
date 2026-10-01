@@ -19,9 +19,11 @@ src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
   styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…),
                          .tag, .link-r, placeholder .ph e o revelar [data-rv]
-  data/site.ts           marca, seo, contato/redes, regrasPedido, compromisso (+ textoAcucar/textoCozinha), rotulosAlergenos,
+  data/site.ts           marca, seo, contato/redes, regrasPedido, conservacao, compromisso (+ textoAcucar/textoCozinha),
+                         rotulosAlergenos,
                          secoes (ordem da home) e menu
-  data/cardapio.ts       categorias (nome, tipo, chamada) e produtos (variantes, adicionais, opções), precoMinimo, formatarPreco
+  data/cardapio.ts       categorias e produtos (variantes, opções com alérgenos, contem/podeConter), precoMinimo, emBreve,
+                         formatarPreco, getImagensProduto (produtos/{id}/capa|corte|extra-N)
   assets/images/cardapio/  fotos da vitrine ({categoria}.jpg|webp) + FONTES-PROVISORIAS.md
   assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
@@ -71,13 +73,14 @@ src/
 
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
-- Confirmar com a cliente os dados de `compromisso` (site.ts): cozinha sem glúten/sem leite, açúcar refinado e a lista
-  "O que entra". Enquanto forem null, a seção não afirma nada sobre eles. O numeral "0 conservantes" é fixo no
-  componente e também precisa de confirmação.
+- Ainda a confirmar com a cliente (TODO nos dados): entrega só aos domingos, se brigadeiro leva ovo, paçoca com
+  amendoim, se "sem ovos" muda preço/prazo, preços de Bolo de maracujá e Pão de cebola, textos de "O que entra".
+  O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
+- Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
 - **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver
   `src/assets/images/cardapio/FONTES-PROVISORIAS.md`): substituir pelas fotos reais da Jhessica e ajustar os `alt`.
 - Página /design-system não pode ir para produção (já garantido: a rota só existe no dev).
-4. Preencher `contact` em `src/data/site.ts` e definir o destino do formulário de encomenda.
+4. Definir o destino do formulário de encomenda (contato já preenchido em `src/data/site.ts`).
 
 ## Development
 
