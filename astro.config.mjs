@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig, fontProviders } from 'astro/config';
+import { loadEnv } from 'vite';
 
 // Fontes do design system (../design_system2.html), baixadas e servidas pelo próprio Astro.
 const google = fontProviders.google();
@@ -18,9 +19,11 @@ const designSystemSoEmDev = {
 
 // site/base por variável de ambiente: padrão "/" (local e domínio futuro); o deploy de teste no GitHub Pages usa
 // SITE_URL=https://jontinhaa.github.io e BASE_PATH=/jhessica-site1/ (.github/workflows/deploy.yml).
+// lidas com o loadEnv do Vite (ambiente + .env), sem depender dos tipos do Node
+const env = loadEnv('', '.', '');
 export default defineConfig({
-  site: process.env.SITE_URL,
-  base: process.env.BASE_PATH || '/',
+  site: env.SITE_URL || undefined,
+  base: env.BASE_PATH || '/',
   integrations: [designSystemSoEmDev],
   fonts: [
     {
