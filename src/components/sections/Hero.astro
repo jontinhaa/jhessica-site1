@@ -342,14 +342,15 @@ const faixa = [
       });
       ctx.globalAlpha = 1;
     }
-    readColor(); size();
+    size();
     addEventListener('resize', size);
-    // lê a cor no próximo quadro: ler na hora forçava um recálculo de estilo da página inteira no clique
-    new MutationObserver(() => requestAnimationFrame(readColor)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    // a cor só é lida com o açúcar rodando, e no próximo quadro: ler na hora (ou no celular, sem açúcar)
+    // forçava um recálculo de estilo extra na troca de tema
+    new MutationObserver(() => { if (raf) requestAnimationFrame(readColor); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     hero.addEventListener('pointermove', (e) => { const r = cv.getBoundingClientRect(); mx = (e.clientX - r.left) * DPR; my = (e.clientY - r.top) * DPR; });
     hero.addEventListener('pointerleave', () => { mx = my = -1e4; });
     return (on: boolean) => {
-      if (on && !raf) raf = requestAnimationFrame(frame);
+      if (on && !raf) { readColor(); raf = requestAnimationFrame(frame); }
       if (!on) { cancelAnimationFrame(raf); raf = 0; }
     };
   })();
