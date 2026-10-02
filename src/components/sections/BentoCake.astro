@@ -1,20 +1,171 @@
 ---
-// BENTO CAKE · o bolo da festa (antiga seção Encomendas). Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · 03 Componentes): formulário em vidro "Conta pra gente a festa"
-// (.field/.input/.select, .seg retirada|entrega, .switch, .stepper) + .comanda.
-// Massas, recheios e preço do produto "bento-cake" em src/data/cardapio.ts. Prazo: regrasPedido.prazoEspecialDias (7 dias,
-// Bento está em categoriasPrazoEspecial), nunca o prazo mínimo de 2 dias.
-// .lead combinado: "Um bolo de aniversário pequeno e bonito, com receita sem glúten e sem leite, para a festa inteira dividir."
+// BENTO CAKE · o bolo de aniversário pequeno: preço, sabores, prazo e como pedir, em segundos.
+// DS · Padrão B (.split foto 1.18fr | texto .82fr), .carimbo, .stat-list, .tag--caramelo, .cap, .ph.
+// Dados: produto da categoria "bento" (preço, massas, recheios) em src/data/cardapio.ts; prazo por prazoDias (7 dias,
+// sempre); WhatsApp em contato; quantidade de modelos em fotosBento (site.ts). Nada de valor fixo aqui.
+// Fotos em src/assets/images/bento/: destaque.* e modelo-1…N.* (sem foto → placeholder do DS).
+// Movimento: a foto "assenta" presa à rolagem (animation-timeline: view()); sem suporte ou com movimento reduzido,
+// já vem assentada e só aparece (data-rv). O carimbo só gira na tela.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
-import type { Secao } from '../../data/site';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import Doodle from '../ui/Doodle.astro';
+import { url } from '../../lib/url';
+import { linkWhatsApp } from '../../lib/pedido/mensagem';
+import { formatarPreco, precosDe, produtos } from '../../data/cardapio';
+import { fotosBento, prazoDias, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
+
+const bento = produtos.find((p) => p.categoria === 'bento')!;
+const preco = precosDe(bento)[0];
+const valores = (opcao: string) => bento.opcoes?.find((o) => o.id === opcao)?.valores.map((v) => v.nome) ?? [];
+const massas = valores('massa');
+const recheios = valores('recheio');
+const prazo = prazoDias(bento.categoria);
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+const stats = [
+  { valor: preco === undefined ? 'Em breve' : formatarPreco(preco), unidade: preco === undefined ? '' : 'por bolo' },
+  { valor: plural(massas.length, 'massa', 'massas'), unidade: '' },
+  { valor: plural(recheios.length, 'recheio', 'recheios'), unidade: '' },
+  { valor: plural(prazo, 'dia', 'dias'), unidade: 'de antecedência' },
+];
+
+const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/bento/*.{jpg,jpeg,png,webp}', { eager: true });
+const foto = (nome: string) => Object.entries(fotos).find(([caminho]) => caminho.split('/').pop()!.replace(/\.\w+$/, '') === nome)?.[1].default;
+const destaque = foto('destaque');
+const variantesPh = ['ph--caramelo', 'ph--fruta', 'ph--pista'];
+// TODO: nomes dos modelos com a cliente
+const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1, foto: foto(`modelo-${i + 1}`), ph: variantesPh[i % variantesPh.length] }));
 ---
 
 <section class="sec" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "BentoCake" */}</div>
+    <div class="sec-body">
+      <div class="split">
+        <figure class="foto" data-rv>
+          <div class:list={['media', 'assenta', !destaque && ['ph', 'ph-empty', 'ph--noite']]} data-ph={destaque ? undefined : 'bento/destaque'}>
+            {/* TODO: alt final com a foto real */}
+            {destaque && <Image src={destaque} alt="Bento cake branco com vela acesa, numa embalagem aberta" widths={[480, 720, 960, 1280]} sizes="(max-width: 860px) calc(100vw - 40px), (max-width: 1400px) 52vw, 720px" loading="lazy" />}
+          </div>
+          <div class="carimbo" aria-hidden="true">
+            <svg class="ring" viewBox="0 0 120 120"><defs><path id="bento-circ" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" /></defs><text><textPath href="#bento-circ" textLength="286" lengthAdjust="spacing">sem glúten · sem leite · feito à mão · </textPath></text></svg>
+            <Doodle name="batedor" class="core" />
+          </div>
+        </figure>
+
+        <div class="copy">
+          <p class="lead" data-rv>Um bolo de aniversário pequeno e bonito, com receita sem glúten e sem leite, para a festa inteira dividir.</p>
+
+          <div class="stats" data-rv>
+            <ul class="stat-list">
+              {stats.map((s) => <li><b>{s.valor}</b>{s.unidade && <em>{s.unidade}</em>}</li>)}
+            </ul>
+            <p class="hand nota" aria-hidden="true">com vela e tudo — J.</p>
+          </div>
+
+          <div class="sabores" data-rv>
+            <h3 class="t-bold-s">Massas</h3>
+            <ul class="tags">{massas.map((m) => <li class="tag tag--caramelo">{m}</li>)}</ul>
+            <h3 class="t-bold-s">Recheios</h3>
+            <ul class="tags">{recheios.map((r) => <li class="tag tag--caramelo">{r}</li>)}</ul>
+            <p class="t-s">Decoração nos modelos da casa, pensados para sair sempre bonitos.</p>
+          </div>
+
+          <div class="acoes" data-rv>
+            <Button href={url(`/pedido?produto=${bento.id}`)}><Icon name="solar:bag-4-linear" />Encomendar um Bento</Button>
+            <a class="link-r" href={linkWhatsApp('Olá, Jhessica! Quero tirar uma dúvida sobre o Bento Cake.')} target="_blank" rel="noopener">
+              <Icon name="simple-icons:whatsapp" />Tirar dúvidas no WhatsApp
+              <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modelos" data-rv>
+        <h3 class="t-bold-s">Modelos da casa</h3>
+        <ul class="fileira">
+          {modelos.map((m) => (
+            <li class:list={['modelo', !m.foto && ['ph', 'ph-empty', m.ph]]} data-ph={m.foto ? undefined : `bento/modelo-${m.n}`}>
+              {m.foto && <Image src={m.foto} alt={`Bento Cake, modelo ${m.n}`} widths={[300, 480, 640]} sizes="(max-width: 860px) 76vw, (max-width: 1400px) 30vw, 420px" loading="lazy" />}
+              <span class="cap">Modelo {m.n}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  .split { align-items: start; }
+  .foto { position: relative; }
+  .media img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* carimbo do DS: texto em círculo girando 22s, batedor no centro; gira só na tela (.gira, posto pelo script) */
+  .carimbo { position: absolute; top: -2.2rem; right: -2.2rem; z-index: 2; width: 132px; height: 132px; color: var(--accent); border-radius: 50%; background: var(--bg); }
+  .carimbo .ring { width: 100%; height: 100%; animation: carimbo-gira 22s linear infinite paused; }
+  .carimbo.gira .ring { animation-play-state: running; }
+  .carimbo text { font-family: var(--sans); font-size: 8.6px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; fill: currentColor; }
+  .carimbo :global(.core) { position: absolute; left: 31%; top: 31%; width: 38%; height: 38%; color: var(--ink); }
+  @keyframes carimbo-gira { to { transform: rotate(360deg); } }
+
+  .copy { display: flex; flex-direction: column; gap: 2rem; }
+  .copy .lead { max-width: none; }
+
+  /* DS · .stat-list: valor em serif caramelo, unidade em itálico */
+  .stats { position: relative; }
+  .stat-list li { display: flex; align-items: baseline; gap: .6rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .stat-list li:last-child { border-bottom: 0; }
+  .stat-list b { font-family: var(--serif); font-weight: 400; font-size: 1.8rem; line-height: 1; color: var(--accent-ink); white-space: nowrap; }
+  .stat-list em { font-family: var(--serif); font-size: 1.05rem; font-style: italic; color: var(--ink-2); }
+  .nota { position: absolute; top: -.4rem; right: 0; rotate: -5deg; font-size: 1.35rem; pointer-events: none; }
+
+  .sabores { display: flex; flex-direction: column; gap: .7rem; }
+  .sabores .t-bold-s:not(:first-child) { margin-top: .6rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .tag--caramelo { border-color: transparent; background: rgba(var(--accent-rgb), .16); color: var(--accent-ink); }
+  .sabores .t-s { margin-top: .4rem; }
+
+  .acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
+
+  /* modelos da casa: 3 lado a lado; no celular, fileira com scroll-snap (~1,3 visíveis, sem barra) */
+  .modelos { display: flex; flex-direction: column; gap: 1rem; margin-top: clamp(3rem, 6vw, 5rem); }
+  .fileira { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.6rem); }
+  .modelo { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: var(--r-sm); }
+  .modelo img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* a foto chega deitada e assenta enquanto a seção entra (só transform e opacity) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* só longhands: o minificador junta `animation` + `animation-timeline` num atalho que o Chrome rejeita */
+      .assenta { transform-origin: 50% 100%; animation-name: assentar; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+      :global(.rv-on) .foto[data-rv] { opacity: 1; translate: none; transition: none; } /* quem aparece é o "assentar" */
+    }
+  }
+  @keyframes assentar { from { transform: perspective(1200px) rotateX(30deg) translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
+
+  @media (max-width: 859px) {
+    .media { height: auto; aspect-ratio: 4 / 5; }
+    .carimbo { top: -1.4rem; right: .6rem; width: 96px; height: 96px; }
+    .stat-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.2rem; }
+    .stat-list li { flex-direction: column; gap: .35rem; }
+    .stat-list li:nth-last-child(2) { border-bottom: 0; }
+    .nota { top: -1.6rem; }
+    .acoes { flex-direction: column; align-items: stretch; }
+    .acoes :global(.btn) { width: 100%; }
+    .acoes .link-r { align-self: center; }
+    .fileira { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(var(--pad) * -1); padding-inline: var(--pad); scroll-padding-inline: var(--pad); }
+    .fileira::-webkit-scrollbar { display: none; }
+    .modelo { flex: 0 0 76%; scroll-snap-align: start; }
+  }
+</style>
+
+<script>
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('gira', e.isIntersecting)));
+  document.querySelectorAll('.carimbo').forEach((c) => io.observe(c));
+</script>

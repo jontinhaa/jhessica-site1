@@ -78,6 +78,8 @@ ul, ol { list-style: none; }
 .surface { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
 /* legenda sobre foto */
 .cap { position: absolute; left: 1rem; bottom: 1rem; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .75rem; border-radius: var(--r-xs); font-size: .58rem; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: #FBF3E6; background: rgba(20, 13, 10, .42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+/* celular: legenda sem desfoque sobre a foto (mesma regra do vidro sobre o vídeo); fundo um pouco mais denso no lugar */
+@media (max-width: 768px) { .cap { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 13, 10, .6); } }
 
 /* ---------- texto + foto lado a lado (seção 04 do design system); .rev põe a foto à direita ---------- */
 .split { display: grid; grid-template-columns: 1.18fr .82fr; gap: clamp(2rem, 4.5vw, 4.5rem); align-items: center; }
