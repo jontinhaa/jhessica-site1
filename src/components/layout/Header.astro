@@ -82,7 +82,7 @@ import Icon from '../ui/Icon.astro';
   /* celular: sem desfoque (refazia o blur do vídeo a cada quadro); o véu fica mais denso para o efeito ser o mesmo */
   @media (max-width: 768px) {
     .nav { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(var(--bg-rgb), .6); }
-    .nav.docked { background: rgba(var(--bg-rgb), .92); }
+    .nav.docked { background: rgba(var(--bg-rgb), .97); } /* sem blur, o texto que passa por baixo não pode aparecer */
   }
 </style>
 
