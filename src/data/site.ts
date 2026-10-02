@@ -1,5 +1,6 @@
 // Configuração central. Header, Footer, SEO e a ordem das seções da home leem daqui.
 import type { Alergeno, CategoriaId } from './cardapio';
+import { url } from '../lib/url.ts';
 
 export const marca = {
   nome: 'Jhessica em Cozinha Saudável',
@@ -157,7 +158,7 @@ export const secoes: Secao[] = [
   { id: 'contato', rotulo: 'Contato', titulo: 'Tem um sabor', tituloDestaque: 'esperando por você.', noMenu: true },
 ];
 
-// Menu do Header e do rodapé: href absoluto (/#id) para funcionar também fora da home.
-export const menu = secoes.filter((s) => s.noMenu).map((s) => ({ href: `/#${s.id}`, rotulo: s.rotuloMenu ?? s.rotulo }));
+// Menu do Header e do rodapé: href absoluto (url('/#id')) para funcionar também fora da home.
+export const menu = secoes.filter((s) => s.noMenu).map((s) => ({ href: url(`/#${s.id}`), rotulo: s.rotuloMenu ?? s.rotulo }));
 
-export const pedido = { href: '/pedido', rotulo: 'Encomendar' } as const;
+export const pedido = { href: url('/pedido'), rotulo: 'Encomendar' } as const;

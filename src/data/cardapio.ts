@@ -2,6 +2,7 @@
 // Preços em reais (número); null = ainda sem preço: o produto aparece como "Em breve" e fica fora do "a partir de".
 // `imagem` ainda é caminho reservado; as fotos por produto seguem a convenção de getImagensProduto (fim do arquivo).
 import type { ImageMetadata } from 'astro';
+import { url } from '../lib/url.ts';
 
 export type Alergeno = 'gluten' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'soja';
 
@@ -45,7 +46,7 @@ export const categorias: Categoria[] = [
   { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem glúten e sem leite, para a festa inteira dividir.' },
 ];
 
-const img = (id: string) => `/images/cardapio/${id}.webp`; // TODO: fotos reais
+const img = (id: string) => url(`/images/cardapio/${id}.webp`); // TODO: fotos reais
 const bolo500 = (preco: number | null): Variante[] => [{ id: '500g', rotulo: '500 g', preco }];
 const cobertura: Adicional[] = [{ id: 'cobertura', rotulo: 'Cobertura', preco: 10 }];
 const pesosPao: Variante[] = [

@@ -5,6 +5,7 @@ import SectionHeading from '../components/ui/SectionHeading.astro';
 import Button from '../components/ui/Button.astro';
 import Icon from '../components/ui/Icon.astro';
 import { marca, pedido } from '../data/site';
+import { url } from '../lib/url';
 ---
 
 <BaseLayout title={`Página não encontrada · ${marca.nome}`}>
@@ -14,7 +15,7 @@ import { marca, pedido } from '../data/site';
       <p class="lead">O endereço pode ter mudado ou ainda não existe. O cardápio e a página inicial continuam no mesmo lugar.</p>
       <div class="acoes">
         <Button href={pedido.href}><Icon name="solar:list-heart-minimalistic-linear" />Ver cardápio</Button>
-        <Button variant="vidro" href="/"><Icon name="solar:home-2-linear" />Voltar ao início</Button>
+        <Button variant="vidro" href={url()}><Icon name="solar:home-2-linear" />Voltar ao início</Button>
       </div>
     </div>
   </section>

@@ -7,7 +7,8 @@ interface Props {
 }
 import { marca } from '../../data/site';
 import { scallop } from './mark';
-const { text = true, href = '/' } = Astro.props;
+import { url } from '../../lib/url';
+const { text = true, href = url() } = Astro.props;
 ---
 
 <a class="brand" href={href} aria-label={`${marca.nome}, início`}>

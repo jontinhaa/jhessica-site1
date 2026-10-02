@@ -4,13 +4,14 @@
 // Abaixo de 1180px os links vão para a gaveta (links + Encomendar + chave de tema).
 import { menu, pedido } from '../../data/site';
 import Logo from '../ui/Logo.astro';
+import { url } from '../../lib/url';
 import ThemeSwitch from '../ui/ThemeSwitch.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 ---
 
 <header class="nav" id="nav">
-  <Logo href="/#top" />
+  <Logo href={url('/#top')} />
   <nav class="nlinks" aria-label="Principal">
     {menu.map((l) => <a class="nlink" href={l.href}>{l.rotulo}</a>)}
   </nav>
@@ -82,6 +83,7 @@ import Icon from '../ui/Icon.astro';
 
 <script>
   import { totalSalvo } from '../../scripts/sacola';
+  import { url } from '../../lib/url';
   const nav = document.getElementById('nav')!;
   const prog = nav.querySelector<HTMLElement>('.prog')!;
   const drawer = document.getElementById('drawer')!;
@@ -135,13 +137,13 @@ import Icon from '../ui/Icon.astro';
   });
 
   // Encomendar com contador da sacola: no /pedido abre a sacola; nas outras páginas leva a /pedido?sacola=1 se houver itens
-  const noPedido = location.pathname.startsWith('/pedido');
+  const noPedido = location.pathname.startsWith(url('/pedido'));
   const contar = (total: number) => document.querySelectorAll<HTMLElement>('[data-sacola-conta]').forEach((c) => {
     c.textContent = String(total);
     c.hidden = total === 0;
     c.setAttribute('aria-label', `${total} ${total === 1 ? 'item' : 'itens'} na sacola`);
     const link = c.closest<HTMLAnchorElement>('[data-sacola-link]');
-    if (link && !noPedido) link.href = total ? '/pedido?sacola=1' : '/pedido';
+    if (link && !noPedido) link.href = url(total ? '/pedido?sacola=1' : '/pedido');
   });
   contar(totalSalvo());
   addEventListener('sacola:mudou', (e) => contar((e as CustomEvent<{ total: number }>).detail.total));

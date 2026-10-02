@@ -3,6 +3,7 @@
 // Links saem de `menu` e `redes` (src/data/site.ts). Rede sem endereço aparece desabilitada, nunca aponta para "#".
 import { marca, menu, pedido, redes } from '../../data/site';
 import Logo from '../ui/Logo.astro';
+import { url } from '../../lib/url';
 import Icon from '../ui/Icon.astro';
 
 const ano = new Date().getFullYear();
@@ -16,7 +17,7 @@ const social = [
   <div class="wrapx">
     <div class="frow">
       <div class="fbrand">
-        <Logo href="/#top" text={false} />
+        <Logo href={url('/#top')} text={false} />
         <p class="wordmark">{marca.nomeCurto}</p>
         <p class="hand">{marca.assinatura.toLowerCase()}</p>
       </div>
@@ -24,7 +25,7 @@ const social = [
         <div class="fcol">
           <h2>Navegue</h2>
           {menu.map((l) => <a href={l.href}>{l.rotulo}</a>)}
-          <a href="/#perguntas">Perguntas frequentes</a>
+          <a href={url('/#perguntas')}>Perguntas frequentes</a>
         </div>
         <div class="fcol">
           <h2>Ateliê</h2>

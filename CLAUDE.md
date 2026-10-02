@@ -98,6 +98,10 @@ src/
 - **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver
   `src/assets/images/cardapio/FONTES-PROVISORIAS.md`): substituir pelas fotos reais da Jhessica e ajustar os `alt`.
 - Página /design-system não pode ir para produção (já garantido: a rota só existe no dev).
+- **No lançamento, remover PUBLIC_NOINDEX.** Hoje o deploy de teste (`.github/workflows/deploy.yml`, GitHub Pages em
+  https://jontinhaa.github.io/jhessica-site1/) usa `PUBLIC_NOINDEX=true` e `BASE_PATH=/jhessica-site1/`.
+  Links internos sempre por `url()` (`src/lib/url.ts`), nunca `href="/..."` fixo. Publicar: `npm run publicar:teste`
+  (subtree split de jhess-site/ + limpeza do histórico + push no remote `github`; nunca no `origin`).
 4. Definir o destino do formulário de encomenda (contato já preenchido em `src/data/site.ts`).
 
 ## Development

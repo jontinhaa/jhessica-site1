@@ -7,6 +7,7 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Icon from '../ui/Icon.astro';
+import { url } from '../../lib/url';
 import Doodle from '../ui/Doodle.astro';
 import type { Secao } from '../../data/site';
 import { categorias, formatarPreco, getProdutosPorCategoria, precoMinimo, precosDe, type CategoriaId } from '../../data/cardapio';
@@ -49,7 +50,7 @@ const vitrine = categorias.map((cat) => {
         {vitrine.map((c) => (
           <a
             class:list={['tile', 'cat', c.id === 'bolos' && 'cat--largo', !c.foto && ['ph', 'ph-empty', c.ph], c.esgotado && 'is-out']}
-            href={`/pedido#${c.id}`}
+            href={url(`/pedido#${c.id}`)}
             style={`grid-area: ${c.id}`}
             data-ph={c.foto ? undefined : `${c.id}.jpg`}
             data-ico={c.id === 'brigadeiros' ? 'doce' : undefined}
@@ -72,7 +73,7 @@ const vitrine = categorias.map((cat) => {
         </div>
       </div>
 
-      <a class="link-r ver-tudo" href="/pedido">
+      <a class="link-r ver-tudo" href={url('/pedido')}>
         Ver cardápio completo<Icon name="solar:arrow-right-linear" />
         <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
       </a>

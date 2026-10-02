@@ -7,6 +7,7 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Icon from '../ui/Icon.astro';
+import { url } from '../../lib/url';
 import Doodle from '../ui/Doodle.astro';
 import CenaIngrediente from '../ui/CenaIngrediente.astro';
 import { compromisso, redes, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
@@ -72,7 +73,7 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
             <h3 class="t-bold-s">Outros alérgenos</h3>
             <ul class="tags">{outros.map((r) => <li class="tag">{r}</li>)}</ul>
             <p class="t-s">Bolos, pães e fatias levam ovo e oleaginosas (amêndoas ou castanha de caju); os brigadeiros não levam ovo. Tudo pode conter soja. O bolo de chocolate, o Chocolate Matilda e os pães têm opção sem ovos.</p>
-            <a class="link-r" href="/pedido">
+            <a class="link-r" href={url('/pedido')}>
               Ver o cardápio<Icon name="solar:arrow-right-linear" />
               <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
             </a>

@@ -1,0 +1,40 @@
+# Deploy de TESTE no GitHub Pages: https://jontinhaa.github.io/jhessica-site1/
+# Os testes rodam antes do build (build-cmd); se falharem, nada é publicado.
+name: Deploy no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: withastro/action@v6
+        with:
+          build-cmd: npm test && npm run build
+        env:
+          SITE_URL: https://jontinhaa.github.io
+          BASE_PATH: /jhessica-site1/
+          PUBLIC_NOINDEX: 'true'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

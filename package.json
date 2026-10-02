@@ -12,7 +12,8 @@
     "astro": "astro",
     "check": "astro check",
     "fotos": "node scripts/checar-fotos.mjs",
-    "test": "node --test \"tests/**/*.test.mjs\""
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "publicar:teste": "node scripts/publicar-teste.mjs"
   },
   "dependencies": {
     "@iconify-json/simple-icons": "^1.2.98",

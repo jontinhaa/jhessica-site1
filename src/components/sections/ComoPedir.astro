@@ -8,6 +8,7 @@
 import SectionHeading from '../ui/SectionHeading.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+import { url } from '../../lib/url';
 import { contato, faixaAtendimento, passosPedido, redes, regrasPedido, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
@@ -53,7 +54,7 @@ const horario = contato.atendimento.texto.slice(contato.atendimento.texto.indexO
       </ul>
     </div>
     <div class="acoes" data-rv>
-      <Button href="/pedido" data-esconde-pilula><Icon name="solar:bag-4-linear" />Montar meu pedido</Button>
+      <Button href={url('/pedido')} data-esconde-pilula><Icon name="solar:bag-4-linear" />Montar meu pedido</Button>
       {redes.whatsapp && (
         <a class="link-r" href={redes.whatsapp} target="_blank" rel="noopener">
           <Icon name="simple-icons:whatsapp" />Falar no WhatsApp

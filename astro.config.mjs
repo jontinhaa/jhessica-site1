@@ -16,7 +16,11 @@ const designSystemSoEmDev = {
   },
 };
 
+// site/base por variável de ambiente: padrão "/" (local e domínio futuro); o deploy de teste no GitHub Pages usa
+// SITE_URL=https://jontinhaa.github.io e BASE_PATH=/jhessica-site1/ (.github/workflows/deploy.yml).
 export default defineConfig({
+  site: process.env.SITE_URL,
+  base: process.env.BASE_PATH || '/',
   integrations: [designSystemSoEmDev],
   fonts: [
     {

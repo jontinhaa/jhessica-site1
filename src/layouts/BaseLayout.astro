@@ -4,6 +4,7 @@ import { seo } from '../data/site';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import PedidoFlutuante from '../components/ui/PedidoFlutuante.astro';
+import { url } from '../lib/url';
 import '../styles/global.css';
 
 interface Props {
@@ -21,7 +22,8 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {import.meta.env.PUBLIC_NOINDEX === 'true' && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
     <meta name="generator" content={Astro.generator} />
     <!-- Tema antes do primeiro paint: escolha salva > preferência do sistema.
          Reaplicado quando a página volta do cache de voltar/avançar (o script não roda de novo) e quando outra aba troca o tema. -->
@@ -51,7 +53,7 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
       <slot />
     </main>
     <Footer />
-    {!Astro.url.pathname.startsWith('/pedido') && <PedidoFlutuante />}
+    {!Astro.url.pathname.startsWith(url('/pedido')) && <PedidoFlutuante />}
     <script>
       // [data-rv]: revela ao entrar na tela (88%; 94% com movimento reduzido), em cascata de 80ms entre vizinhos
       const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
