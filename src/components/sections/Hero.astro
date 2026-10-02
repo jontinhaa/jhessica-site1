@@ -205,7 +205,7 @@ const faixa = [
   .ticker { position: relative; overflow: hidden; padding: 1.15rem 0; border-block: 1px solid var(--line); background: rgba(var(--bg-rgb), .55); }
   .sprite { position: absolute; width: 0; height: 0; }
   .run { display: flex; width: max-content; animation: tick 42s linear infinite; }
-  .ticker:hover .run { animation-play-state: paused; }
+  @media (hover: hover) { .ticker:hover .run { animation-play-state: paused; } } /* no toque o :hover fica preso */
   .tk { display: flex; align-items: center; gap: 2.2rem; padding-right: 2.2rem; white-space: nowrap; }
   .tk span { font-family: var(--poster); font-size: clamp(1.7rem, 3.4vw, 2.7rem); font-stretch: 62%; font-weight: 800; line-height: 1; letter-spacing: -.005em; text-transform: uppercase; }
   .tk em { font-family: var(--serif); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-style: italic; font-weight: 400; line-height: 1; color: var(--accent); }
@@ -370,8 +370,9 @@ const faixa = [
   document.addEventListener('visibilitychange', sync);
   addEventListener('tema:transicao', (e) => { trocandoTema = (e as CustomEvent<boolean>).detail; sync(); });
   celular.addEventListener('change', sync);
-  // ratio, não isIntersecting: no celular a faixa encosta na borda de baixo (encostar conta como "na tela")
-  new IntersectionObserver(([e]) => ticker.classList.toggle('fora', e.intersectionRatio === 0)).observe(ticker);
+  // no celular a faixa abre encostada na borda de baixo: isso conta como "na tela" com ratio 0. Por isso o teste é
+  // o ratio, e o limiar .01 garante um novo aviso quando ela entra de fato (só com o limiar 0, ficava parada)
+  new IntersectionObserver(([e]) => ticker.classList.toggle('fora', e.intersectionRatio === 0), { threshold: [0, .01] }).observe(ticker);
 
   // ---------- tilt 3D com reflexo nos cards de vidro (só com mouse) ----------
   if (!reduced && podeInclinar()) hero.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => tilt(el));
