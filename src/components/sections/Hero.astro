@@ -30,7 +30,7 @@ const faixa = [
   <div class="amb b" aria-hidden="true"></div>
   <div class="hero-media" aria-hidden="true">
     <div class="hero-pic">
-      <video muted loop playsinline preload="none" poster={url('/videos/hero-poster.webp')}>
+      <video muted loop playsinline preload="metadata" poster={url('/videos/hero-poster.webp')}>
         <source src={url('/videos/hero-1080.mp4')} type="video/mp4" media="(min-width: 768px)" />
         <source src={url('/videos/hero-retrato.mp4')} type="video/mp4" />
       </video>
@@ -278,8 +278,9 @@ const faixa = [
 
 <script>
   import { podeInclinar, tilt } from '../../scripts/tilt';
-  // Vídeo, açúcar e tilt da hero. O vídeo só baixa quando vai tocar (preload="none"):
-  // com movimento reduzido ou economia de dados a hero começa pausada e o botão retoma.
+  // Vídeo, açúcar e tilt da hero. O pôster aparece de imediato e só os metadados do vídeo vêm antes do play;
+  // com movimento reduzido ou economia de dados a hero começa pausada (só o pôster) e o botão retoma.
+  // Fora da tela ou com a aba oculta, tudo para.
   const hero = document.getElementById('top')!;
   const ticker = document.querySelector<HTMLElement>('.ticker')!;
   const video = hero.querySelector('video')!;
@@ -338,7 +339,7 @@ const faixa = [
 
   // ---------- vídeo, açúcar e faixa: tocam juntos, param juntos, e param fora da tela ----------
   function sync() {
-    const on = !paused && visible;
+    const on = !paused && visible && !document.hidden;
     if (on) video.play().catch(() => {}); // modo economia do iOS recusa: fica o pôster
     else video.pause();
     sugar(on);
@@ -348,6 +349,7 @@ const faixa = [
   }
   btn.addEventListener('click', () => { paused = !paused; sync(); });
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }).observe(hero);
+  document.addEventListener('visibilitychange', sync);
 
   // ---------- tilt 3D com reflexo nos cards de vidro (só com mouse) ----------
   if (!reduced && podeInclinar()) hero.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => tilt(el));
