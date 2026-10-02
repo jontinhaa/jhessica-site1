@@ -1,6 +1,7 @@
 ---
 // Chave dia/noite. O tema inicial é aplicado no <head> do BaseLayout (sem piscar).
-// Ao trocar, o novo tema abre em círculo a partir da chave (View Transitions).
+// Ao trocar, o novo tema abre em círculo a partir da chave (View Transitions); durante o círculo a hero pausa
+// vídeo e efeitos (evento tema:transicao). Celular e movimento reduzido: troca instantânea, só os tokens mudam.
 import Icon from './Icon.astro';
 ---
 
@@ -24,7 +25,8 @@ import Icon from './Icon.astro';
 
 <script>
   const root = document.documentElement;
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const instantaneo = matchMedia('(max-width: 768px), (prefers-reduced-motion: reduce)');
+  const avisar = (on: boolean) => dispatchEvent(new CustomEvent('tema:transicao', { detail: on }));
 
   function setTheme(t: string) {
     root.dataset.theme = t;
@@ -34,11 +36,14 @@ import Icon from './Icon.astro';
   document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-      if (!document.startViewTransition || reduced) return setTheme(next);
+      if (!document.startViewTransition || instantaneo.matches) return setTheme(next);
       const r = btn.getBoundingClientRect();
       const x = r.left + r.width / 2, y = r.top + r.height / 2;
       const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-      document.startViewTransition(() => setTheme(next)).ready.then(() => {
+      avisar(true);
+      const vt = document.startViewTransition(() => setTheme(next));
+      vt.finished.finally(() => avisar(false));
+      vt.ready.then(() => {
         root.animate(
           { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
           { duration: 900, easing: 'cubic-bezier(.2,.8,.2,1)', pseudoElement: '::view-transition-new(root)' },

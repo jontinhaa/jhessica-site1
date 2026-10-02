@@ -305,6 +305,7 @@ const faixa = [
   const celular = matchMedia('(max-width: 768px)'); // sem açúcar (o canvas some no CSS)
   let paused = reduced || saveData;
   let visible = true;
+  let trocandoTema = false; // círculo da troca de tema (desktop): vídeo, açúcar e faixa param
 
   // ---------- poeira de açúcar (o "vapor" da Asagiri, virado açúcar de confeiteiro) ----------
   const sugar = (() => {
@@ -343,7 +344,8 @@ const faixa = [
     }
     readColor(); size();
     addEventListener('resize', size);
-    new MutationObserver(readColor).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    // lê a cor no próximo quadro: ler na hora forçava um recálculo de estilo da página inteira no clique
+    new MutationObserver(() => requestAnimationFrame(readColor)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     hero.addEventListener('pointermove', (e) => { const r = cv.getBoundingClientRect(); mx = (e.clientX - r.left) * DPR; my = (e.clientY - r.top) * DPR; });
     hero.addEventListener('pointerleave', () => { mx = my = -1e4; });
     return (on: boolean) => {
@@ -354,17 +356,18 @@ const faixa = [
 
   // ---------- vídeo, açúcar e faixa: tocam juntos, param juntos, e param fora da tela ----------
   function sync() {
-    const on = !paused && visible && !document.hidden;
+    const on = !paused && visible && !trocandoTema && !document.hidden;
     if (on) video.play().catch(() => {}); // modo economia do iOS recusa: fica o pôster
     else video.pause();
     sugar(on && !celular.matches);
     hero.classList.toggle('is-paused', paused);
-    ticker.classList.toggle('is-paused', paused);
+    ticker.classList.toggle('is-paused', paused || trocandoTema);
     btn.setAttribute('aria-label', paused ? 'Reproduzir vídeo' : 'Pausar vídeo');
   }
   btn.addEventListener('click', () => { paused = !paused; sync(); });
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }).observe(hero);
   document.addEventListener('visibilitychange', sync);
+  addEventListener('tema:transicao', (e) => { trocandoTema = (e as CustomEvent<boolean>).detail; sync(); });
   celular.addEventListener('change', sync);
   new IntersectionObserver(([e]) => ticker.classList.toggle('fora', !e.isIntersecting)).observe(ticker);
 
