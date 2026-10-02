@@ -369,7 +369,8 @@ const faixa = [
   document.addEventListener('visibilitychange', sync);
   addEventListener('tema:transicao', (e) => { trocandoTema = (e as CustomEvent<boolean>).detail; sync(); });
   celular.addEventListener('change', sync);
-  new IntersectionObserver(([e]) => ticker.classList.toggle('fora', !e.isIntersecting)).observe(ticker);
+  // ratio, não isIntersecting: no celular a faixa encosta na borda de baixo (encostar conta como "na tela")
+  new IntersectionObserver(([e]) => ticker.classList.toggle('fora', e.intersectionRatio === 0)).observe(ticker);
 
   // ---------- tilt 3D com reflexo nos cards de vidro (só com mouse) ----------
   if (!reduced && podeInclinar()) hero.querySelectorAll<HTMLElement>('[data-tilt]').forEach((el) => tilt(el));
