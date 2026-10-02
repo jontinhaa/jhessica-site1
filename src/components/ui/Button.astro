@@ -58,4 +58,8 @@ const Tag = href ? 'a' : 'button';
   .btn--cacau:hover::before { transform: none; border-radius: 0; }
 
   .btn--vidro:active, .btn--linha:active, .btn--cacau:active { transform: scale(.97); }
+  /* celular: vidro sem desfoque; o mesmo --glass sobre um véu do fundo faz o papel do blur */
+  @media (max-width: 768px) {
+    .btn--vidro { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(var(--glass), var(--glass)), rgba(var(--bg-rgb), .45); }
+  }
 </style>

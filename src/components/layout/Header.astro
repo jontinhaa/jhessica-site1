@@ -79,6 +79,11 @@ import Icon from '../ui/Icon.astro';
   @media (max-width: 860px) { .nav-r :global(.nav-cta) { display: none; } }
   /* 360px: marca + chave + menu cabem em 20px de margem */
   @media (max-width: 400px) { .nav { gap: .75rem; } .nav-r { gap: .5rem; } }
+  /* celular: sem desfoque (refazia o blur do vídeo a cada quadro); o véu fica mais denso para o efeito ser o mesmo */
+  @media (max-width: 768px) {
+    .nav { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(var(--bg-rgb), .6); }
+    .nav.docked { background: rgba(var(--bg-rgb), .92); }
+  }
 </style>
 
 <script>

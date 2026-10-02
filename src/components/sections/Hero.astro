@@ -285,6 +285,8 @@ const faixa = [
     .hero-cta :global(.btn) { width: 100%; min-height: 48px; }
     .hero-badges { grid-template-columns: minmax(0, 1fr); gap: .8rem; padding-top: 1.4rem; }
     .hero-badges li + li { padding-left: 0; border-left: 0; }
+    /* vidro sem desfoque sobre o vídeo (ver .btn--vidro) */
+    .hero-pause { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(var(--glass), var(--glass)), rgba(var(--bg-rgb), .45); }
   }
 </style>
 
