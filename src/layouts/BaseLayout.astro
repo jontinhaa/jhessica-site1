@@ -66,6 +66,21 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
         if (!reduzido) el.style.setProperty('--rv-d', `${([...el.parentElement!.children].indexOf(el) % 4) * 80}ms`);
         io.observe(el);
       });
+
+      // âncoras na mesma página: com content-visibility (global.css), as seções ainda não vistas têm altura estimada;
+      // depois do salto elas renderizam e empurram o alvo. Reposiciona até ele parar (no máximo 6 quadros).
+      addEventListener('click', (e) => {
+        const a = (e.target as Element).closest?.<HTMLAnchorElement>('a[href*="#"]');
+        if (!a || a.pathname !== location.pathname || a.hash.length < 2) return;
+        const alvo = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+        if (!alvo) return;
+        let n = 0;
+        const ajustar = () => {
+          if (Math.abs(alvo.getBoundingClientRect().top - parseFloat(getComputedStyle(alvo).scrollMarginTop)) > 1) alvo.scrollIntoView();
+          if (++n < 6) requestAnimationFrame(ajustar);
+        };
+        requestAnimationFrame(ajustar);
+      });
     </script>
   </body>
 </html>

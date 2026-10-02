@@ -29,6 +29,10 @@ ul, ol { list-style: none; }
 /* ---------- layout ---------- */
 .wrapx { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--pad); }
 .sec { position: relative; padding: var(--sec-y) 0; scroll-margin-top: var(--nav-h); } /* âncora para abaixo do header fixo */
+/* celular: fora da tela, a seção não calcula estilo, layout nem pintura (carregamento e troca de tema mais leves);
+   `auto` guarda a altura real depois da 1ª vez, os 700px só valem antes disso. Fica fora do desktop: lá a contenção
+   arredonda a posição das seções (texto deslocado em subpixel) e a barra de progresso andaria com alturas estimadas. */
+@media (max-width: 768px) { .sec { content-visibility: auto; contain-intrinsic-size: auto 700px; } }
 .sec--tint { background: var(--tint); }
 .band { background: var(--band); color: var(--on-band); }
 
