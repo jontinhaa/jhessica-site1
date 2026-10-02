@@ -38,9 +38,16 @@ const [viewBox, d] = doodles[name];
 <style>
   .doodle { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
   .boil { animation: boil .5s steps(1) infinite; }
+  .longe { animation-play-state: paused !important; }
   @keyframes boil {
     0% { transform: rotate(0) translate(0, 0); }
     33% { transform: rotate(-2.5deg) translate(.6px, -.4px); }
     66% { transform: rotate(2deg) translate(-.5px, .5px); }
   }
 </style>
+
+<script>
+  // rabisco fervendo só na tela: fora dela, a animação mantinha um recálculo de estilo a cada quadro
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('longe', !e.isIntersecting)));
+  document.querySelectorAll('.doodle').forEach((d) => io.observe(d));
+</script>
