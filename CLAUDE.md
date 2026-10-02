@@ -63,6 +63,11 @@ src/
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
 - Cena fixada (Como pedir): CSS nativo, sem GSAP/Lenis: `position: sticky` + `animation-timeline` (view-timeline no
   contêiner alto). Sem suporte ou com movimento reduzido, vira grade estática.
+- Intervalos de scroll-driven animation sempre com animation-range-start/-end separados (o minificador corrompe o
+  shorthand com 'cover 100%'). E nada de atalho `animation:` junto com `animation-timeline`: use longhands
+  (animation-name, -duration, -timing-function, -fill-mode, -timeline). `npm run build` roda
+  `scripts/checar-css-build.mjs`, que falha se o CSS do build vier corrompido (criou/removeu regra com intervalo:
+  atualize ESPERADAS lá).
 - `[hidden]` sempre esconde (`display: none !important` no reset): não precisa de regra por componente.
 - Elementos criados por script não recebem o escopo do Astro: estilize-os com `:global(...)` preso a um pai do componente.
 - Pedido: preço SEMPRE recalculado de cardapio.ts (lib/pedido/precos); mudou regra de prazo ou mensagem, rode `npm test`.

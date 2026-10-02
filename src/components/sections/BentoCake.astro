@@ -142,8 +142,8 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
   /* a foto chega deitada e assenta enquanto a seção entra (só transform e opacity) */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
-      /* só longhands: o minificador junta `animation` + `animation-timeline` num atalho que o Chrome rejeita */
-      .assenta { transform-origin: 50% 100%; animation-name: assentar; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+      /* só longhands, e o intervalo em -start/-end: o minificador corrompe os atalhos (ver CLAUDE.md) */
+      .assenta { transform-origin: 50% 100%; animation-name: assentar; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range-start: entry 0%; animation-range-end: cover 40%; }
       :global(.rv-on) .foto[data-rv] { opacity: 1; translate: none; transition: none; } /* quem aparece é o "assentar" */
     }
   }

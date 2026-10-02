@@ -230,11 +230,12 @@ const faixa = [
     /* parallax (Asagiri): a foto desce 12% e o texto sobe e esmaece enquanto a hero sai da tela */
     @supports (animation-timeline: view()) {
       .hero { view-timeline: --hero block; view-timeline-inset: 0; }
-      .hero-pic { animation: settle 2.6s var(--e-soft) backwards, drift auto linear both; animation-timeline: auto, --hero; animation-range: normal, contain 0% cover 100%; }
-      .hero-grid { animation: lift auto linear both; animation-timeline: --hero; animation-range: contain 0% cover 100%; }
+      /* só longhands (e o intervalo em -start/-end): o minificador corrompe os atalhos — ver CLAUDE.md */
+      .hero-pic { animation-name: settle, drift; animation-duration: 2.6s, auto; animation-timing-function: var(--e-soft), linear; animation-fill-mode: backwards, both; animation-timeline: auto, --hero; animation-range-start: normal, contain 0%; animation-range-end: normal, cover 100%; }
+      .hero-grid { animation-name: lift; animation-duration: auto; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: --hero; animation-range-start: contain 0%; animation-range-end: cover 100%; }
       /* esmaece a coluna e cada card, não a grade: opacidade no pai apagaria o desfoque do vidro */
-      .hero-copy { animation: fade auto linear both; animation-timeline: --hero; animation-range: contain 0% cover 100%; }
-      .hc, .hero-note { animation: fade auto linear both, card-in 1.1s var(--e-out) backwards; animation-timeline: --hero, auto; animation-range: contain 0% cover 100%, normal; animation-delay: 0s, calc(.75s + var(--i) * 100ms); }
+      .hero-copy { animation-name: fade; animation-duration: auto; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: --hero; animation-range-start: contain 0%; animation-range-end: cover 100%; }
+      .hc, .hero-note { animation-name: fade, card-in; animation-duration: auto, 1.1s; animation-timing-function: linear, var(--e-out); animation-fill-mode: both, backwards; animation-timeline: --hero, auto; animation-range-start: contain 0%, normal; animation-range-end: cover 100%, normal; animation-delay: 0s, calc(.75s + var(--i) * 100ms); }
     }
   }
   /* celular: entrada só com transform e opacity (sem desfoque nas letras nem recorte na assinatura) e mais curta,

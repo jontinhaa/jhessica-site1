@@ -134,16 +134,17 @@ ul, ol { list-style: none; }
 /* parallax [data-par]: a foto (120% da altura, .par) anda de -8% a 8% enquanto atravessa a tela.
    O DS usa GSAP; aqui é animação CSS presa à rolagem, como na hero. Sem suporte, a foto fica parada. */
 @supports (animation-timeline: view()) {
-  [data-par] { animation: par linear both; animation-timeline: view(); }
+  /* só longhands, e o intervalo em -start/-end: o minificador corrompe os atalhos (ver CLAUDE.md) */
+  [data-par] { animation-name: par; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); }
 }
 @keyframes par { from { translate: 0 -8%; } to { translate: 0 8%; } }
 
 /* recorte que abre [data-clip] (Padrão E do DS, Sable): a figura sai de um recorte central inset(42%) até a borda inteira
    e a foto perde o zoom de 1.06, do topo a 95% da tela até o centro perto de 55%. O DS usa GSAP; aqui, CSS preso à rolagem. */
 @supports (animation-timeline: view()) {
-  [data-clip] { view-timeline: --clip block; animation: clip linear both; animation-timeline: --clip; animation-range: entry 5% cover 45%; }
-  [data-clip] img { animation: clip-img linear both; animation-timeline: --clip; animation-range: entry 5% cover 45%; }
-  [data-clip] img[data-par] { animation-name: par, clip-img; animation-timeline: view(), --clip; animation-range: normal, entry 5% cover 45%; }
+  [data-clip] { view-timeline: --clip block; animation-name: clip; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: --clip; animation-range-start: entry 5%; animation-range-end: cover 45%; }
+  [data-clip] img { animation-name: clip-img; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: --clip; animation-range-start: entry 5%; animation-range-end: cover 45%; }
+  [data-clip] img[data-par] { animation-name: par, clip-img; animation-timeline: view(), --clip; animation-range-start: normal, entry 5%; animation-range-end: normal, cover 45%; }
 }
 @keyframes clip { from { clip-path: inset(42% 42% 42% 42% round 6px); } to { clip-path: inset(0 0 0 0 round 6px); } }
 @keyframes clip-img { from { scale: 1.06; } to { scale: 1; } }
