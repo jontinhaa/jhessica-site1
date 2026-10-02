@@ -10,6 +10,7 @@ import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
 import Doodle from '../ui/Doodle.astro';
 import CenaIngrediente from '../ui/CenaIngrediente.astro';
+import { produtos } from '../../data/cardapio';
 import { compromisso, redes, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
@@ -22,6 +23,8 @@ const zeros = ['ingredientes com glúten', 'com leite ou derivados', 'conservant
 const cozinha = textoCozinha();
 const entram = compromisso.ingredientesQueEntram;
 // glúten e leite já têm o bloco deles; aqui só os "outros"
+// quem tem versão sem ovos sai do campo permiteSemOvo de cada produto (nada de lista escrita à mão)
+const semOvos = new Intl.ListFormat('pt-BR').format(produtos.filter((p) => p.permiteSemOvo).map((p) => p.nome.charAt(0).toLowerCase() + p.nome.slice(1)));
 const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' && k !== 'leite').map(([, r]) => r);
 ---
 
@@ -72,7 +75,7 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
           <div class="alergenos" data-rv>
             <h3 class="t-bold-s">Outros alérgenos</h3>
             <ul class="tags">{outros.map((r) => <li class="tag">{r}</li>)}</ul>
-            <p class="t-s">Bolos, pães e fatias levam ovo e oleaginosas (amêndoas ou castanha de caju); os brigadeiros não levam ovo. Tudo pode conter soja. O bolo de chocolate, o Chocolate Matilda e os pães têm opção sem ovos.</p>
+            <p class="t-s">Bolos, pães e fatias levam ovo e oleaginosas (amêndoas ou castanha de caju); os brigadeiros não levam ovo. Tudo pode conter soja. Têm opção sem ovos: {semOvos}.</p>
             <a class="link-r" href={url('/pedido')}>
               Ver o cardápio<Icon name="solar:arrow-right-linear" />
               <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>

@@ -57,7 +57,8 @@ const pesosPao: Variante[] = [
 const fatia: Variante[] = [{ id: 'fatia', rotulo: 'Fatia', preco: 30 }];
 
 // Padrão dos produtos (respostas da cliente); os brigadeiros sobrescrevem os alérgenos.
-// Versão sem ovos só no bolo de chocolate, no Chocolate Matilda e nos pães (permiteSemOvo: true em cada um).
+// Versão sem ovos só no bolo de chocolate e nos três pães; "Mais pedido" só no bolo de chocolate e no pão de batata-doce.
+// Os dois saem só destes campos (permiteSemOvo, maisPedido), nunca do nome ou da categoria; os testes travam as listas.
 const base = {
   alergenos: { contem: ['ovo', 'castanhas'], podeConter: ['soja', 'gluten', 'leite'] } as Produto['alergenos'],
   permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço. TODO: confirmar se muda o prazo
@@ -81,7 +82,7 @@ export const produtos: Produto[] = [
   { ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao },
 
   { ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia },
-  { ...base, permiteSemOvo: true, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
+  { ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
   { ...base, id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), variantes: fatia },
 
   {

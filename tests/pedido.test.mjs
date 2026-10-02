@@ -89,3 +89,12 @@ test('número do pedido e link do WhatsApp', () => {
   assert.match(numeroPedido(new Date()), /^\d{4}-[2-9A-HJ-NP-Z]{3}$/);
   assert.equal(linkWhatsApp('Olá, Jhessica!\nPedido'), 'https://wa.me/5594981080336?text=Ol%C3%A1%2C%20Jhessica!%0APedido');
 });
+
+// etiquetas e opções decididas só pelos campos de cada produto em cardapio.ts: a lista exata, para nada entrar por engano
+const comCampo = (campo) => produtos.filter((p) => p[campo] === true).map((p) => p.id).sort();
+test('"Mais pedido" só no bolo de chocolate e no pão de batata-doce', () => {
+  assert.deepEqual(comCampo('maisPedido'), ['bolo-de-chocolate', 'pao-de-batata-doce']);
+});
+test('"Quero sem ovos" só no bolo de chocolate e nos três pães', () => {
+  assert.deepEqual(comCampo('permiteSemOvo'), ['bolo-de-chocolate', 'pao-de-batata-doce', 'pao-de-cebola', 'pao-de-graos']);
+});
