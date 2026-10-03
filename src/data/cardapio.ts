@@ -61,7 +61,7 @@ const fatia: Variante[] = [{ id: 'fatia', rotulo: 'Fatia', preco: 30 }];
 // Os dois saem só destes campos (permiteSemOvo, maisPedido), nunca do nome ou da categoria; os testes travam as listas.
 const base = {
   alergenos: { contem: ['ovo', 'castanhas'], podeConter: ['soja', 'gluten', 'leite'] } as Produto['alergenos'],
-  permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço. TODO: confirmar se muda o prazo
+  permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço. TODO: confirmar com a Jéssica se a versão sem ovos muda o prazo (por ora é igual ao do produto normal)
   disponivel: true,
 };
 

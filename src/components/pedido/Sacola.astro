@@ -251,7 +251,7 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
       li.dataset.chave = chaveItem(i);
       $('.item-nome', li).textContent = `${i.quantidade}× ${p.nome}`;
       $('.item-preco', li).textContent = formatarReais(precoItem(i, produtos));
-      const det = [p.variante, ...p.adicionais.map((a) => `com ${a}`), ...p.opcoes, p.sabores.join(', '), p.semOvo ? 'sem ovos' : ''].filter(Boolean);
+      const det = [p.variante, ...p.adicionais.map((a) => `com ${a}`), ...p.opcoes, p.sabores.join(', '), p.versao].filter(Boolean);
       $('.item-det', li).textContent = det.join(' · ');
       $('.item-det', li).hidden = !det.length;
       $<HTMLOutputElement>('output', li).value = String(i.quantidade);

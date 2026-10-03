@@ -5,7 +5,8 @@ import { produtos } from '../src/data/cardapio.ts';
 import { juntar, chaveItem } from '../src/lib/pedido/itens.ts';
 import { subtotal, precoItem } from '../src/lib/pedido/precos.ts';
 import { prazoDoPedido, inicioDaContagem, datasValidas, diaCurto } from '../src/lib/pedido/prazos.ts';
-import { montarMensagem, linkWhatsApp, numeroPedido, entregaGratis } from '../src/lib/pedido/mensagem.ts';
+import { urlAbsoluta } from '../src/lib/absoluta.ts';
+import { montarMensagem, linhaItem, linkWhatsApp, numeroPedido, entregaGratis } from '../src/lib/pedido/mensagem.ts';
 
 const item = (id, variante, extra = {}) => ({ id, variante, adicionais: [], opcoes: {}, semOvo: false, sabores: {}, quantidade: 1, ...extra });
 const bolo = item('bolo-de-maca', '500g');
@@ -97,4 +98,25 @@ test('"Mais pedido" só no bolo de chocolate e no pão de batata-doce', () => {
 });
 test('"Quero sem ovos" só no bolo de chocolate e nos três pães', () => {
   assert.deepEqual(comCampo('permiteSemOvo'), ['bolo-de-chocolate', 'pao-de-batata-doce', 'pao-de-cebola', 'pao-de-graos']);
+});
+
+test('versão sem ovos: mesmo preço e mesmo prazo, itens separados e a mensagem diz qual versão', () => {
+  const com = item('bolo-de-chocolate', '500g'), sem = { ...com, semOvo: true };
+  assert.equal(precoItem(com, produtos), precoItem(sem, produtos));
+  assert.deepEqual(prazoDoPedido([com], produtos), prazoDoPedido([sem], produtos));
+  assert.notEqual(chaveItem(com), chaveItem(sem));
+  assert.equal(linhaItem(com, produtos), '• 1x Bolo de chocolate (500 g), com ovos — R$ 45,00');
+  assert.equal(linhaItem(sem, produtos), '• 1x Bolo de chocolate (500 g), sem ovos — R$ 45,00');
+  assert.ok(!/ovos/.test(linhaItem(bolo, produtos)), 'produto sem a opção não cita ovos');
+});
+
+test('páginas /p/{id}: um id único e seguro para URL por produto disponível', () => {
+  const ids = produtos.filter((p) => p.disponivel).map((p) => p.id);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.ok(ids.every((id) => /^[a-z0-9-]+$/.test(id)));
+});
+
+test('urlAbsoluta: junta com o site; sem site, devolve o caminho', () => {
+  assert.equal(urlAbsoluta('/jhessica-site1/_astro/a.jpg', new URL('https://jontinhaa.github.io')), 'https://jontinhaa.github.io/jhessica-site1/_astro/a.jpg');
+  assert.equal(urlAbsoluta('/_astro/a.jpg'), '/_astro/a.jpg');
 });

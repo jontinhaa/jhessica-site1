@@ -1,0 +1,50 @@
+---
+// /p/{id} · uma página por produto, só para o link compartilhado mostrar prévia (título, descrição e foto em og:*).
+// Quem abre é levado ao painel do produto no /pedido; o robô do WhatsApp lê o HTML antes do redirecionamento.
+// Foto: a capa do produto; sem ela (fotos reais ainda não chegaram), a foto da categoria. TODO: fotos reais por produto.
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatarPreco, getImagensProduto, precosDe, produtos, type Produto } from '../../data/cardapio';
+import { marca } from '../../data/site';
+import { url } from '../../lib/url';
+import { urlAbsoluta } from '../../lib/absoluta';
+
+export function getStaticPaths() {
+  return produtos.filter((p) => p.disponivel).map((produto) => ({ params: { id: produto.id }, props: { produto } }));
+}
+
+interface Props { produto: Produto }
+const { produto: p } = Astro.props;
+
+const fotosCategoria = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/cardapio/*.{jpg,jpeg,png,webp}', { eager: true });
+const daCategoria = Object.entries(fotosCategoria).find(([caminho]) => caminho.includes(`/${p.categoria}.`))?.[1].default;
+const foto = getImagensProduto(p.id).capa ?? daCategoria;
+const og = foto ? await getImage({ src: foto, width: 1200, height: 630, fit: 'cover', format: 'jpg' }) : undefined;
+
+const precos = precosDe(p);
+const aPartirDe = new Set(precos).size > 1 ? 'a partir de ' : '';
+const descricao = `${p.descricao} ${precos.length ? `${aPartirDe}${formatarPreco(Math.min(...precos))}. ` : ''}Peça pelo WhatsApp.`;
+const destino = url(`/pedido?produto=${p.id}`);
+---
+
+<BaseLayout
+  title={`${p.nome} · ${marca.nome}`}
+  description={descricao}
+  image={og && urlAbsoluta(og.src, Astro.site)}
+  imageAlt={og && p.nome}
+  redirect={destino}
+  noindex
+>
+  <section class="sec">
+    <div class="wrapx">
+      <h1 class="h3">{p.nome}</h1>
+      <p class="lead">{p.descricao}</p>
+      <p>Abrindo o cardápio… Se não abrir, <a class="link-r" href={destino}>ver no cardápio e pedir</a>.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .sec { padding-top: calc(var(--nav-h) + clamp(2rem, 5vw, 3.5rem)); padding-bottom: clamp(2rem, 5vw, 3.5rem); }
+</style>

@@ -35,7 +35,7 @@ export function linhaItem(i: ItemPedido, produtos: Produto[]) {
   if (p.adicionais.length) s += ` com ${p.adicionais.join(' e ')}`;
   if (p.sabores.length) s += `: ${p.sabores.join(', ')}`;
   if (p.opcoes.length) s += `, ${p.opcoes.join(', ')}`;
-  if (p.semOvo) s += ', sem ovos';
+  if (p.versao) s += `, ${p.versao}`;
   return `${s} — ${formatarReais(precoItem(i, produtos))}`;
 }
 

@@ -38,10 +38,15 @@ const semOvo = !p.alergenos.contem.includes('ovo');
     <p class="t-m">{p.descricao}</p>
     <div class="produto-row">
       <span class="price">{aPartirDe && <small>a partir de</small>}{formatarPreco(Math.min(...precos))}</span>
-      <button class="link-r" type="button" data-abrir={p.id} aria-label={`Detalhes: ${p.nome}`}>
-        Detalhes
-        <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
-      </button>
+      <div class="produto-acoes">
+        <button class="compartilhar" type="button" data-compartilhar={p.id} data-nome={p.nome} aria-label={`Compartilhar: ${p.nome}`}>
+          <Icon name="solar:share-linear" /><span>Compartilhar</span>
+        </button>
+        <button class="link-r" type="button" data-abrir={p.id} aria-label={`Detalhes: ${p.nome}`}>
+          Detalhes
+          <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>
+        </button>
+      </div>
     </div>
   </div>
   <i class="glare" aria-hidden="true"></i>
@@ -71,6 +76,10 @@ const semOvo = !p.alergenos.contem.includes('ovo');
   .produto-body .t-m { flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .produto-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem 1rem; margin-top: .6rem; padding-top: 1rem; border-top: 1px solid var(--line); }
   .produto-row .link-r { font-size: .8rem; }
+  .produto-acoes { display: flex; align-items: center; gap: .3rem 1rem; }
+  .compartilhar { display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; font-size: .8rem; color: var(--ink-2); transition: color .3s var(--e-std); }
+  .compartilhar:hover { color: var(--accent-ink); }
+  .compartilhar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
   .produto.is-out .produto-pic img { filter: grayscale(.85) brightness(.9); }
   .produto.is-out .add-bar { transform: none; background: rgba(var(--ink-rgb), .6); cursor: not-allowed; }
 
@@ -95,6 +104,8 @@ const semOvo = !p.alergenos.contem.includes('ovo');
     .produto-row { margin-top: .3rem; padding-top: .7rem; }
     .produto-row .price { font-size: 1.15rem; }
     .produto-row .link-r { font-size: .75rem; }
+    .compartilhar { font-size: .75rem; min-width: 44px; justify-content: center; }
+    .compartilhar span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     .add-bar { height: 42px; letter-spacing: .14em; }
     .add-longo { display: none; }
     .add-curto { display: inline; }
@@ -106,6 +117,9 @@ const semOvo = !p.alergenos.contem.includes('ovo');
 <script>
   import { podeInclinar, tilt } from '../../scripts/tilt';
   import { adicionar } from '../../scripts/sacola';
+  import { compartilhar } from '../../scripts/compartilhar';
+
+  document.querySelectorAll<HTMLButtonElement>('[data-compartilhar]').forEach((b) => b.addEventListener('click', () => compartilhar(b.dataset.compartilhar!, b.dataset.nome!)));
 
   if (podeInclinar()) document.querySelectorAll<HTMLElement>('.produto[data-tilt]').forEach((el) => tilt(el, { move: 8 }));
 

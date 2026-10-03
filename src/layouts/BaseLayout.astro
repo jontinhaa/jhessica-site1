@@ -1,6 +1,6 @@
 ---
 import { Font } from 'astro:assets';
-import { seo } from '../data/site';
+import { marca, seo } from '../data/site';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import PedidoFlutuante from '../components/ui/PedidoFlutuante.astro';
@@ -10,8 +10,15 @@ import '../styles/global.css';
 interface Props {
   title?: string;
   description?: string;
+  /** Prévia do link (WhatsApp, redes): imagem já com endereço absoluto. Sem ela, nenhuma tag og:* é emitida. */
+  image?: string;
+  imageAlt?: string;
+  /** Leva quem abre a página para outro endereço (páginas de compartilhamento /p/{id}); o robô do WhatsApp lê o HTML antes. */
+  redirect?: string;
+  /** Fora do Google (páginas só de prévia). */
+  noindex?: boolean;
 }
-const { title = seo.titulo, description = seo.descricao } = Astro.props;
+const { title = seo.titulo, description = seo.descricao, image, imageAlt, redirect, noindex } = Astro.props;
 ---
 
 <!doctype html>
@@ -21,8 +28,22 @@ const { title = seo.titulo, description = seo.descricao } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {image && (
+      <>
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:site_name" content={marca.nome} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={Astro.url.href} />
+        <meta property="og:image" content={image} />
+        {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
+        <meta name="twitter:card" content="summary_large_image" />
+      </>
+    )}
+    {redirect && <meta http-equiv="refresh" content={`0; url=${redirect}`} />}
     <meta name="color-scheme" content="light dark" />
-    {import.meta.env.PUBLIC_NOINDEX === 'true' && <meta name="robots" content="noindex, nofollow" />}
+    {(noindex || import.meta.env.PUBLIC_NOINDEX === 'true') && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
     <meta name="generator" content={Astro.generator} />
     <!-- Tema antes do primeiro paint: escolha salva > preferência do sistema.

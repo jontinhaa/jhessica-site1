@@ -67,6 +67,7 @@ export function partesItem(i: ItemPedido, produtos: Produto[]) {
     adicionais: i.adicionais.map((a) => minuscula(p.adicionais!.find((x) => x.id === a)!.rotulo)),
     opcoes: (p.opcoes ?? []).filter((o) => i.opcoes[o.id]).map((o) => `${o.rotulo.toLowerCase()} ${minuscula(i.opcoes[o.id])}`),
     sabores: Object.entries(i.sabores).filter(([, n]) => n > 0).map(([s, n]) => `${n} ${s.toLowerCase()}`),
-    semOvo: i.semOvo,
+    // só nos produtos que têm as duas versões: a mensagem e a sacola dizem qual foi escolhida
+    versao: p.permiteSemOvo ? (i.semOvo ? 'sem ovos' : 'com ovos') : '',
   };
 }
