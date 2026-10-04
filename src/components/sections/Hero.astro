@@ -310,20 +310,25 @@ const faixa = [
 
   // ---------- poeira de açúcar (o "vapor" da Asagiri, virado açúcar de confeiteiro) ----------
   const sugar = (() => {
-    type Grain = { x: number; y: number; r: number; vy: number; ph: number; sw: number; a: number };
+    type Grain = { x: number; y: number; r: number; vy: number; ph: number; sw: number; a: number; born: number };
     const ctx = cv.getContext('2d')!;
     const DPR = Math.min(2, devicePixelRatio || 1);
+    const FADE = 1400; // ms para o grão ir de invisível ao alfa dele
+    let iniciado = false;
     let W = 0, H = 0, grains: Grain[] = [], raf = 0, last = 0, mx = -1e4, my = -1e4, rgb = '255,255,255';
-    const grain = (anywhere: boolean): Grain => ({
+    // born: instante em que o grão começa a aparecer (mesma base de tempo do requestAnimationFrame)
+    const grain = (anywhere: boolean, born = performance.now()): Grain => ({
       x: Math.random() * W, y: anywhere ? Math.random() * H : -12, r: (.45 + Math.random() * 1.6) * DPR,
-      vy: (.12 + Math.random() * .4) * DPR, ph: Math.random() * 6.28, sw: .2 + Math.random() * .6, a: .22 + Math.random() * .6,
+      vy: (.12 + Math.random() * .4) * DPR, ph: Math.random() * 6.28, sw: .2 + Math.random() * .6, a: .22 + Math.random() * .6, born,
     });
+    // surgimento em cascata: começa depois de `base` ms (o título entra primeiro) e se espalha por `span` ms
+    const stagger = (base: number, span: number) => performance.now() + base + Math.random() * span;
     const readColor = () => { rgb = getComputedStyle(document.documentElement).getPropertyValue('--sugar').trim() || rgb; };
     function size() {
       const r = cv.getBoundingClientRect(), w = Math.max(2, Math.round(r.width * DPR)), h = Math.max(2, Math.round(r.height * DPR));
       if (w === W && h === H) return; // barra do navegador no celular: mesmo tamanho, nada a refazer
       W = cv.width = w; H = cv.height = h;
-      grains = Array.from({ length: Math.min(120, Math.round(r.width * r.height / 13000)) }, () => grain(true));
+      grains = Array.from({ length: Math.min(120, Math.round(r.width * r.height / 13000)) }, () => grain(true, iniciado ? stagger(0, 800) : stagger(500, 2200)));
     }
     function frame(t: number) {
       raf = requestAnimationFrame(frame);
@@ -337,8 +342,12 @@ const faixa = [
         p.x += Math.sin(t * .0006 + p.ph) * p.sw * DPR * .45;
         const dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy;
         if (d2 < R * R) { const d = Math.sqrt(d2) || 1, f = (1 - d / R) * 2.4 * DPR; p.x += dx / d * f; p.y += dy / d * f; }
-        if (p.y > H + 12 || p.x < -20 || p.x > W + 20) grains[i] = grain(false);
-        ctx.globalAlpha = p.a;
+        if (p.y > H + 12 || p.x < -20 || p.x > W + 20) { grains[i] = grain(false, t); return; }
+        // entra com ease-out e apaga nos últimos 14% da altura, em vez de sumir cortado
+        const k = Math.min(1, Math.max(0, (t - p.born) / FADE)), vida = 1 - (1 - k) * (1 - k);
+        const alfa = p.a * vida * Math.min(1, Math.max(0, (H - p.y) / (H * .14)));
+        if (alfa < .005) return;
+        ctx.globalAlpha = alfa;
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
       });
       ctx.globalAlpha = 1;
@@ -351,7 +360,13 @@ const faixa = [
     hero.addEventListener('pointermove', (e) => { const r = cv.getBoundingClientRect(); mx = (e.clientX - r.left) * DPR; my = (e.clientY - r.top) * DPR; });
     hero.addEventListener('pointerleave', () => { mx = my = -1e4; });
     return (on: boolean) => {
-      if (on && !raf) { readColor(); raf = requestAnimationFrame(frame); }
+      if (on && !raf) {
+        readColor();
+        // 1ª partida: cascata longa depois do título; retomada: mais curta. Sempre contada daqui, não da criação dos grãos
+        grains.forEach((p) => { p.born = iniciado ? stagger(0, 800) : stagger(500, 2200); });
+        iniciado = true;
+        raf = requestAnimationFrame(frame);
+      }
       if (!on) { cancelAnimationFrame(raf); raf = 0; }
     };
   })();
