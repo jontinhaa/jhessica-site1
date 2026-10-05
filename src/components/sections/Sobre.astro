@@ -1,17 +1,107 @@
 ---
-// SOBRE · nossa história, quem faz. Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · 04 Layout): Padrão B "Dividido, mídia em parallax"
-// (.split.rev + .media com legenda .cap) com .meta (números) e .steps (passos à mão).
+// SOBRE · nossa história. Texto em `historia` (src/data/site.ts), vindo do briefing da cliente.
+// Retrato "sai da forma" (protótipo em docs/prototipos/sobre-retrato.html): forma --calda embaixo, foto com máscara de duas
+// camadas (livre em cima, recortada pela MESMA forma embaixo; um único --blob serve de fundo e de máscara), halo no tema
+// escuro e um batedor. Movimento preso à rolagem (CSS nativo): a foto sobe de dentro da forma e a forma cresce de .94 a 1.
+// A máscara fica num invólucro parado; só a imagem se move. Sem foto, quadro de espera (.ph).
+// .meta: só números calculados dos dados (cardápio e prazo mínimo), nunca fixos no markup.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
-import type { Secao } from '../../data/site';
+import Doodle from '../ui/Doodle.astro';
+import { produtos } from '../../data/cardapio';
+import { historia, regrasPedido, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
+
+const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/sobre/jhessica.{png,webp,avif}', { eager: true });
+const foto = Object.values(fotos)[0]?.default;
+
+const plural = (n: number, um: string, varios: string) => (n === 1 ? um : varios);
+const nProdutos = produtos.filter((p) => p.disponivel).length;
+const meta = [
+  { k: String(nProdutos), l: plural(nProdutos, 'produto no cardápio', 'produtos no cardápio') },
+  { k: String(regrasPedido.prazoMinimoDias), l: plural(regrasPedido.prazoMinimoDias, 'dia de antecedência, no mínimo', 'dias de antecedência, no mínimo') },
+];
 ---
 
 <section class="sec" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "Sobre" */}</div>
+    <div class="sobre">
+      <div class="texto">
+        {historia.paragrafos.map((p) => <p class="lead" data-rv>{p}</p>)}
+        <ul class="meta" data-rv>
+          {meta.map((m) => <li><span class="k">{m.k}</span><span class="l">{m.l}</span></li>)}
+        </ul>
+        <p class="assin hand" data-rv>{historia.assinatura}</p>
+      </div>
+
+      <figure class="retrato">
+        <div class="halo" aria-hidden="true"></div>
+        <div class="forma" aria-hidden="true"></div>
+        {foto ? (
+          <div class="foto-mascara">
+            <Image src={foto} alt={historia.fotoAlt} format="webp" widths={[520, 1040]}
+              sizes="(max-width: 860px) min(100vw - 40px, 400px), 520px" loading="lazy" />
+          </div>
+        ) : (
+          <div class="ph ph-empty ph--caramelo vazio" data-ph="sobre/jhessica.png"></div>
+        )}
+        <span class="rabisco" aria-hidden="true"><Doodle name="batedor" /></span>
+      </figure>
+    </div>
   </div>
 </section>
+
+<style>
+  .sobre { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+  .texto { display: flex; flex-direction: column; gap: 1.1rem; max-width: 36rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 2.4rem; margin-top: .8rem; list-style: none; padding: 0; }
+  .meta li { display: flex; flex-direction: column; }
+  .meta .k { font-family: var(--serif); font-size: 2.1rem; line-height: 1; color: var(--accent-ink); }
+  .meta .l { margin-top: .45rem; font-size: .75rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .assin { font-size: 2.1rem; line-height: 1; color: var(--accent-ink); margin-top: .6rem; }
+
+  /* ---------- o retrato que "sai" da forma ---------- */
+  .retrato {
+    /* UMA forma só: é o fundo (.forma) e a máscara da foto (.foto-mascara). Mexeu aqui, mexeu nos dois. */
+    --blob: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M52 1.5C76 2 98.5 19 98.5 47 98.5 77 79 99 49 98.5 20 98 1.5 79 1.5 51 1.5 21 27 1 52 1.5Z'/%3E%3C/svg%3E");
+    --forma-h: 74%;  /* altura da forma, de baixo para cima */
+    --livre-h: 63%;  /* até aqui (de cima) a foto é livre: é a linha mais larga da forma */
+    position: relative; margin: 0; aspect-ratio: 3 / 4; width: min(100%, 520px); justify-self: center;
+  }
+  .forma {
+    position: absolute; inset: auto 0 0 0; height: var(--forma-h); background: var(--calda); transform-origin: 50% 100%;
+    -webkit-mask: var(--blob) center / 100% 100% no-repeat; mask: var(--blob) center / 100% 100% no-repeat;
+  }
+  .foto-mascara {
+    position: absolute; inset: 0;
+    -webkit-mask: linear-gradient(#000 0 0) top / 100% var(--livre-h) no-repeat, var(--blob) bottom / 100% var(--forma-h) no-repeat;
+    mask: linear-gradient(#000 0 0) top / 100% var(--livre-h) no-repeat, var(--blob) bottom / 100% var(--forma-h) no-repeat;
+  }
+  .foto-mascara :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; }
+  .vazio { position: absolute; inset: auto 0 0 0; height: var(--forma-h); }
+
+  /* halo de caramelo atrás da cabeça, só no tema escuro */
+  .halo { position: absolute; top: -4%; left: 50%; width: 62%; aspect-ratio: 1; translate: -50% 0; background: radial-gradient(closest-side, rgba(var(--accent-rgb), var(--halo-a, 0)), transparent); }
+  :global([data-theme='dark']) .retrato { --halo-a: .3; }
+
+  .rabisco { position: absolute; top: 8%; right: 12%; width: clamp(54px, 7vw, 72px); color: var(--accent); rotate: 18deg; }
+
+  /* entrada presa à rolagem: a foto sobe ~10% de dentro da forma, a forma cresce de .94 a 1 (longhands: ver CLAUDE.md) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .foto-mascara :global(img) { animation-name: sobre-sobe; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range-start: entry 10%; animation-range-end: cover 40%; }
+      .forma { animation-name: sobre-cresce; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range-start: entry 10%; animation-range-end: cover 40%; }
+    }
+  }
+  @keyframes sobre-sobe { from { translate: 0 10%; } to { translate: 0 0; } }
+  @keyframes sobre-cresce { from { scale: .94; } to { scale: 1; } }
+
+  @media (max-width: 860px) {
+    .sobre { grid-template-columns: 1fr; }
+    .retrato { order: -1; width: min(100%, 400px); }
+  }
+</style>

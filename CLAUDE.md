@@ -43,7 +43,7 @@ src/
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra"),
                          PedidoFlutuante (pílula "Fazer pedido" até 1180px; esconda-a com data-esconde-pilula)
-  components/sections/   Hero + uma seção por item de `secoes` (hoje esqueletos com título e âncora)
+  components/sections/   Hero + uma seção por item de `secoes` (Sobre: retrato `sobre/jhessica.png` que "sai da forma", máscara de duas camadas com um --blob só; texto em `historia`)
   pages/index.astro      Hero + seções percorrendo `secoes`
   pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)
   pages/404.astro
@@ -100,6 +100,7 @@ src/
   Convenção de pastas e nomes em `docs/FOTOS.md`.
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
+- **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; **confirmar com a cliente desde quando a loja existe** (hoje a seção não cita data nem tempo de loja) e revisar o texto.
 - Ainda a confirmar com a cliente (TODO nos dados): **a versão sem ovos muda o prazo?** (mantido o prazo atual, igual ao do produto normal, até ela responder), se o brigadeiro leva castanha
   ou amêndoa, textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.

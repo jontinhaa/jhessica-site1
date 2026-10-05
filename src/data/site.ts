@@ -134,6 +134,19 @@ export const rotulosAlergenos: Record<Alergeno, string> = {
   soja: 'Soja',
 };
 
+/** Seção "Nossa história" (Sobre.astro). Texto a partir do briefing da cliente (seção 2, "História da marca").
+ *  Números do .meta não ficam aqui: a seção os calcula do cardápio e de `regrasPedido`. Sem data nem tempo de loja.
+ *  TODO: confirmar com a cliente desde quando a loja existe (só então entra "desde ..."); revisar o texto em primeira pessoa. */
+export const historia = {
+  paragrafos: [
+    'Depois que meu segundo filho nasceu, eu precisava de um jeito de trabalhar que coubesse na vida da nossa casa: gerar renda sem me afastar da família. Foi na minha cozinha que tudo começou.',
+    'A Jhessica em Cozinha Saudável nasceu desse movimento. Aqui tudo é feito à mão, em pequena escala e por encomenda, pensado para quem tem alguma restrição alimentar e para quem só quer comer melhor.',
+    'Restrição não precisa ser sinônimo de abrir mão do sabor. Cada receita é pensada para ser bonita, macia e do jeito que bolo de casa tem que ser.',
+  ],
+  assinatura: 'Jhessica',
+  fotoAlt: 'Jhessica, a confeiteira, sorrindo de braços cruzados, de blusa preta e calça branca',
+};
+
 export interface Secao {
   id: string;
   rotulo: string;
