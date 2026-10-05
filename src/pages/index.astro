@@ -14,6 +14,9 @@ import Perguntas from '../components/sections/Perguntas.astro';
 import Contato from '../components/sections/Contato.astro';
 import FaixaVideo from '../components/sections/FaixaVideo.astro';
 import { secoes } from '../data/site';
+import { getImage } from 'astro:assets';
+import ogPadrao from '../assets/images/og-padrao.jpg';
+import { dadosEstruturados } from '../lib/seo';
 
 const componentes = {
   cardapio: Cardapio,
@@ -28,9 +31,13 @@ const componentes = {
 
 const faltando = secoes.filter((s) => !(s.id in componentes)).map((s) => s.id);
 if (faltando.length) throw new Error(`Seção sem componente em pages/index.astro: ${faltando.join(', ')}`);
+
+// JSON-LD da confeitaria (Bakery) com a mesma imagem da prévia padrão do BaseLayout
+const og = await getImage({ src: ogPadrao, width: 1200, height: 630, format: 'jpeg', quality: 82 });
+const jsonLd = dadosEstruturados({ site: Astro.site, imagem: og.src });
 ---
 
-<BaseLayout>
+<BaseLayout jsonLd={jsonLd}>
   <Hero />
   {secoes.map((secao, i) => {
     const Secao = componentes[secao.id as keyof typeof componentes];

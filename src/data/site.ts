@@ -13,18 +13,31 @@ export const seo = {
   titulo: `${marca.nome} · Confeitaria artesanal em Marabá`,
   descricao: 'Bolos, pães e doces sem glúten e sem leite, feitos à mão em Marabá.',
   idioma: 'pt-BR',
+  // barra do navegador no celular (<meta name="theme-color">): meta tag não lê variável CSS, então os valores
+  // repetem o --bg de src/styles/tokens.css (modo dia e modo noite). Mudou o token, mude aqui.
+  corTema: { dia: '#F6EFE4', noite: '#140D0A' },
 } as const;
 
 // Endereço completo (rua, quadra, lote) NÃO entra no repositório: só o bairro; o resto é combinado no WhatsApp.
+// Horário de atendimento em HH:MM: os textos ("das 8h às 18h") e o JSON-LD da home saem daqui.
+const horario = { abre: '08:00', fecha: '18:00' };
+const hora = (hhmm: string) => `${Number(hhmm.slice(0, 2))}h${hhmm.endsWith(':00') ? '' : hhmm.slice(3)}`;
+
 export const contato = {
   whatsapp: '5594981080336', // DDI + DDD, só dígitos
   whatsappExibicao: '(94) 98108-0336',
   instagram: 'jhessica.em.cozinha.saudavel', // sem @
   bairroRetirada: 'Cidade Jardim',
   cidade: 'Marabá',
+  estado: 'PA',
   retirada: { dias: [1, 2, 3, 4, 5], texto: 'Retirada de segunda a sexta, com horário combinado' },
   // dias como em Date.getDay(): 0 = domingo … 6 = sábado
-  atendimento: { dias: [1, 2, 3, 4, 5], texto: 'Segunda a sexta, das 8h às 18h', textoCurto: 'Seg a sex · 8h às 18h' },
+  atendimento: {
+    dias: [1, 2, 3, 4, 5],
+    horario,
+    texto: `Segunda a sexta, das ${hora(horario.abre)} às ${hora(horario.fecha)}`,
+    textoCurto: `Seg a sex · ${hora(horario.abre)} às ${hora(horario.fecha)}`,
+  },
 };
 
 // Links das redes; string vazia se o contato faltar (o rodapé mostra o ícone desabilitado).

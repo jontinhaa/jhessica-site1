@@ -13,7 +13,10 @@ import { marca, regrasPedido } from '../data/site';
 import { categorias, getProdutosPorCategoria, produtos } from '../data/cardapio';
 ---
 
-<BaseLayout title={`Cardápio completo · ${marca.nome}`}>
+<BaseLayout
+  title={`Cardápio completo · ${marca.nome}`}
+  description="Monte seu pedido de bolos, pães, brigadeiros e Bento Cake sem glúten e sem leite na receita e envie pelo WhatsApp."
+>
   <section class="sec topo" data-aba={categorias[0].id}>
     <div class="wrapx">
       <SectionHeading rotulo="Cardápio" titulo="Monte seu" tituloDestaque="pedido." as="h1" />

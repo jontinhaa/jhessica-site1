@@ -13,6 +13,7 @@
     "check": "astro check",
     "fotos": "node scripts/checar-fotos.mjs",
     "prints": "node scripts/recortar-prints.mjs",
+    "imagens": "node scripts/gerar-imagens-padrao.mjs",
     "test": "node --test \"tests/**/*.test.mjs\"",
     "publicar:teste": "node scripts/publicar-teste.mjs"
   },

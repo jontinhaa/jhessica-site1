@@ -1,5 +1,6 @@
 ---
 // 404 · título no padrão das seções, um rabisco e dois caminhos de volta. Links por url()/pedido.href: respeitam o `base` do site.
+// Sempre noindex, inclusive em produção: a página de erro não deve aparecer no Google.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import Button from '../components/ui/Button.astro';
@@ -9,7 +10,7 @@ import { marca, pedido } from '../data/site';
 import { url } from '../lib/url';
 ---
 
-<BaseLayout title={`Página não encontrada · ${marca.nome}`}>
+<BaseLayout title={`Página não encontrada · ${marca.nome}`} noindex>
   <section class="sec nao-achada">
     <div class="wrapx">
       <span class="rabisco" aria-hidden="true"><Doodle name="cereja" /></span>

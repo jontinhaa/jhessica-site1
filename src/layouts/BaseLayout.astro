@@ -1,16 +1,18 @@
 ---
-import { Font } from 'astro:assets';
+import { Font, getImage } from 'astro:assets';
+import ogPadrao from '../assets/images/og-padrao.jpg';
 import { marca, seo } from '../data/site';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import PedidoFlutuante from '../components/ui/PedidoFlutuante.astro';
 import { url } from '../lib/url';
+import { urlAbsoluta } from '../lib/absoluta';
 import '../styles/global.css';
 
 interface Props {
   title?: string;
   description?: string;
-  /** Prévia do link (WhatsApp, redes): imagem já com endereço absoluto. Sem ela, nenhuma tag og:* é emitida. */
+  /** Prévia do link (WhatsApp, redes): imagem já com endereço absoluto. Sem ela, vale a padrão (og-padrao.jpg, 1200×630). */
   image?: string;
   imageAlt?: string;
   /** Tamanho real da imagem de prévia (og:image:width/height). */
@@ -20,10 +22,24 @@ interface Props {
   canonical?: string;
   /** Leva quem abre a página para outro endereço (páginas de compartilhamento /p/{id}); o robô do WhatsApp lê o HTML antes. */
   redirect?: string;
-  /** Fora do Google (páginas só de prévia). */
+  /** Fora do Google (páginas só de prévia, 404). */
   noindex?: boolean;
+  /** Dados estruturados (JSON-LD) desta página; a home manda o da confeitaria (src/lib/seo.ts). */
+  jsonLd?: object;
 }
-const { title = seo.titulo, description = seo.descricao, image, imageAlt, imageLargura, imageAltura, canonical, redirect, noindex } = Astro.props;
+const { title = seo.titulo, description = seo.descricao, imageAlt, canonical, redirect, noindex, jsonLd } = Astro.props;
+
+// prévia padrão: jpeg 1200×630 (o WhatsApp ignora imagem pesada ou em webp em alguns aparelhos)
+const padrao = Astro.props.image ? undefined : await getImage({ src: ogPadrao, width: 1200, height: 630, format: 'jpeg', quality: 82 });
+const image = Astro.props.image ?? urlAbsoluta(padrao!.src, Astro.site);
+const imageLargura = Astro.props.image ? Astro.props.imageLargura : 1200;
+const imageAltura = Astro.props.image ? Astro.props.imageAltura : 630;
+const imageAltFinal = imageAlt ?? (Astro.props.image ? undefined : `Bolo de chocolate coberto de calda em forma de alumínio, ${marca.nome}`);
+const fora = noindex || import.meta.env.PUBLIC_NOINDEX === 'true';
+// canonical: o informado (páginas de prévia apontam para o /pedido) ou o próprio endereço, sem query, nas páginas indexáveis
+const canonicalFinal = canonical ?? (noindex ? undefined : new URL(Astro.url.pathname, Astro.site ?? Astro.url).href);
+// JSON-LD dentro de <script>: "<" escapado para nenhum texto fechar a tag
+const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -33,32 +49,40 @@ const { title = seo.titulo, description = seo.descricao, image, imageAlt, imageL
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {image && (
-      <>
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="pt_BR" />
-        <meta property="og:site_name" content={marca.nome} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={Astro.url.href} />
-        <meta property="og:image" content={image} />
-        {imageLargura && <meta property="og:image:width" content={String(imageLargura)} />}
-        {imageAltura && <meta property="og:image:height" content={String(imageAltura)} />}
-        {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
-        <meta name="twitter:card" content="summary_large_image" />
-      </>
-    )}
-    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={marca.nome} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:image" content={image} />
+    {imageLargura && <meta property="og:image:width" content={String(imageLargura)} />}
+    {imageAltura && <meta property="og:image:height" content={String(imageAltura)} />}
+    {imageAltFinal && <meta property="og:image:alt" content={imageAltFinal} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    {canonicalFinal && <link rel="canonical" href={canonicalFinal} />}
     {redirect && <meta http-equiv="refresh" content={`0; url=${redirect}`} />}
     {redirect && <script is:inline define:vars={{ redirect }}>location.replace(redirect);</script>}
     <meta name="color-scheme" content="light dark" />
-    {(noindex || import.meta.env.PUBLIC_NOINDEX === 'true') && <meta name="robots" content="noindex, nofollow" />}
+    <!-- barra do navegador: começa pelo tema do sistema; o script abaixo acompanha o tema escolhido no site -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content={seo.corTema.dia} data-dia={seo.corTema.dia} data-noite={seo.corTema.noite} />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content={seo.corTema.noite} data-dia={seo.corTema.dia} data-noite={seo.corTema.noite} />
+    {fora && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
+    {ld && <script type="application/ld+json" set:html={ld} />}
     <meta name="generator" content={Astro.generator} />
     <!-- Tema antes do primeiro paint: escolha salva > preferência do sistema.
-         Reaplicado quando a página volta do cache de voltar/avançar (o script não roda de novo) e quando outra aba troca o tema. -->
+         Reaplicado quando a página volta do cache de voltar/avançar (o script não roda de novo) e quando outra aba troca o tema.
+         A cor da barra do navegador (theme-color) segue o data-theme, inclusive quando a chave do site troca o tema. -->
     <script is:inline>
       (function () {
+        var raiz = document.documentElement;
+        function pintarBarra() {
+          var dia = raiz.getAttribute('data-theme') === 'light';
+          document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute('content', dia ? m.dataset.dia : m.dataset.noite); });
+        }
+        new MutationObserver(pintarBarra).observe(raiz, { attributes: true, attributeFilter: ['data-theme'] });
         function aplicar() {
           var t = null;
           try { t = localStorage.getItem('theme'); } catch (e) {}

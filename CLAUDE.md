@@ -35,12 +35,15 @@ src/
   data/perguntas.ts      perguntas frequentes; respostas montadas dos dados (regrasPedido, compromisso, conservacao, cardápio);
                          `pendente` oculta a pergunta
   scripts/checar-fotos.mjs  npm run fotos: confere as fotos esperadas
+  scripts/gerar-imagens-padrao.mjs  npm run imagens: refaz og-padrao.jpg (prévia de link) e public/apple-touch-icon.png
   components/pedido/     ProdutoCard (card .produto) e ProdutoPainel (<dialog> "Detalhes", um por produto, abre com
                          [data-abrir="{id}"] ou ?produto={id}; o voltar do navegador fecha)
   pages/p/[id].astro     uma página por produto (/p/{id}) só para a prévia do link (og:*), que redireciona ao /pedido?produto={id}
   scripts/compartilhar.ts  botão "Compartilhar" do card e do painel: folha nativa, senão copia (toast) e, se falhar, mostra o link num campo
   lib/pedido/compartilhar.ts  linkProduto, textoCompartilhar, dadosCompartilhar (puros, testados)
   lib/absoluta.ts        urlAbsoluta (og:image precisa de endereço absoluto; Astro.site vem de SITE_URL)
+  lib/seo.ts             JSON-LD da home (Bakery) a partir de site.ts e do cardápio; sem avaliação/nota (tests/seo.test.mjs)
+  pages/sitemap.xml.ts, pages/robots.txt.ts  endpoints estáticos: sitemap só com home e /pedido; com PUBLIC_NOINDEX, sitemap vazio e robots sem sitemap (o noindex das páginas é que segura)
   components/pedido/Sacola.astro  sacola em <dialog class="folha"> (comanda → como receber → enviado), barra do celular
   lib/pedido/            lógica pura e testada: itens (chave), precos (sempre do cardápio), prazos (datas), mensagem (WhatsApp)
   scripts/sacola.ts      estado da sacola no localStorage "jhessica:sacola:v1" (só itens e nome; endereço nunca)
@@ -116,7 +119,8 @@ src/
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
 - Ainda a confirmar com a cliente (TODO nos dados): **ingredientes e frase de descrição de cada produto** (ela vai mandar), textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
-- **Prévia do link (/p/{id}) usa a imagem padrão `src/assets/images/og-padrao.jpg`** (1200×630, recorte do poster da hero; será a OG padrão do site) enquanto os produtos não têm `capa`: trocar quando as fotos reais chegarem.
+- **Domínio de produção ainda não escolhido** (a cliente vai decidir): `<domínio>` em `docs/LANCAMENTO.md` e o `SITE_URL` do Cloudflare Pages dependem dele.
+- **Prévia de link padrão `src/assets/images/og-padrao.jpg`** (1200×630, gerada por `npm run imagens` a partir do poster da hero, com a forma no centro para o recorte quadrado do WhatsApp): vale na home, no /pedido, na 404 e nos /p/{id} de produto sem `capa`.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
 - **Fotos provisórias** (listadas nos `FONTES-PROVISORIAS.md` de cada pasta; `npm run fotos` cobra): vitrine (brigadeiros,
   bento), Bento (destaque e modelos; a foto de agora é um bolo redondo com frutas, não um bento), Bento Cake (capa e corte)
