@@ -1,0 +1,104 @@
+---
+// Tela de carregamento · "o forno preaquecendo" (design system, seção 04 · loader): a forminha se desenha, o odômetro
+// sobe até 180 °C conforme as fontes e o pôster da hero carregam, e a tela some com "no ponto · pode servir".
+// Só na home e uma vez por sessão: o BaseLayout marca <html data-forno> e o script inline do <head> põe
+// html.carregando antes do primeiro quadro (sem JS, ou já vista na sessão, a tela nem aparece).
+// Enquanto ela está na tela, a entrada da hero fica pausada e começa quando a tela some.
+import { marca } from '../../data/site';
+import { scallop } from '../ui/mark';
+
+const graus = Array.from({ length: 181 }, (_, i) => String(i).padStart(3, '0'));
+---
+
+<div class="forno" role="status" aria-label="Carregando">
+  <div class="lw" aria-hidden="true">
+    <svg class="mark" viewBox="0 0 80 80">
+      <path class="sc" pathLength="1" d={scallop} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+      <g class="jj">
+        <circle cx="40" cy="40" r="23" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2.5 3.2" opacity=".7" />
+        <text x="40.5" y="51" text-anchor="middle" style="font-family: var(--serif)" font-style="italic" font-size="31" fill="currentColor">J</text>
+      </g>
+    </svg>
+    <div class="wordmark">{marca.nomeCurto}</div>
+    <div class="lsub">confeitaria artesanal</div>
+    <div class="odo"><span class="br">[</span><span class="win"><span class="reel">{graus.map((g) => <div>{g}</div>)}</span></span><span class="br">/ 180 <em>°C</em> ]</span></div>
+    <div class="lbar"><i></i></div>
+    <div class="lnote">preaquecendo o forno</div>
+  </div>
+</div>
+
+<style>
+  .forno { display: none; position: fixed; inset: 0; z-index: 200; place-items: center; background: var(--bg); transition: opacity .9s ease, visibility .9s; }
+  :global(html.carregando) .forno, .forno.saindo { display: grid; }
+  .forno.saindo { opacity: 0; visibility: hidden; pointer-events: none; }
+  :global(html.carregando) { overflow: hidden; }
+  /* a entrada da hero (CSS por tempo) espera a tela sumir */
+  :global(html.carregando .hero), :global(html.carregando .hero *) { animation-play-state: paused !important; }
+
+  .lw { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .mark { width: 82px; height: 82px; color: var(--accent); margin-bottom: 1.3rem; }
+  .sc { stroke-dasharray: 1; stroke-dashoffset: 1; animation: forno-desenha 2s var(--e-out) .1s forwards; }
+  .jj { opacity: 0; animation: forno-aparece 1s ease .9s forwards; }
+  .wordmark { padding-left: .42em; }
+  .lsub { margin-top: .55rem; font-size: .56rem; letter-spacing: .5em; text-transform: uppercase; color: var(--accent-ink); padding-left: .5em; }
+  .odo { display: flex; align-items: center; gap: .35em; margin-top: 2.1rem; font-family: var(--serif); font-weight: 300; font-size: 2.3rem; line-height: 1; color: var(--ink); }
+  .br { color: var(--muted); }
+  /* cada grau ocupa 1.3em: com linha de 1em os algarismos da Newsreader passam da caixa e o número seguinte aparecia
+     cortado na borda de baixo da janela. O script anda de 1.3em em 1.3em (PASSO). */
+  .win { position: relative; width: 1.75em; height: 1.3em; overflow: hidden; }
+  .reel { position: absolute; left: 0; top: 0; width: 100%; text-align: center; will-change: transform; }
+  .reel div { height: 1.3em; line-height: 1.3; }
+  .odo em { font-style: italic; color: var(--accent); }
+  .lbar { position: relative; width: 180px; height: 1px; margin-top: 1.4rem; overflow: hidden; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .lbar i { position: absolute; inset: 0; width: 45%; background: linear-gradient(90deg, transparent, var(--ink), transparent); animation: forno-brilho 1.5s infinite; }
+  .lnote { margin-top: 1rem; font-size: .58rem; letter-spacing: .34em; text-transform: uppercase; color: var(--muted); }
+  @keyframes forno-brilho { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+  @keyframes forno-desenha { to { stroke-dashoffset: 0; } }
+  @keyframes forno-aparece { to { opacity: 1; } }
+
+  /* movimento reduzido: forminha já desenhada, sem brilho correndo; o odômetro só conta rápido */
+  @media (prefers-reduced-motion: reduce) {
+    .sc { animation: none; stroke-dashoffset: 0; }
+    .jj { animation: none; opacity: 1; }
+    .lbar i { animation: none; opacity: 0; }
+    .forno { transition-duration: .3s; }
+  }
+</style>
+
+<script>
+  const raiz = document.documentElement;
+  const forno = document.querySelector<HTMLElement>('.forno');
+  if (forno && raiz.classList.contains('carregando')) {
+    const reel = forno.querySelector<HTMLElement>('.reel')!;
+    const nota = forno.querySelector<HTMLElement>('.lnote')!;
+    const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const MIN = reduzido ? 300 : 1700; // tempo mínimo para a subida não ser um piscar
+    const PASSO = 1.3; // altura de cada grau no odômetro, em em (igual ao CSS de .reel div)
+    const t0 = performance.now();
+
+    // progresso real: fontes (40%) e o pôster da hero (60%); depois de 5,5 s termina de qualquer jeito
+    let fontes = false, poster = false, forcado = false;
+    (document.fonts?.ready ?? Promise.resolve()).then(() => { fontes = true; });
+    const src = document.querySelector<HTMLVideoElement>('.hero video')?.poster;
+    if (src) { const img = new Image(); img.onload = img.onerror = () => { poster = true; }; img.src = src; } else poster = true;
+    setTimeout(() => { forcado = true; }, 5500);
+
+    let atual = 0;
+    const passo = (t: number) => {
+      const prog = forcado ? 1 : (fontes ? .4 : 0) + (poster ? .6 : 0);
+      const alvo = 180 * Math.min(prog, Math.min(1, (t - t0) / MIN));
+      atual += (alvo - atual) * .16;
+      if (alvo === 180 && 180 - atual < .8) atual = 180;
+      reel.style.transform = `translateY(-${Math.round(atual) * PASSO}em)`;
+      if (atual < 180) { requestAnimationFrame(passo); return; }
+      nota.textContent = 'no ponto · pode servir';
+      setTimeout(() => {
+        try { sessionStorage.setItem('jhessica:forno', '1'); } catch {}
+        forno.classList.add('saindo'); // mantém a tela visível só para o fade
+        raiz.classList.remove('carregando'); // a hero começa a entrar
+        forno.addEventListener('transitionend', () => forno.remove(), { once: true });
+      }, 420);
+    };
+    requestAnimationFrame(passo);
+  }
+</script>

@@ -37,7 +37,7 @@ const og = await getImage({ src: ogPadrao, width: 1200, height: 630, format: 'jp
 const jsonLd = dadosEstruturados({ site: Astro.site, imagem: og.src });
 ---
 
-<BaseLayout jsonLd={jsonLd}>
+<BaseLayout jsonLd={jsonLd} carregando>
   <Hero />
   {secoes.map((secao, i) => {
     const Secao = componentes[secao.id as keyof typeof componentes];

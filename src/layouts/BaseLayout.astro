@@ -5,6 +5,7 @@ import { marca, seo } from '../data/site';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import PedidoFlutuante from '../components/ui/PedidoFlutuante.astro';
+import Carregando from '../components/layout/Carregando.astro';
 import { url } from '../lib/url';
 import { urlAbsoluta } from '../lib/absoluta';
 import '../styles/global.css';
@@ -26,8 +27,10 @@ interface Props {
   noindex?: boolean;
   /** Dados estruturados (JSON-LD) desta página; a home manda o da confeitaria (src/lib/seo.ts). */
   jsonLd?: object;
+  /** Tela de carregamento "o forno preaquecendo" (só a home), uma vez por sessão. */
+  carregando?: boolean;
 }
-const { title = seo.titulo, description = seo.descricao, imageAlt, canonical, redirect, noindex, jsonLd } = Astro.props;
+const { title = seo.titulo, description = seo.descricao, imageAlt, canonical, redirect, noindex, jsonLd, carregando } = Astro.props;
 
 // prévia padrão: jpeg 1200×630 (o WhatsApp ignora imagem pesada ou em webp em alguns aparelhos)
 const padrao = Astro.props.image ? undefined : await getImage({ src: ogPadrao, width: 1200, height: 630, format: 'jpeg', quality: 82 });
@@ -43,7 +46,7 @@ const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
-<html lang={seo.idioma} data-theme="dark">
+<html lang={seo.idioma} data-theme="dark" data-forno={carregando ? '' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -83,6 +86,12 @@ const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
           document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute('content', dia ? m.dataset.dia : m.dataset.noite); });
         }
         new MutationObserver(pintarBarra).observe(raiz, { attributes: true, attributeFilter: ['data-theme'] });
+        // tela de carregamento (Carregando.astro): só onde a página pediu e uma vez por sessão; decidido antes do 1º quadro
+        if (raiz.hasAttribute('data-forno')) {
+          var visto = false;
+          try { visto = sessionStorage.getItem('jhessica:forno') === '1'; } catch (e) {}
+          if (!visto) raiz.classList.add('carregando');
+        }
         function aplicar() {
           var t = null;
           try { t = localStorage.getItem('theme'); } catch (e) {}
@@ -101,6 +110,7 @@ const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
     <Font cssVariable="--font-hand" />
   </head>
   <body>
+    {carregando && <Carregando />}
     <div class="page-bg" aria-hidden="true"><div class="grain"></div><i class="glow g1"></i><i class="glow g2"></i></div>
     <Header />
     <main>

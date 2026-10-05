@@ -50,7 +50,8 @@ src/
   scripts/folha.ts       tocar fora / arrastar a alça para fechar os <dialog class="folha">  ·  scripts/tilt.ts  tilt 3D
   tests/                 npm test (node:test, importa os .ts direto; Node ≥ 23.6)
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
-  components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
+  components/layout/     Header (nav de vidro + gaveta com foco preso), Footer, Carregando (tela "o forno preaquecendo" do DS:
+                         só na home, uma vez por sessão via <html data-forno> + html.carregando; pausa a entrada da hero)
   components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, Carimbo (texto girando; Bento e Contato), SectionHeading,
                          CenaIngrediente (verso de "O que entra"),
                          PedidoFlutuante (pílula "Fazer pedido" até 1180px; esconda-a com data-esconde-pilula)
