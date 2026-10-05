@@ -20,7 +20,7 @@ const { text = true, href = url() } = Astro.props;
   {text && (
     <span class="bt">
       <b>{marca.nomeCurto}</b>
-      <small>{marca.assinatura}</small>
+      <small><i>{marca.ligacao}</i>{marca.assinatura}</small>
     </span>
   )}
 </a>
@@ -31,6 +31,8 @@ const { text = true, href = url() } = Astro.props;
   .brand:hover .mark { transform: rotate(-12deg) scale(1.05); color: var(--accent-2); }
   .bt { display: flex; flex-direction: column; gap: .28rem; }
   .bt b { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; line-height: 1; letter-spacing: .3em; text-transform: uppercase; }
-  .bt small { font-size: .5rem; font-weight: 600; letter-spacing: .34em; text-transform: uppercase; color: var(--accent-ink); }
+  .bt small { display: flex; align-items: baseline; gap: .55rem; font-size: .5rem; font-weight: 600; letter-spacing: .34em; text-transform: uppercase; color: var(--accent-ink); }
+  /* "em": a letra de mão do site (a terceira fonte da marca), pequena, entre o nome e a assinatura; line-height 0 para não aumentar a altura da marca */
+  .bt small i { font-family: var(--hand); font-style: normal; font-weight: 400; font-size: 1.05rem; line-height: 0; letter-spacing: 0; text-transform: none; }
   @media (max-width: 640px) { .bt small { display: none; } }
 </style>

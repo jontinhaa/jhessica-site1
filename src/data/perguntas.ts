@@ -1,11 +1,6 @@
 // Perguntas frequentes (seção Perguntas). Cada resposta é MONTADA dos dados (regrasPedido, compromisso, conservacao, contato,
 // passosPedido e o cardápio), não é texto solto: mudou um prazo, uma entrega ou um alérgeno, a resposta muda junto.
 // Pergunta com `pendente` fica oculta (ou vai sem a parte pendente) até a cliente responder; tire o campo quando entrar o dado.
-//
-// PENDÊNCIAS DA CLIENTE (também em jhess-site/CLAUDE.md):
-//  - o brigadeiro leva castanha ou amêndoa? (hoje a resposta 3 só diz "pode conter", como está no cardápio);
-//  - a versão sem ovos muda o prazo? (a resposta 4 não cita prazo);
-//  - o Bento pode ter nome ou idade escritos? (pergunta 9, oculta).
 import { categorias, produtos, type Alergeno, type CategoriaId } from './cardapio.ts';
 import { compromisso, conservacao, contato, diasDeEntrega, entregaConfirmada, passosPedido, regrasPedido, rotulosAlergenos, textoCozinha } from './site.ts';
 
@@ -112,13 +107,19 @@ const todas: Pergunta[] = [
         + (acucar ? ` Usamos ${minusculo(acucar.nome)}. ${acucar.porque.split('. ').slice(1).join('. ')}`.trimEnd() : ''),
     ],
   },
-  { id: 'alergenos', pergunta: 'Quais alérgenos os produtos têm?', resposta: respostaAlergenos() },
+  {
+    id: 'alergenos',
+    pergunta: 'Quais alérgenos os produtos têm?',
+    resposta: [
+      ...respostaAlergenos(),
+      'O brigadeiro tem base de inhame e não leva castanha nem amêndoa; o de paçoca leva amendoim e o beijinho leva coco. Como tudo é feito na mesma cozinha, pode conter traços.',
+    ],
+  },
   {
     id: 'sem-ovos',
     pergunta: 'Tem versão sem ovos?',
-    // PENDENTE (cliente): se a versão sem ovos muda o prazo. Até responder, a resposta não cita prazo.
     resposta: [
-      `Sim, no ${lista(doCardapio.filter((p) => p.permiteSemOvo).map((p) => minusculo(p.nome)))}. É a mesma receita, sem ovos, pelo mesmo preço. Escolha "Quero sem ovos" ao montar o pedido.`,
+      `Sim, no ${lista(doCardapio.filter((p) => p.permiteSemOvo).map((p) => minusculo(p.nome)))}. É a mesma receita, sem ovos, pelo mesmo preço e com o mesmo prazo das versões com ovo (${regrasPedido.prazoMinimoDias} dias). Escolha "Quero sem ovos" ao montar o pedido.`,
     ],
   },
   { id: 'prazo', pergunta: 'Com quanto tempo preciso pedir?', resposta: respostaPrazos() },
@@ -142,8 +143,7 @@ const todas: Pergunta[] = [
   {
     id: 'bento-nome-idade',
     pergunta: 'O Bento pode ter nome ou idade escritos?',
-    resposta: [],
-    pendente: 'A cliente ainda não respondeu se o Bento aceita nome ou idade escritos.',
+    resposta: ['Não. O Bento sai com a decoração dos modelos da casa, sem escrita.'],
   },
 ];
 

@@ -4,7 +4,7 @@
 // camadas (livre em cima, recortada pela MESMA forma embaixo; um único --blob serve de fundo e de máscara), halo no tema
 // escuro e um batedor. Movimento preso à rolagem (CSS nativo): a foto sobe de dentro da forma e a forma cresce de .94 a 1.
 // A máscara fica num invólucro parado; só a imagem se move. Sem foto, quadro de espera (.ph).
-// .meta: só números calculados dos dados (cardápio e prazo mínimo), nunca fixos no markup.
+// .meta: números calculados dos dados (cardápio e prazo mínimo), nunca fixos no markup; a data da loja é fixa, vem de `historia.desde`.
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -21,6 +21,7 @@ const foto = Object.values(fotos)[0]?.default;
 const plural = (n: number, um: string, varios: string) => (n === 1 ? um : varios);
 const nProdutos = produtos.filter((p) => p.disponivel).length;
 const meta = [
+  { k: historia.desde.ano, l: historia.desde.texto },
   { k: String(nProdutos), l: plural(nProdutos, 'produto no cardápio', 'produtos no cardápio') },
   { k: String(regrasPedido.prazoMinimoDias), l: plural(regrasPedido.prazoMinimoDias, 'dia de antecedência, no mínimo', 'dias de antecedência, no mínimo') },
 ];

@@ -1,5 +1,5 @@
 ---
-// BENTO CAKE · o bolo de aniversário pequeno: preço, sabores, prazo e como pedir, em segundos.
+// BENTO CAKE · o bolo de aniversário: preço, sabores, prazo e como pedir, em segundos.
 // DS · Padrão B (.split foto 1.18fr | texto .82fr), .carimbo, .stat-list, .tag--caramelo, .cap, .ph.
 // Dados: produto da categoria "bento" (preço, massas, recheios) em src/data/cardapio.ts; prazo por prazoDias (7 dias,
 // sempre); WhatsApp em contato; quantidade de modelos em fotosBento (site.ts). Nada de valor fixo aqui.
@@ -38,7 +38,6 @@ const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/b
 const foto = (nome: string) => Object.entries(fotos).find(([caminho]) => caminho.split('/').pop()!.replace(/\.\w+$/, '') === nome)?.[1].default;
 const destaque = foto('destaque');
 const variantesPh = ['ph--caramelo', 'ph--fruta', 'ph--pista'];
-// TODO: nomes dos modelos com a cliente
 const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1, foto: foto(`modelo-${i + 1}`), ph: variantesPh[i % variantesPh.length] }));
 ---
 
@@ -56,7 +55,7 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
         </figure>
 
         <div class="copy">
-          <p class="lead" data-rv>Um bolo de aniversário pequeno e bonito, com receita sem glúten e sem leite, para a festa inteira dividir.</p>
+          <p class="lead" data-rv>Um bolo de aniversário bonito e macio, com receita sem glúten e sem leite, para a festa inteira dividir.</p>
 
           <div class="stats" data-rv>
             <ul class="stat-list">
@@ -88,7 +87,7 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
         <ul class="fileira">
           {modelos.map((m) => (
             <li class:list={['modelo', !m.foto && ['ph', 'ph-empty', m.ph]]} data-ph={m.foto ? undefined : `bento/modelo-${m.n}`}>
-              {m.foto && <Image src={m.foto} alt={`Bento Cake, modelo ${m.n}`} widths={[300, 480, 640]} sizes="(max-width: 860px) 76vw, (max-width: 1400px) 30vw, 420px" loading="lazy" />}
+              {m.foto && <Image src={m.foto} alt="Bento Cake de aniversário" widths={[300, 480, 640]} sizes="(max-width: 860px) 76vw, (max-width: 1400px) 30vw, 420px" loading="lazy" />}
               <span class="cap">Modelo {m.n}</span>
             </li>
           ))}

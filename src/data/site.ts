@@ -5,7 +5,8 @@ import { url } from '../lib/url.ts';
 export const marca = {
   nome: 'Jhessica em Cozinha Saudável',
   nomeCurto: 'Jhessica',
-  assinatura: 'Confeitaria artesanal',
+  ligacao: 'em',
+  assinatura: 'Cozinha Saudável',
 } as const;
 
 export const seo = {
@@ -146,9 +147,10 @@ export const rotulosAlergenos: Record<Alergeno, string> = {
 };
 
 /** Seção "Nossa história" (Sobre.astro). Texto a partir do briefing da cliente (seção 2, "História da marca").
- *  Números do .meta não ficam aqui: a seção os calcula do cardápio e de `regrasPedido`. Sem data nem tempo de loja.
- *  TODO: confirmar com a cliente desde quando a loja existe (só então entra "desde ..."); revisar o texto em primeira pessoa. */
+ *  Números do .meta não ficam aqui: a seção os calcula do cardápio e de `regrasPedido`. `desde` é data fixa (nada de "há X anos").
+ *  TODO: revisar o texto em primeira pessoa com a cliente. */
 export const historia = {
+  desde: { ano: '2025', texto: 'desde setembro' },
   paragrafos: [
     'Depois que meu segundo filho nasceu, eu precisava de um jeito de trabalhar que coubesse na vida da nossa casa: gerar renda sem me afastar da família. Foi na minha cozinha que tudo começou.',
     'A Jhessica em Cozinha Saudável nasceu desse movimento. Aqui tudo é feito à mão, em pequena escala e por encomenda, pensado para quem tem alguma restrição alimentar e para quem só quer comer melhor.',
@@ -173,7 +175,7 @@ const nbsp = String.fromCharCode(160);
 // Ordem da home. O número do sobretítulo é a posição (índice + 1); o id vira âncora e item de menu.
 export const secoes: Secao[] = [
   { id: 'cardapio', rotulo: 'Cardápio', titulo: 'Do café da manhã', tituloDestaque: `à${nbsp}sobremesa.`, noMenu: true },
-  { id: 'bento-cake', rotulo: 'Bento Cake', titulo: 'Conta pra gente', tituloDestaque: 'a festa.', noMenu: false },
+  { id: 'bento-cake', rotulo: 'Bento Cake', titulo: 'Pra cantar parabéns', tituloDestaque: 'sem abrir mão do sabor.', noMenu: false },
   { id: 'ingredientes', rotulo: 'Ingredientes', titulo: 'O que entra', tituloDestaque: `e${nbsp}o${nbsp}que fica de fora.`, noMenu: false },
   { id: 'como-pedir', rotulo: 'Como pedir', titulo: 'Do forno à mesa,', tituloDestaque: 'em quatro tempos.', noMenu: true },
   { id: 'sobre', rotulo: 'Nossa história', titulo: 'Uma cozinha', tituloDestaque: 'que nasceu em casa.', noMenu: true, rotuloMenu: 'Sobre' },

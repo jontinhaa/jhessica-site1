@@ -111,10 +111,8 @@ src/
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
 - **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
-- **Perguntas (`data/perguntas.ts`), pendências da cliente:** o brigadeiro leva castanha/amêndoa? (hoje: "pode conter"); a versão sem ovos muda o prazo? (a resposta não cita prazo); o Bento aceita nome ou idade escritos? (pergunta oculta até responder).
-- **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; **confirmar com a cliente desde quando a loja existe** (hoje a seção não cita data nem tempo de loja) e revisar o texto.
-- Ainda a confirmar com a cliente (TODO nos dados): **a versão sem ovos muda o prazo?** (mantido o prazo atual, igual ao do produto normal, até ela responder), se o brigadeiro leva castanha
-  ou amêndoa, textos de "O que entra" e o texto do depoimento da Karen.
+- **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
+- Ainda a confirmar com a cliente (TODO nos dados): **ingredientes e frase de descrição de cada produto** (ela vai mandar), textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
 - **Prévia do link (/p/{id}) usa a imagem padrão `src/assets/images/og-padrao.jpg`** (1200×630, recorte do poster da hero; será a OG padrão do site) enquanto os produtos não têm `capa`: trocar quando as fotos reais chegarem.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).

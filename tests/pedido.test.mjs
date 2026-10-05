@@ -151,8 +151,10 @@ test('textoCompartilhar: nome, preço "a partir de" e a receita só quando o car
 test('perguntas: as respostas saem dos dados e a pergunta com pendência fica oculta', () => {
   const todas = perguntas.map((p) => p.resposta.join(' ')).join(' ');
   assert.ok(perguntas.every((p) => !p.pendente && p.resposta.length > 0));
-  assert.ok(perguntasPendentes.some((p) => p.id === 'bento-nome-idade'));
-  assert.ok(!perguntas.some((p) => p.id === 'bento-nome-idade'));
+  assert.equal(perguntasPendentes.length, 0);
+  assert.match(perguntas.find((p) => p.id === 'bento-nome-idade').resposta.join(' '), /sem escrita/);
+  assert.match(perguntas.find((p) => p.id === 'sem-ovos').resposta.join(' '), new RegExp(`mesmo prazo.*${regrasPedido.prazoMinimoDias} dias`));
+  assert.match(perguntas.find((p) => p.id === 'alergenos').resposta.join(' '), /base de inhame e não leva castanha nem amêndoa/);
   assert.match(respostaPrazos().join(' '), new RegExp(`${regrasPedido.prazoMinimoDias} dias`));
   assert.match(respostaPrazos().join(' '), new RegExp(`${regrasPedido.limiteBrigadeirosUnidades} unidades pedem ${regrasPedido.prazoEspecialDias} dias`));
   assert.match(respostaEntrega().join(' '), /domingos/);

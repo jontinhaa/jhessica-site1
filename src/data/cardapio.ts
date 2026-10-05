@@ -61,7 +61,7 @@ const fatia: Variante[] = [{ id: 'fatia', rotulo: 'Fatia', preco: 30 }];
 // Os dois saem só destes campos (permiteSemOvo, maisPedido), nunca do nome ou da categoria; os testes travam as listas.
 const base = {
   alergenos: { contem: ['ovo', 'castanhas'], podeConter: ['soja', 'gluten', 'leite'] } as Produto['alergenos'],
-  permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço. TODO: confirmar com a Jéssica se a versão sem ovos muda o prazo (por ora é igual ao do produto normal)
+  permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço e pelo mesmo prazo
   disponivel: true,
 };
 
@@ -87,7 +87,7 @@ export const produtos: Produto[] = [
 
   {
     ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 ou 12 brigadeiros, com sabores misturados.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
-    // brigadeiro não leva ovo (selo "sem ovo"). TODO: confirmar se leva castanha ou amêndoa (por ora só "pode conter")
+    // brigadeiro não leva ovo (selo "sem ovo"); a base é de inhame, sem castanha nem amêndoa ("castanhas" em podeConter é traço da cozinha)
     alergenos: { contem: [], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
     variantes: [
       { id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30, unidades: 6 },
@@ -101,7 +101,7 @@ export const produtos: Produto[] = [
   },
 
   {
-    ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário pequeno, com massa e recheio à escolha.', imagem: img('bento-cake'),
+    ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário, com massa e recheio à escolha.', imagem: img('bento-cake'),
     variantes: [{ id: 'unico', rotulo: 'Bento Cake', preco: 150 }],
     opcoes: [
       { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate' }] },
