@@ -1,7 +1,9 @@
-// "Compartilhar" do card: menu nativo do celular (navigator.share); sem ele, copia o link da página /p/{id}.
-// O link só leva o id do produto, nenhum dado de quem compartilha.
-import { url } from '../lib/url';
+// "Compartilhar" (card e painel Detalhes): folha nativa do celular (navigator.share); sem ela, copia o link da página /p/{id}.
+// O link só leva o id do produto, nenhum dado de quem compartilha. Link, título e texto vêm prontos no build (lib/pedido/compartilhar).
 import { aviso } from './sacola';
+
+export interface DadosCompartilhar { link: string; titulo: string; texto: string }
+export type Resultado = 'compartilhado' | 'copiado' | 'cancelado' | 'falhou';
 
 function copiar(texto: string) {
   if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(texto);
@@ -18,20 +20,34 @@ function copiar(texto: string) {
   });
 }
 
-export async function compartilhar(id: string, nome: string) {
-  const link = new URL(url(`/p/${id}/`), location.origin).href;
+export async function compartilhar({ link, titulo, texto }: DadosCompartilhar): Promise<Resultado> {
   if (navigator.share) {
     try {
-      await navigator.share({ title: nome, text: `${nome}, da Jhessica Confeitaria Artesanal`, url: link });
+      await navigator.share({ title: titulo, text: texto, url: link });
+      return 'compartilhado';
     } catch (e) {
-      if ((e as DOMException).name !== 'AbortError') aviso('Não deu para compartilhar agora. Tente de novo.');
+      if ((e as DOMException).name === 'AbortError') return 'cancelado'; // fechou a folha: não é erro
+      // outro erro: tenta copiar
     }
-    return;
   }
   try {
     await copiar(link);
-    aviso('Link copiado. É só colar na conversa.');
+    return 'copiado';
   } catch {
-    aviso('Não deu para copiar o link. Tente de novo.');
+    return 'falhou';
   }
+}
+
+const dadosDe = (b: HTMLElement): DadosCompartilhar => ({ link: b.dataset.link!, titulo: b.dataset.titulo!, texto: b.dataset.texto! });
+
+/** Liga os `botoes` (card ou painel; cada botão em um só lugar, senão o clique dispara duas vezes). `falhou` recebe o link para mostrar à mão. */
+export function ligarCompartilhar(botoes: Iterable<HTMLElement>, falhou: (link: string, botao: HTMLElement) => void) {
+  [...botoes].forEach((b) =>
+    b.addEventListener('click', async () => {
+      const d = dadosDe(b);
+      const r = await compartilhar(d);
+      if (r === 'copiado') aviso('Link copiado');
+      else if (r === 'falhou') falhou(d.link, b);
+    }),
+  );
 }

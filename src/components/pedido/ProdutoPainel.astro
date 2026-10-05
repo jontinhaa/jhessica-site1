@@ -8,6 +8,7 @@ import { Image } from 'astro:assets';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
 import { formatarPreco, getImagensProduto, type Produto } from '../../data/cardapio';
+import { dadosCompartilhar } from '../../lib/pedido/compartilhar';
 import { conservacao, prazoDias, redes, regrasPedido, rotulosAlergenos } from '../../data/site';
 
 interface Props { produto: Produto }
@@ -20,6 +21,7 @@ const opcoes = (p.opcoes ?? []).filter((o) => o !== caixa);
 const v0 = p.variantes[0];
 const semOvo = !p.alergenos.contem.includes('ovo');
 const tituloId = `t-painel-${p.id}`;
+const dados = Object.fromEntries(Object.entries(dadosCompartilhar(p, Astro.site ?? Astro.url.origin, import.meta.env.BASE_URL)).map(([k, v]) => [`data-${k}`, v]));
 
 // alérgenos: os do produto + os que vêm com um sabor/recheio ("Amendoim (paçoca)")
 const rotulos = (lista: string[]) => lista.map((a) => rotulosAlergenos[a as keyof typeof rotulosAlergenos]);
@@ -73,6 +75,13 @@ const brigadeiros = p.categoria === 'brigadeiros';
           <output class="price" data-preco-un>{formatarPreco(v0.preco ?? 0)}</output>
           <span class="t-s" data-escolha>{v0.rotulo}</span>
         </p>
+        <div class="compartilhar-bloco">
+          <Button variant="linha" size="sm" data-compartilhar {...dados} aria-label={`Compartilhar ${p.nome}`}><Icon name="solar:share-linear" />Compartilhar</Button>
+          <div class="link-campo" data-link-campo hidden>
+            <label class="t-s" for={`link-${p.id}`}>Não deu para copiar. Copie o link:</label>
+            <input id={`link-${p.id}`} type="text" readonly value={dados['data-link']} data-link-input />
+          </div>
+        </div>
       </header>
 
       <p class="t-m">{p.descricao}</p>
@@ -172,6 +181,8 @@ const brigadeiros = p.categoria === 'brigadeiros';
       <Button data-adicionar><Icon name="solar:bag-4-linear" />Adicionar à sacola</Button>
       <p class="t-s motivo" data-motivo aria-live="polite"></p>
     </footer>
+
+    <div class="toast" role="status" aria-live="polite"><Icon name="solar:check-circle-bold" /><span data-toast-texto></span><button type="button" data-toast-acao hidden></button></div>
   </div>
 </dialog>
 
@@ -202,6 +213,13 @@ const brigadeiros = p.categoria === 'brigadeiros';
   .tags { display: flex; flex-wrap: wrap; gap: .35rem; }
   .tag--caramelo { border-color: transparent; background: rgba(var(--accent-rgb), .16); color: var(--accent-ink); }
   .preco-linha { display: flex; align-items: baseline; gap: .7rem; }
+  .compartilhar-bloco :global(.btn) { --h: 44px; } /* alvo de toque */
+  .compartilhar-bloco { display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; }
+  .link-campo { display: flex; flex-direction: column; gap: .3rem; width: 100%; }
+  .link-campo input { width: 100%; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--bg-2); color: var(--ink); font: inherit; font-size: .85rem; }
+  .link-campo input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* aviso dentro do painel (fora dele o <dialog> modal esconderia o toast da página) */
+  .painel .toast { position: absolute; bottom: 6.5rem; z-index: 4; }
 
   /* escolhas (DS · .seg, .switch, .stepper) */
   .campo { border: 0; margin: 0; padding: 0; min-width: 0; }
@@ -238,6 +256,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
 
 <script>
   import { adicionar } from '../../scripts/sacola';
+  import { ligarCompartilhar } from '../../scripts/compartilhar';
   import { prepararFolha } from '../../scripts/folha';
 
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(v) ? 0 : 2 }).format(v);
@@ -263,6 +282,14 @@ const brigadeiros = p.categoria === 'brigadeiros';
 
   // ---------- um painel ----------
   function iniciar(d: HTMLDialogElement) {
+    // Compartilhar: folha nativa → copiar com aviso → link num campo já selecionado
+    ligarCompartilhar(d.querySelectorAll<HTMLElement>('[data-compartilhar]'), () => {
+      const campo = d.querySelector<HTMLElement>('[data-link-campo]')!;
+      campo.hidden = false;
+      const input = campo.querySelector<HTMLInputElement>('[data-link-input]')!;
+      input.focus();
+      input.select();
+    });
     const form = d.querySelector('form')!;
     const q = <T extends Element>(s: string) => d.querySelector<T>(s);
     const valor = (st: Element) => Number(st.querySelector('output')!.value);

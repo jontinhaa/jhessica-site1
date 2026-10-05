@@ -31,7 +31,8 @@ src/
   components/pedido/     ProdutoCard (card .produto) e ProdutoPainel (<dialog> "Detalhes", um por produto, abre com
                          [data-abrir="{id}"] ou ?produto={id}; o voltar do navegador fecha)
   pages/p/[id].astro     uma página por produto (/p/{id}) só para a prévia do link (og:*), que redireciona ao /pedido?produto={id}
-  scripts/compartilhar.ts  botão "Compartilhar" do card: menu nativo ou copia o link
+  scripts/compartilhar.ts  botão "Compartilhar" do card e do painel: folha nativa, senão copia (toast) e, se falhar, mostra o link num campo
+  lib/pedido/compartilhar.ts  linkProduto, textoCompartilhar, dadosCompartilhar (puros, testados)
   lib/absoluta.ts        urlAbsoluta (og:image precisa de endereço absoluto; Astro.site vem de SITE_URL)
   components/pedido/Sacola.astro  sacola em <dialog class="folha"> (comanda → como receber → enviado), barra do celular
   lib/pedido/            lógica pura e testada: itens (chave), precos (sempre do cardápio), prazos (datas), mensagem (WhatsApp)
@@ -99,10 +100,10 @@ src/
   Convenção de pastas e nomes em `docs/FOTOS.md`.
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
-- Ainda a confirmar com a cliente (TODO nos dados): se a versão sem ovos muda o prazo (hoje é igual ao do produto normal), se o brigadeiro leva castanha
+- Ainda a confirmar com a cliente (TODO nos dados): **a versão sem ovos muda o prazo?** (mantido o prazo atual, igual ao do produto normal, até ela responder), se o brigadeiro leva castanha
   ou amêndoa, textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
-- **Prévia do link (/p/{id}) usa a foto da CATEGORIA** enquanto os produtos não têm `capa`: trocar quando as fotos reais chegarem.
+- **Prévia do link (/p/{id}) usa a imagem padrão `src/assets/images/og-padrao.jpg`** (1200×630, recorte do poster da hero; será a OG padrão do site) enquanto os produtos não têm `capa`: trocar quando as fotos reais chegarem.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
 - **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver
   `src/assets/images/cardapio/FONTES-PROVISORIAS.md`): substituir pelas fotos reais da Jhessica e ajustar os `alt`.

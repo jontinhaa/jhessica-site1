@@ -6,6 +6,7 @@ import { juntar, chaveItem } from '../src/lib/pedido/itens.ts';
 import { subtotal, precoItem } from '../src/lib/pedido/precos.ts';
 import { prazoDoPedido, inicioDaContagem, datasValidas, diaCurto } from '../src/lib/pedido/prazos.ts';
 import { urlAbsoluta } from '../src/lib/absoluta.ts';
+import { linkProduto, textoCompartilhar } from '../src/lib/pedido/compartilhar.ts';
 import { montarMensagem, linhaItem, linkWhatsApp, numeroPedido, entregaGratis } from '../src/lib/pedido/mensagem.ts';
 
 const item = (id, variante, extra = {}) => ({ id, variante, adicionais: [], opcoes: {}, semOvo: false, sabores: {}, quantidade: 1, ...extra });
@@ -119,4 +120,28 @@ test('páginas /p/{id}: um id único e seguro para URL por produto disponível',
 test('urlAbsoluta: junta com o site; sem site, devolve o caminho', () => {
   assert.equal(urlAbsoluta('/jhessica-site1/_astro/a.jpg', new URL('https://jontinhaa.github.io')), 'https://jontinhaa.github.io/jhessica-site1/_astro/a.jpg');
   assert.equal(urlAbsoluta('/_astro/a.jpg'), '/_astro/a.jpg');
+});
+
+test('linkProduto: site e base com ou sem barra final dão o mesmo link', () => {
+  const esperado = 'https://jontinhaa.github.io/jhessica-site1/p/bolo-de-maca/';
+  assert.equal(linkProduto('bolo-de-maca', 'https://jontinhaa.github.io', '/jhessica-site1'), esperado);
+  assert.equal(linkProduto('bolo-de-maca', 'https://jontinhaa.github.io/', '/jhessica-site1/'), esperado);
+  assert.equal(linkProduto('bolo-de-maca', new URL('https://jontinhaa.github.io'), 'jhessica-site1'), esperado);
+});
+
+test('linkProduto: sem base (domínio próprio)', () => {
+  assert.equal(linkProduto('bento-cake', 'https://exemplo.com.br/', ''), 'https://exemplo.com.br/p/bento-cake/');
+  assert.equal(linkProduto('bento-cake', 'https://exemplo.com.br', '/'), 'https://exemplo.com.br/p/bento-cake/');
+});
+
+test('textoCompartilhar: nome, preço "a partir de" e a receita só quando o cardápio confirma', () => {
+  for (const p of produtos.filter((x) => x.disponivel)) {
+    const { titulo, texto } = textoCompartilhar(p);
+    assert.equal(titulo, p.nome);
+    assert.ok(texto.startsWith(p.nome));
+    assert.equal(/sem glúten e sem leite/.test(texto), !p.alergenos.contem.some((a) => a === 'gluten' || a === 'leite'));
+    assert.ok(!/celíac/i.test(texto));
+  }
+  const caixa = produtos.find((p) => p.id === 'caixa-de-brigadeiros');
+  assert.match(textoCompartilhar(caixa).texto, /a partir de R\$/);
 });

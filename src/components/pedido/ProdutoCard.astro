@@ -5,6 +5,7 @@
 import { Image } from 'astro:assets';
 import Icon from '../ui/Icon.astro';
 import { formatarPreco, getImagensProduto, precosDe, type Produto } from '../../data/cardapio';
+import { dadosCompartilhar } from '../../lib/pedido/compartilhar';
 
 interface Props { produto: Produto }
 const { produto: p } = Astro.props;
@@ -14,6 +15,7 @@ const precos = precosDe(p);
 const aPartirDe = new Set(precos).size > 1;
 const direto = p.variantes.length === 1 && !p.opcoes?.length;
 const semOvo = !p.alergenos.contem.includes('ovo');
+const dados = Object.fromEntries(Object.entries(dadosCompartilhar(p, Astro.site ?? Astro.url.origin, import.meta.env.BASE_URL)).map(([k, v]) => [`data-${k}`, v]));
 ---
 
 <article class:list={['produto', !p.disponivel && 'is-out']} data-tilt data-rv>
@@ -39,7 +41,7 @@ const semOvo = !p.alergenos.contem.includes('ovo');
     <div class="produto-row">
       <span class="price">{aPartirDe && <small>a partir de</small>}{formatarPreco(Math.min(...precos))}</span>
       <div class="produto-acoes">
-        <button class="compartilhar" type="button" data-compartilhar={p.id} data-nome={p.nome} aria-label={`Compartilhar: ${p.nome}`}>
+        <button class="compartilhar" type="button" data-compartilhar {...dados} aria-label={`Compartilhar ${p.nome}`}>
           <Icon name="solar:share-linear" /><span>Compartilhar</span>
         </button>
         <button class="link-r" type="button" data-abrir={p.id} aria-label={`Detalhes: ${p.nome}`}>
@@ -116,10 +118,11 @@ const semOvo = !p.alergenos.contem.includes('ovo');
 
 <script>
   import { podeInclinar, tilt } from '../../scripts/tilt';
-  import { adicionar } from '../../scripts/sacola';
-  import { compartilhar } from '../../scripts/compartilhar';
+  import { adicionar, aviso } from '../../scripts/sacola';
+  import { ligarCompartilhar } from '../../scripts/compartilhar';
 
-  document.querySelectorAll<HTMLButtonElement>('[data-compartilhar]').forEach((b) => b.addEventListener('click', () => compartilhar(b.dataset.compartilhar!, b.dataset.nome!)));
+  // sem folha nativa e sem copiar: o próprio aviso mostra o link para a pessoa copiar à mão
+  ligarCompartilhar(document.querySelectorAll<HTMLElement>('.produto [data-compartilhar]'), (link) => aviso(`Copie o link: ${link}`, undefined, 9000));
 
   if (podeInclinar()) document.querySelectorAll<HTMLElement>('.produto[data-tilt]').forEach((el) => tilt(el, { move: 8 }));
 

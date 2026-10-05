@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prova: retrato Nossa história</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&family=Hanken+Grotesk:wght@300..700&family=La+Belle+Aurore&display=swap" rel="stylesheet">
+<style>
+:root{--serif:'Newsreader',Georgia,serif;--sans:'Hanken Grotesk',system-ui,sans-serif;--hand:'La Belle Aurore',cursive;
+  --pad:clamp(20px,6vw,96px);--calda:linear-gradient(100deg,#EDC282 0%,#D59A4E 52%,#B87733 100%);
+  --blob:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M52 1.5C76 2 98.5 19 98.5 47 98.5 77 79 99 49 98.5 20 98 1.5 79 1.5 51 1.5 21 27 1 52 1.5Z'/%3E%3C/svg%3E")}
+[data-theme=light]{--bg:#F6EFE4;--ink:#2B1D17;--ink-2:#5A4338;--muted:#78624F;--accent:#B8742F;--accent-ink:#8F5520;--halo:transparent}
+[data-theme=dark]{--bg:#140D0A;--ink:#F5EADB;--ink-2:rgba(245,234,219,.74);--muted:rgba(245,234,219,.5);--accent:#D9A45B;--accent-ink:#E4B774;
+  --halo:rgba(217,164,91,.30)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans)}
+.sobre{max-width:1400px;margin:auto;padding:clamp(4rem,10vh,7rem) var(--pad);display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,5vw,5rem);align-items:center}
+.eyebrow{font:600 .78rem/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink)}
+h2{font:300 clamp(2.6rem,5.4vw,4.8rem)/1.02 var(--serif);margin:.9rem 0 1.6rem;letter-spacing:-.02em}
+h2 em{font-style:italic;color:var(--accent-ink)}
+p{font-size:1.06rem;line-height:1.65;color:var(--ink-2);max-width:34rem}
+p+p{margin-top:1rem}
+.assin{font:2.1rem/1 var(--hand);color:var(--accent-ink);margin-top:1.6rem}
+
+/* ——— o retrato que "sai" da forma ——— */
+.retrato{position:relative;aspect-ratio:4/5;width:min(100%,520px);justify-self:center}
+.blob{position:absolute;inset:auto 0 0 0;height:74%;background:var(--calda);
+  -webkit-mask:var(--blob) center/100% 100% no-repeat;mask:var(--blob) center/100% 100% no-repeat}
+.foto{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;
+  /* parte de cima livre + parte de baixo recortada pela forma */
+  -webkit-mask:linear-gradient(#000 0 0) top/100% 63% no-repeat, var(--blob) bottom/100% 74% no-repeat;
+          mask:linear-gradient(#000 0 0) top/100% 63% no-repeat, var(--blob) bottom/100% 74% no-repeat}
+.halo{position:absolute;top:-4%;left:50%;width:62%;aspect-ratio:1;translate:-50% 0;background:radial-gradient(closest-side,var(--halo),transparent)}
+.rabisco{position:absolute;color:var(--accent);width:clamp(54px,7vw,72px)}
+.rabisco.batedor{top:6%;right:4%;rotate:18deg}
+.doodle{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+
+@media (max-width:860px){.sobre{grid-template-columns:1fr}.retrato{order:-1;width:min(100%,400px)}</style>
+</head>
+<body>
+<section class="sobre">
+  <div>
+    <span class="eyebrow">05 · Sobre</span>
+    <h2>Uma cozinha<br><em>que nasceu em casa.</em></h2>
+    <p>Aqui entra a história aprovada da Jhessica: como a loja começou, o porquê das receitas sem glúten e sem leite, e o cuidado de fazer tudo à mão, por encomenda.</p>
+    <p>Texto provisório só para a prova de composição — o real vem do arquivo de dados.</p>
+    <div class="assin">Jhessica</div>
+  </div>
+  <figure class="retrato" id="r">
+    <div class="halo"></div>
+    <div class="blob"></div>
+    <img class="foto" src="../../src/assets/images/sobre/jhessica.png" alt="Jhessica, a confeiteira, sorrindo de braços cruzados">
+    <svg class="doodle rabisco batedor" viewBox="0 0 64 64"><path d="M32 61c-.5-6 .5-12 0-18M29 43.5c2-.7 4-.7 6 0M32 43c-13.5-7.5-14.5-30.5.4-37.8C46.6 13.4 45.2 35.8 32 43M32 43c-7-9-7-29 0-38M32 43c7-9 7-29 0-38"/></svg>
+  </figure>
+</section>
+</body>
+</html>

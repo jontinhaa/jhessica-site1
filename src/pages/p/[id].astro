@@ -1,14 +1,16 @@
 ---
 // /p/{id} · uma página por produto, só para o link compartilhado mostrar prévia (título, descrição e foto em og:*).
 // Quem abre é levado ao painel do produto no /pedido; o robô do WhatsApp lê o HTML antes do redirecionamento.
-// Foto: a capa do produto; sem ela (fotos reais ainda não chegaram), a foto da categoria. TODO: fotos reais por produto.
+// Foto 1200×630 em jpeg (o WhatsApp ignora imagem pesada): a capa do produto; sem ela, a imagem padrão do site (poster da hero).
+// TODO: fotos reais por produto.
 import { getImage } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { formatarPreco, getImagensProduto, precosDe, produtos, type Produto } from '../../data/cardapio';
+import ogPadrao from '../../assets/images/og-padrao.jpg';
+import { getImagensProduto, produtos, type Produto } from '../../data/cardapio';
 import { marca } from '../../data/site';
 import { url } from '../../lib/url';
 import { urlAbsoluta } from '../../lib/absoluta';
+import { textoCompartilhar } from '../../lib/pedido/compartilhar';
 
 export function getStaticPaths() {
   return produtos.filter((p) => p.disponivel).map((produto) => ({ params: { id: produto.id }, props: { produto } }));
@@ -17,22 +19,19 @@ export function getStaticPaths() {
 interface Props { produto: Produto }
 const { produto: p } = Astro.props;
 
-const fotosCategoria = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/cardapio/*.{jpg,jpeg,png,webp}', { eager: true });
-const daCategoria = Object.entries(fotosCategoria).find(([caminho]) => caminho.includes(`/${p.categoria}.`))?.[1].default;
-const foto = getImagensProduto(p.id).capa ?? daCategoria;
-const og = foto ? await getImage({ src: foto, width: 1200, height: 630, fit: 'cover', format: 'jpg' }) : undefined;
+const foto = getImagensProduto(p.id).capa ?? ogPadrao;
+const og = await getImage({ src: foto, width: 1200, height: 630, fit: 'cover', format: 'jpeg', quality: 80 });
 
-const precos = precosDe(p);
-const aPartirDe = new Set(precos).size > 1 ? 'a partir de ' : '';
-const descricao = `${p.descricao} ${precos.length ? `${aPartirDe}${formatarPreco(Math.min(...precos))}. ` : ''}Peça pelo WhatsApp.`;
 const destino = url(`/pedido?produto=${p.id}`);
 ---
-
 <BaseLayout
   title={`${p.nome} · ${marca.nome}`}
-  description={descricao}
-  image={og && urlAbsoluta(og.src, Astro.site)}
-  imageAlt={og && p.nome}
+  description={textoCompartilhar(p).texto}
+  image={urlAbsoluta(og.src, Astro.site)}
+  imageLargura={1200}
+  imageAltura={630}
+  imageAlt={`${p.nome}, ${marca.nome}`}
+  canonical={urlAbsoluta(destino, Astro.site)}
   redirect={destino}
   noindex
 >
@@ -40,7 +39,7 @@ const destino = url(`/pedido?produto=${p.id}`);
     <div class="wrapx">
       <h1 class="h3">{p.nome}</h1>
       <p class="lead">{p.descricao}</p>
-      <p>Abrindo o cardápio… Se não abrir, <a class="link-r" href={destino}>ver no cardápio e pedir</a>.</p>
+      <p>Abrindo o cardápio… Se não abrir, toque em <a class="link-r" href={destino}>Ver produto</a>.</p>
     </div>
   </section>
 </BaseLayout>

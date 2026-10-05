@@ -13,12 +13,17 @@ interface Props {
   /** Prévia do link (WhatsApp, redes): imagem já com endereço absoluto. Sem ela, nenhuma tag og:* é emitida. */
   image?: string;
   imageAlt?: string;
+  /** Tamanho real da imagem de prévia (og:image:width/height). */
+  imageLargura?: number;
+  imageAltura?: number;
+  /** Endereço canônico absoluto (páginas de prévia apontam para o produto no /pedido). */
+  canonical?: string;
   /** Leva quem abre a página para outro endereço (páginas de compartilhamento /p/{id}); o robô do WhatsApp lê o HTML antes. */
   redirect?: string;
   /** Fora do Google (páginas só de prévia). */
   noindex?: boolean;
 }
-const { title = seo.titulo, description = seo.descricao, image, imageAlt, redirect, noindex } = Astro.props;
+const { title = seo.titulo, description = seo.descricao, image, imageAlt, imageLargura, imageAltura, canonical, redirect, noindex } = Astro.props;
 ---
 
 <!doctype html>
@@ -37,11 +42,15 @@ const { title = seo.titulo, description = seo.descricao, image, imageAlt, redire
         <meta property="og:description" content={description} />
         <meta property="og:url" content={Astro.url.href} />
         <meta property="og:image" content={image} />
+        {imageLargura && <meta property="og:image:width" content={String(imageLargura)} />}
+        {imageAltura && <meta property="og:image:height" content={String(imageAltura)} />}
         {imageAlt && <meta property="og:image:alt" content={imageAlt} />}
         <meta name="twitter:card" content="summary_large_image" />
       </>
     )}
+    {canonical && <link rel="canonical" href={canonical} />}
     {redirect && <meta http-equiv="refresh" content={`0; url=${redirect}`} />}
+    {redirect && <script is:inline define:vars={{ redirect }}>location.replace(redirect);</script>}
     <meta name="color-scheme" content="light dark" />
     {(noindex || import.meta.env.PUBLIC_NOINDEX === 'true') && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
