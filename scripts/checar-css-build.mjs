@@ -4,9 +4,9 @@
 // o Chrome rejeita. Por isso o código usa longhands (ver CLAUDE.md) e este script falha se algo assim voltar.
 import { readdirSync, readFileSync } from 'node:fs';
 
-// regras com animation-range-* no código: Hero 4, Como pedir 3, Bento 1, global.css 3 ([data-clip]), Sobre 2.
+// regras com animation-range-* no código: Hero 4, Como pedir 3, Bento 1, global.css 3 ([data-clip]), Sobre 2, Depoimentos 1.
 // Criou ou removeu uma? Atualize este número.
-const ESPERADAS = 13;
+const ESPERADAS = 14;
 
 const dir = new URL('../dist/_astro/', import.meta.url);
 const css = readdirSync(dir).filter((f) => f.endsWith('.css')).map((f) => readFileSync(new URL(f, dir), 'utf8')).join('\n');

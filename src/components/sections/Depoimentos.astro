@@ -1,20 +1,212 @@
 ---
-// DEPOIMENTOS. Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · 03 Componentes): .depo (fusão de opacidade entre falas,
-// nome em .hand) + faixa de números com contador (Asagiri .numbers) ou interlúdio em parallax.
+// DEPOIMENTOS · falas de clientes (src/data/depoimentos.ts, só as autorizadas). DS: .depo (troca por opacidade a cada 6 s,
+// nome em .hand). O print da fala atual assenta "na mesa" ao lado (embaixo no celular), preso à rolagem; ao tocar, abre maior.
+// Print = SÓ o balão da mensagem (cópia gerada por `npm run prints`); o print original, com foto e nome do contato, não é importado.
+// Com 1 depoimento: citação fixa, sem controles. Reduced-motion: sem troca automática (os pontos e as setas dão acesso às outras falas).
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
-import type { Secao } from '../../data/site';
+import Doodle from '../ui/Doodle.astro';
+import Icon from '../ui/Icon.astro';
+import { contato, redes, type Secao } from '../../data/site';
 import { depoimentosPublicos } from '../../data/depoimentos';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
-// só os autorizados pela cliente; a seção usa esta lista quando for desenvolvida
-const depoimentos = depoimentosPublicos;
+
+const baloes = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/depoimentos/balao/*.webp', { eager: true });
+const itens = depoimentosPublicos.map((d) => ({
+  ...d,
+  foto: d.print ? baloes[`/src/assets/images/depoimentos/balao/${d.print.toLowerCase()}.webp`]?.default : undefined,
+}));
+const varios = itens.length > 1;
+const temFoto = itens.some((d) => d.foto);
 ---
 
 <section class="sec sec--tint" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
-    <div class="sec-body" data-depoimentos={depoimentos.length}>{/* TODO: conteúdo da etapa "Depoimentos" (lista: depoimentos) */}</div>
+    {itens.length > 0 && (
+      <div class:list={['depo-grid', !temFoto && 'sem-foto']}>
+        <div class="depo" data-depo={varios ? '' : undefined}>
+          <span class="rabisco"><Doodle name="forminha" /></span>
+          <div class="slides" aria-live="off" data-slides>
+            {itens.map((d, i) => (
+              <div class:list={['depo-s', i === 0 && 'is-on']} data-slide inert={i !== 0}>
+                <blockquote class:list={['quote', d.texto.length > 120 && 'quote--longa']}>“{d.texto}”</blockquote>
+                <p class="who"><span class="hand">{d.nome}</span>{d.contexto && <span class="micro">{d.contexto}</span>}</p>
+              </div>
+            ))}
+          </div>
+
+          {varios && (
+            <div class="controles" role="group" aria-label="Trocar depoimento">
+              <button type="button" class="seta-b" data-ant aria-label="Depoimento anterior"><Icon name="solar:arrow-left-linear" /></button>
+              <div class="pontos">
+                {itens.map((d, i) => <button type="button" data-ponto aria-label={`Depoimento ${i + 1} de ${itens.length}, de ${d.nome}`} aria-current={i === 0 ? 'true' : undefined}></button>)}
+              </div>
+              <button type="button" class="seta-b" data-prox aria-label="Próximo depoimento"><Icon name="solar:arrow-right-linear" /></button>
+              <button type="button" class="pausar" data-pausar aria-pressed="false">
+                <span class="ic-pausa"><Icon name="solar:pause-linear" /></span><span class="ic-toca"><Icon name="solar:play-linear" /></span>
+                <span data-pausar-rotulo>Pausar a troca</span>
+              </button>
+            </div>
+          )}
+
+          {redes.instagram && (
+            <a class="link-r insta" href={redes.instagram} target="_blank" rel="noopener">Veja mais no Instagram <span class="micro">@{contato.instagram}</span></a>
+          )}
+        </div>
+
+        {temFoto && (
+          <div class="mesa" aria-live="off">
+            {itens.map((d, i) => d.foto && (
+              <div class:list={['print', i === 0 && 'is-on']} data-print={i} inert={i !== 0}>
+                <button type="button" class="print-btn" data-ampliar data-grande={d.foto.src}
+                  data-alt={`Mensagem de ${d.nome}: ${d.texto}`} aria-label={`Ampliar a mensagem de ${d.nome}`}>
+                  <Image src={d.foto} alt="" widths={[360, 720]} sizes="(max-width: 860px) 80vw, 360px" loading="lazy" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
   </div>
+
+  <dialog class="print-zoom" aria-label="Mensagem ampliada" data-zoom>
+    <button type="button" class="fechar" data-zoom-fechar aria-label="Fechar"><Icon name="solar:close-linear" /></button>
+    <img alt="" data-zoom-img />
+  </dialog>
 </section>
+
+<style>
+  .depo-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+  .depo-grid.sem-foto, .depo-grid[data-sem-print] { grid-template-columns: minmax(0, 46rem); justify-content: center; }
+  .depo-grid[data-sem-print] .mesa { display: none; }
+  .depo { position: relative; display: flex; flex-direction: column; gap: 1.6rem; }
+  .rabisco { position: absolute; top: -2.6rem; left: -.4rem; width: 54px; color: var(--accent); rotate: -12deg; }
+
+  /* falas empilhadas na mesma célula: a caixa tem a altura da maior; troca por opacidade (DS .depo) */
+  .slides { display: grid; }
+  .depo-s { grid-area: 1 / 1; display: flex; flex-direction: column; justify-content: center; gap: 1.2rem; opacity: 0; transition: opacity 1s ease-in-out; pointer-events: none; }
+  .depo-s.is-on { opacity: 1; pointer-events: auto; }
+  .quote { font-family: var(--serif); font-weight: 300; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.25; letter-spacing: -.01em; margin: 0; text-wrap: pretty; }
+  .quote--longa { font-size: clamp(1.15rem, 1.8vw, 1.45rem); line-height: 1.4; }
+  .who { display: flex; align-items: baseline; gap: 1rem; margin: 0; }
+  .who .hand { font-size: 1.7rem; }
+
+  .controles { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem 1rem; }
+  .pontos { display: flex; gap: .15rem; }
+  .pontos button { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; cursor: pointer; }
+  .pontos button::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); transition: width .4s var(--e-out), background .3s; }
+  .pontos button[aria-current='true']::before { width: 26px; border-radius: 6px; background: var(--accent); }
+  .seta-b { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); background: none; color: var(--ink); cursor: pointer; font-size: 18px; transition: border-color .3s, color .3s; }
+  .seta-b:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .pausar { display: inline-flex; align-items: center; gap: .45rem; min-height: 44px; margin-left: auto; padding: 0 .4rem; background: none; border: 0; color: var(--ink-2); font-size: .8rem; cursor: pointer; }
+  .pausar:hover { color: var(--accent-ink); }
+  .pausar .ic-toca, .pausar[aria-pressed='true'] .ic-pausa { display: none; }
+  .pausar[aria-pressed='true'] .ic-toca { display: inline-flex; }
+  .pausar :global(.icon) { font-size: 18px; }
+  :is(.pontos button, .seta-b, .pausar):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .insta { align-self: flex-start; }
+  .insta .micro { margin-left: .4rem; }
+
+  /* print da fala atual: o balão, como uma foto que assenta na mesa */
+  .mesa { display: grid; width: min(100%, 360px); justify-self: center; }
+  .print { grid-area: 1 / 1; align-self: center; opacity: 0; transition: opacity 1s ease-in-out; pointer-events: none; }
+  .print.is-on { opacity: 1; pointer-events: auto; }
+  .print-btn { display: block; width: 100%; padding: 0; border: 0; background: var(--bg-2); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--shadow-2); cursor: zoom-in; }
+  .print-btn :global(img) { display: block; width: 100%; height: auto; }
+  .print-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* assenta: chega deitada e pousa enquanto a seção sobe (preso à rolagem; longhands, ver CLAUDE.md) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .mesa { transform-origin: 50% 100%; animation-name: depo-assenta; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range-start: entry 0%; animation-range-end: cover 40%; }
+    }
+  }
+  @keyframes depo-assenta { from { transform: perspective(1200px) rotateX(30deg) translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
+
+  /* print ampliado */
+  .print-zoom { margin: auto; border: 0; padding: 0; background: transparent; max-width: min(92vw, 560px); max-height: 92dvh; overflow: visible; }
+  .print-zoom::backdrop { background: rgba(20, 13, 10, .72); }
+  .print-zoom img { display: block; width: 100%; height: auto; max-height: 88dvh; object-fit: contain; border-radius: var(--r-md); box-shadow: var(--shadow-2); }
+  .print-zoom .fechar { position: absolute; top: .6rem; right: .6rem; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--glass-line); background: var(--glass-strong); color: var(--ink); cursor: pointer; font-size: 20px; }
+  .print-zoom .fechar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) { .pausar { display: none; } } /* sem troca automática: nada a pausar */
+
+  @media (max-width: 860px) {
+    .depo-grid { grid-template-columns: 1fr; }
+    .pausar { margin-left: 0; }
+  }
+</style>
+
+<script>
+  const raiz = document.querySelector<HTMLElement>('[data-depo]');
+  const zoom = document.querySelector<HTMLDialogElement>('[data-zoom]');
+  let reagendar = () => {}; // preenchida abaixo, quando há mais de um depoimento
+
+  // print ampliado: nativo (<dialog>); Esc, botão ou toque fora fecham, e o foco volta ao print
+  if (zoom) {
+    const img = zoom.querySelector<HTMLImageElement>('[data-zoom-img]')!;
+    document.querySelectorAll<HTMLElement>('[data-ampliar]').forEach((b) => b.addEventListener('click', () => {
+      img.src = b.dataset.grande!;
+      img.alt = b.dataset.alt ?? '';
+      zoom.showModal();
+      reagendar();
+    }));
+    zoom.querySelector('[data-zoom-fechar]')!.addEventListener('click', () => zoom.close());
+    zoom.addEventListener('click', (e) => { if (e.target === zoom) zoom.close(); });
+    zoom.addEventListener('close', () => reagendar());
+  }
+
+  if (raiz) {
+    const slides = [...raiz.querySelectorAll<HTMLElement>('[data-slide]')];
+    const prints = [...document.querySelectorAll<HTMLElement>('[data-print]')]; // data-print = índice do depoimento
+    const pontos = [...raiz.querySelectorAll<HTMLElement>('[data-ponto]')];
+    const botaoPausa = raiz.querySelector<HTMLButtonElement>('[data-pausar]')!;
+    const rotulo = raiz.querySelector<HTMLElement>('[data-pausar-rotulo]')!;
+    const lista = raiz.querySelector<HTMLElement>('[data-slides]')!;
+    const grade = raiz.closest<HTMLElement>('.depo-grid')!;
+    const reduz = matchMedia('(prefers-reduced-motion: reduce)');
+    const n = slides.length;
+    let atual = 0, pausadoPeloUsuario = false, hover = false, foco = false, visivel = false, timer = 0;
+
+    const ir = (i: number) => {
+      atual = (i + n) % n;
+      slides.forEach((s, k) => { s.classList.toggle('is-on', k === atual); s.inert = k !== atual; });
+      pontos.forEach((p, k) => (k === atual ? p.setAttribute('aria-current', 'true') : p.removeAttribute('aria-current')));
+      prints.forEach((p) => { const dela = Number(p.dataset.print) === atual; p.classList.toggle('is-on', dela); p.inert = !dela; });
+      grade.toggleAttribute('data-sem-print', !prints.some((p) => Number(p.dataset.print) === atual)); // fala sem print: texto sozinho
+    };
+
+    const agendar = () => {
+      clearInterval(timer);
+      const parado = pausadoPeloUsuario || hover || foco || !visivel || reduz.matches || document.hidden || !!zoom?.open;
+      lista.setAttribute('aria-live', parado ? 'polite' : 'off'); // girando sozinho, não anuncia; parado, anuncia a troca manual
+      if (!parado) timer = window.setInterval(() => ir(atual + 1), 6000);
+    };
+    reagendar = agendar;
+
+    raiz.querySelector('[data-ant]')!.addEventListener('click', () => { ir(atual - 1); agendar(); });
+    raiz.querySelector('[data-prox]')!.addEventListener('click', () => { ir(atual + 1); agendar(); });
+    pontos.forEach((p, k) => p.addEventListener('click', () => { ir(k); agendar(); }));
+    botaoPausa.addEventListener('click', () => {
+      pausadoPeloUsuario = !pausadoPeloUsuario;
+      botaoPausa.setAttribute('aria-pressed', String(pausadoPeloUsuario));
+      rotulo.textContent = pausadoPeloUsuario ? 'Retomar a troca' : 'Pausar a troca';
+      agendar();
+    });
+    raiz.addEventListener('mouseenter', () => { hover = true; agendar(); });
+    raiz.addEventListener('mouseleave', () => { hover = false; agendar(); });
+    raiz.addEventListener('focusin', () => { foco = true; agendar(); });
+    raiz.addEventListener('focusout', (e) => { if (!raiz.contains(e.relatedTarget as Node | null)) { foco = false; agendar(); } });
+    document.addEventListener('visibilitychange', agendar);
+    reduz.addEventListener('change', agendar);
+
+    // só gira com a seção na tela
+    new IntersectionObserver(([e]) => { visivel = e.isIntersecting; agendar(); }).observe(raiz);
+  }
+</script>

@@ -1,12 +1,13 @@
 ---
 // Rodapé em faixa cacau (Asagiri footer): marca, colunas de links, social e linha legal.
 // Links saem de `menu` e `redes` (src/data/site.ts). Rede sem endereço aparece desabilitada, nunca aponta para "#".
-import { marca, menu, pedido, redes } from '../../data/site';
+import { contato, diasDeEntrega, entregaConfirmada, fraseTracos, marca, menu, pedido, redes } from '../../data/site';
 import Logo from '../ui/Logo.astro';
 import { url } from '../../lib/url';
 import Icon from '../ui/Icon.astro';
 
 const ano = new Date().getFullYear();
+const tracos = fraseTracos();
 const social = [
   { label: 'Instagram da Jhessica', icon: 'simple-icons:instagram', href: redes.instagram },
   { label: 'WhatsApp da Jhessica', icon: 'simple-icons:whatsapp', href: redes.whatsapp },
@@ -30,7 +31,11 @@ const social = [
         <div class="fcol">
           <h2>Ateliê</h2>
           <a href={pedido.href}>{pedido.rotulo}</a>
-          <span>Retirada com hora marcada</span>
+          <span>Retirada no {contato.bairroRetirada}, {contato.cidade}, com horário combinado</span>
+          {entregaConfirmada.confirmado && <span>Entrega aos {diasDeEntrega()}</span>}
+          <span>{contato.atendimento.texto}</span>
+          {redes.whatsapp && <a href={redes.whatsapp} target="_blank" rel="noopener">WhatsApp {contato.whatsappExibicao}</a>}
+          {redes.instagram && <a href={redes.instagram} target="_blank" rel="noopener">@{contato.instagram}</a>}
           <div class="social">
             {social.map((s) => s.href ? (
               <a href={s.href} aria-label={s.label} target="_blank" rel="noopener"><Icon name={s.icon} /></a>
@@ -41,6 +46,7 @@ const social = [
         </div>
       </div>
     </div>
+    {tracos && <p class="tracos">{tracos}</p>}
     <div class="fbot">
       <span>© {ano} {marca.nome}</span>
       <span>Feito à mão, como os bolos. · Site por <a href="https://www.linkedin.com/in/jhonatanalmeida" target="_blank" rel="noopener">Jhonatan Almeida</a></span>
@@ -56,13 +62,16 @@ const social = [
   .fbrand .hand { margin-top: .8rem; color: #EFC98C; font-size: 1.35rem; }
   .fcols { display: flex; flex-wrap: wrap; gap: 4rem; }
   .fcol h2 { margin-bottom: 1rem; font-size: .6rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-2); }
-  .fcol > a, .fcol > span { display: block; margin-bottom: .55rem; font-size: .88rem; color: var(--on-band-2); transition: color .3s; }
+  .fcol > a { display: flex; align-items: center; min-height: 44px; font-size: .88rem; color: var(--on-band-2); transition: color .3s; } /* alvo de toque de 44px */
+  .fcol > span { display: block; margin-bottom: .55rem; font-size: .88rem; color: var(--on-band-2); transition: color .3s; }
   .fcol > a:hover { color: var(--on-band); }
   .social { display: flex; gap: .7rem; margin-top: 1rem; }
-  .social a { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; color: var(--on-band-2); border: 1px solid var(--band-line); transition: color .3s, border-color .3s, transform .4s var(--e-out); }
+  .social a { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; color: var(--on-band-2); border: 1px solid var(--band-line); transition: color .3s, border-color .3s, transform .4s var(--e-out); }
   .social a[href]:hover { color: var(--accent-2); border-color: var(--accent-2); transform: translateY(-2px); }
   .social .is-off { opacity: .4; cursor: not-allowed; }
+  .tracos { margin-top: 3rem; font-size: .8rem; line-height: 1.6; color: var(--on-band-2); max-width: 46ch; }
+  .tracos + .fbot { margin-top: 1.5rem; }
   .fbot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3.5rem; padding-top: 1.6rem; border-top: 1px solid var(--band-line); font-size: .68rem; letter-spacing: .04em; color: var(--on-band-2); }
-  .fbot a { color: var(--on-band); text-decoration: underline; text-decoration-color: var(--band-line); text-underline-offset: 3px; transition: text-decoration-color .3s; }
+  .fbot a { display: inline-block; padding-block: .7rem; color: var(--on-band); text-decoration: underline; text-decoration-color: var(--band-line); text-underline-offset: 3px; transition: text-decoration-color .3s; }
   .fbot a:hover { text-decoration-color: var(--accent-2); }
 </style>

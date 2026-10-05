@@ -12,7 +12,7 @@ import { fotosBento } from '../src/data/site.ts';
 const RAIZ = fileURLToPath(new URL('../src/assets/images/', import.meta.url));
 const EXT = /\.(jpe?g|png|webp)$/i;
 const MIN = 1600; // largura mínima recomendada das fotos
-const MIN_PRINT = 720; // prints de conversa são menores
+const MIN_PRINT = 500; // balões recortados de prints de conversa são menores
 
 // [pasta, [nome, obrigatória, largura mínima]]
 const grupos = [
@@ -21,7 +21,8 @@ const grupos = [
   ['bento', [['destaque', true], ...Array.from({ length: fotosBento.modelos }, (_, i) => [`modelo-${i + 1}`, false])]],
   ['ingredientes', [['destaque', true]]],
   ['sobre', [['jhessica', true], ['jhessica-cozinha', false]]],
-  ['depoimentos', depoimentosPublicos.filter((d) => d.print).map((d) => [d.print, true, MIN_PRINT])],
+  // o site usa só a cópia recortada (npm run prints), nunca o print original (tem foto e nome do contato)
+  ['depoimentos/balao', depoimentosPublicos.filter((d) => d.print).map((d) => [d.print.toLowerCase(), true, MIN_PRINT])],
 ];
 
 const largura = 46;

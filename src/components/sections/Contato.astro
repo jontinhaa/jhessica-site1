@@ -1,17 +1,81 @@
 ---
-// CONTATO · fechamento. Esqueleto: título e âncora prontos, conteúdo por fazer.
-// Referência (design_system2.html · fim): CTA (Asagiri .cta-sec) com rastro de fotos seguindo o
-// cursor (Follow image-trail) + linhas de contato com .well. Contato e redes em src/data/site.ts.
+// CONTATO · chamada final ("Tem um sabor esperando por você."). Botão "Montar meu pedido", WhatsApp e Instagram, e as linhas de
+// atendimento, retirada e entrega com .well. Tudo vem de src/data/site.ts. SEM mapa e SEM endereço completo: só o bairro.
+// Carimbo girando ("feito à mão · por encomenda · cidade") e a seta apontando para o botão (DS: .carimbo e rabisco seta).
 import SectionHeading from '../ui/SectionHeading.astro';
-import type { Secao } from '../../data/site';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import Doodle from '../ui/Doodle.astro';
+import Carimbo from '../ui/Carimbo.astro';
+import { contato, diasDeEntrega, entregaConfirmada, pedido, redes, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
+
+const infos = [
+  { icone: 'solar:clock-circle-linear', rotulo: 'Atendimento', texto: contato.atendimento.texto },
+  { icone: 'solar:map-point-linear', rotulo: 'Retirada', texto: `Retirada no ${contato.bairroRetirada}, ${contato.cidade}` },
+  // o dia da entrega só aparece depois de confirmado (entregaConfirmada)
+  { icone: 'solar:delivery-linear', rotulo: 'Entrega', texto: entregaConfirmada.confirmado ? `Entrega aos ${diasDeEntrega()}` : 'Entrega combinada pelo WhatsApp' },
+] as const;
 ---
 
 <section class="sec sec--tint" id={secao.id}>
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} center />
-    <div class="sec-body">{/* TODO: conteúdo da etapa "Contato" */}</div>
+    <div class="cta">
+      <div class="carimbo-pos"><Carimbo id="contato" texto={`feito à mão · por encomenda · ${contato.cidade} · `} /></div>
+      <p class="lead" data-rv>Monte o pedido no site e envie pelo WhatsApp. A Jhessica confirma a data e combina tudo com você.</p>
+
+      <div class="acoes" data-rv>
+        <span class="principal">
+          <span class="seta" aria-hidden="true"><Doodle name="seta" /></span>
+          <Button href={pedido.href} data-esconde-pilula><Icon name="solar:bag-4-linear" />Montar meu pedido</Button>
+        </span>
+        {redes.whatsapp && (
+          <Button variant="vidro" href={redes.whatsapp} target="_blank" rel="noopener"><Icon name="simple-icons:whatsapp" />Chamar no WhatsApp</Button>
+        )}
+      </div>
+
+      {redes.instagram && (
+        <a class="link-r insta" href={redes.instagram} target="_blank" rel="noopener" data-rv>
+          <Icon name="simple-icons:instagram" />Instagram <span class="micro">@{contato.instagram}</span>
+        </a>
+      )}
+
+      <ul class="infos" data-rv>
+        {infos.map((i) => (
+          <li><span class="well"><Icon name={i.icone} /></span><span class="t-m">{i.texto}</span></li>
+        ))}
+      </ul>
+    </div>
   </div>
 </section>
+
+<style>
+  .cta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2rem; text-align: center; }
+  .cta .lead { max-width: 40ch; }
+  .carimbo-pos { position: absolute; top: -1.5rem; right: 6%; --carimbo-bg: transparent; } /* a seção já tem fundo próprio (.sec--tint) */
+
+  .acoes { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+  .principal { position: relative; display: inline-flex; }
+  .seta { position: absolute; right: calc(100% + .4rem); top: -3rem; width: 72px; color: var(--accent); }
+
+  .insta { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; }
+  .insta .micro { margin-left: .2rem; }
+
+  .infos { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.2rem 2.4rem; margin-top: 1rem; padding: 0; list-style: none; }
+  .infos li { display: flex; align-items: center; gap: .8rem; text-align: left; }
+  .infos .t-m { margin: 0; font-size: .95rem; }
+
+  @media (max-width: 860px) {
+    .carimbo-pos { position: static; margin-bottom: -.5rem; }
+    .seta { display: none; } /* com os botões rentes à borda, a seta sairia da tela */
+  }
+  @media (max-width: 640px) {
+    .acoes { flex-direction: column; align-items: stretch; width: 100%; }
+    .principal { display: flex; }
+    .principal :global(.btn), .acoes > :global(.btn) { width: 100%; }
+    .infos { flex-direction: column; align-items: flex-start; }
+  }
+</style>

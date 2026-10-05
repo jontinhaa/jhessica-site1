@@ -48,6 +48,10 @@ export const regrasPedido = {
 // Entrega: o texto público só cita o dia depois de confirmado.
 export const entregaConfirmada = { diasEntrega: [0], confirmado: true }; // confirmado com a cliente: só aos domingos
 
+/** "domingos", a partir de regrasPedido.diasEntrega (para "entregamos aos domingos"). */
+const diasExtenso = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+export const diasDeEntrega = () => new Intl.ListFormat('pt-BR').format(regrasPedido.diasEntrega.map((d) => `${diasExtenso[d]}s`));
+
 /** "seg a sex", a partir de contato.atendimento.dias. */
 // ponytail: supõe dias seguidos (1–5); se a cliente atender em dias salteados, listar os nomes
 const nomesDias = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -123,6 +127,13 @@ export function textoCozinha({ cozinhaSemGluten: gluten, cozinhaSemLeite: leite 
   const manipula = !gluten && !leite ? 'esses ingredientes' : !gluten ? 'glúten' : 'leite';
   return `Nossas receitas não levam glúten nem leite, mas são feitas numa cozinha que também manipula ${manipula}. Por isso, podem conter traços. Se você tem doença celíaca ou alergia grave, fale com a gente antes de pedir.`;
 }
+
+/** Frase curta de traços do rodapé. Só aparece enquanto a cozinha está confirmada como NÃO livre de glúten e de leite;
+ *  se virar livre (true) ou ficar sem confirmação (null), não afirma nada. */
+export const fraseTracos = (c: Cozinha = compromisso) =>
+  c.cozinhaSemGluten === false && c.cozinhaSemLeite === false
+    ? 'Receitas sem glúten e sem leite. Produzidas em cozinha que não é livre de traços. Em caso de doença celíaca ou alergia grave, fale com a gente antes de pedir.'
+    : null;
 
 export const rotulosAlergenos: Record<Alergeno, string> = {
   gluten: 'Glúten',

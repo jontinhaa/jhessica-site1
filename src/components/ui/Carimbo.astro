@@ -1,0 +1,27 @@
+---
+// Carimbo do DS: texto em círculo girando 22s, batedor em stop-motion no centro. Gira só enquanto está na tela.
+// `id` precisa ser único na página (o texto corre num <path> próprio). Quem usa decide a posição (envolva num elemento).
+import Doodle from './Doodle.astro';
+
+interface Props { texto: string; id: string }
+const { texto, id } = Astro.props;
+---
+
+<div class="carimbo" aria-hidden="true">
+  <svg class="ring" viewBox="0 0 120 120"><defs><path id={`carimbo-${id}`} d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" /></defs><text><textPath href={`#carimbo-${id}`} textLength="286" lengthAdjust="spacing">{texto}</textPath></text></svg>
+  <Doodle name="batedor" class="core" />
+</div>
+
+<style>
+  .carimbo { position: relative; width: 132px; height: 132px; color: var(--accent); border-radius: 50%; background: var(--carimbo-bg, var(--bg)); } /* --carimbo-bg: fundo do disco; muda onde o carimbo não fica sobre foto */
+  .carimbo .ring { width: 100%; height: 100%; animation: carimbo-gira 22s linear infinite paused; }
+  .carimbo.gira .ring { animation-play-state: running; }
+  .carimbo text { font-family: var(--sans); font-size: 8.6px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; fill: currentColor; }
+  .carimbo :global(.core) { position: absolute; left: 31%; top: 31%; width: 38%; height: 38%; color: var(--ink); }
+  @keyframes carimbo-gira { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('gira', e.isIntersecting)));
+  document.querySelectorAll('.carimbo').forEach((c) => io.observe(c));
+</script>

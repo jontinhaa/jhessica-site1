@@ -1,9 +1,10 @@
 ---
-// 404 · título no padrão das seções e dois caminhos de volta.
+// 404 · título no padrão das seções, um rabisco e dois caminhos de volta. Links por url()/pedido.href: respeitam o `base` do site.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import Button from '../components/ui/Button.astro';
 import Icon from '../components/ui/Icon.astro';
+import Doodle from '../components/ui/Doodle.astro';
 import { marca, pedido } from '../data/site';
 import { url } from '../lib/url';
 ---
@@ -11,11 +12,12 @@ import { url } from '../lib/url';
 <BaseLayout title={`Página não encontrada · ${marca.nome}`}>
   <section class="sec nao-achada">
     <div class="wrapx">
-      <SectionHeading numero="404" rotulo="Página não encontrada" titulo="Essa página" tituloDestaque="saiu do forno antes da hora." as="h1" />
-      <p class="lead">O endereço pode ter mudado ou ainda não existe. O cardápio e a página inicial continuam no mesmo lugar.</p>
+      <span class="rabisco" aria-hidden="true"><Doodle name="cereja" /></span>
+      <SectionHeading numero="404" rotulo="Página não encontrada" titulo="Essa receita" tituloDestaque="não saiu do forno." as="h1" />
+      <p class="lead">O endereço pode ter mudado ou ainda não existe. Mas o cardápio e a página inicial continuam quentinhos, no mesmo lugar.</p>
       <div class="acoes">
-        <Button href={pedido.href}><Icon name="solar:list-heart-minimalistic-linear" />Ver cardápio</Button>
-        <Button variant="vidro" href={url()}><Icon name="solar:home-2-linear" />Voltar ao início</Button>
+        <Button href={url()}><Icon name="solar:home-2-linear" />Voltar ao início</Button>
+        <Button variant="vidro" href={pedido.href}><Icon name="solar:list-heart-minimalistic-linear" />Ver cardápio e pedir</Button>
       </div>
     </div>
   </section>
@@ -23,6 +25,7 @@ import { url } from '../lib/url';
 
 <style>
   .nao-achada { min-height: 100svh; display: flex; align-items: center; padding-top: calc(var(--nav-h) + 3rem); }
+  .rabisco { display: block; width: 64px; margin-bottom: 1.2rem; color: var(--accent); }
   .nao-achada :global(.head) { margin-bottom: 2rem; }
   .acoes { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem; }
   @media (max-width: 768px) {

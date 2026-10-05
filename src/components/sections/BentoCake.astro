@@ -11,11 +11,11 @@ import { Image } from 'astro:assets';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
-import Doodle from '../ui/Doodle.astro';
+import Carimbo from '../ui/Carimbo.astro';
 import { url } from '../../lib/url';
 import { linkWhatsApp } from '../../lib/pedido/mensagem';
 import { formatarPreco, precosDe, produtos } from '../../data/cardapio';
-import { fotosBento, prazoDias, type Secao } from '../../data/site';
+import { contato, fotosBento, prazoDias, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
@@ -52,10 +52,7 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
             {/* TODO: alt final com a foto real */}
             {destaque && <Image src={destaque} alt="Bento cake branco com vela acesa, numa embalagem aberta" widths={[480, 720, 960, 1280]} sizes="(max-width: 860px) calc(100vw - 40px), (max-width: 1400px) 52vw, 720px" loading="lazy" />}
           </div>
-          <div class="carimbo" aria-hidden="true">
-            <svg class="ring" viewBox="0 0 120 120"><defs><path id="bento-circ" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" /></defs><text><textPath href="#bento-circ" textLength="286" lengthAdjust="spacing">sem glúten · sem leite · feito à mão · </textPath></text></svg>
-            <Doodle name="batedor" class="core" />
-          </div>
+          <div class="carimbo-pos"><Carimbo id="bento" texto={`feito à mão · por encomenda · ${contato.cidade} · `} /></div>
         </figure>
 
         <div class="copy">
@@ -106,13 +103,7 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
   .foto { position: relative; }
   .media img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* carimbo do DS: texto em círculo girando 22s, batedor no centro; gira só na tela (.gira, posto pelo script) */
-  .carimbo { position: absolute; top: -2.2rem; right: -2.2rem; z-index: 2; width: 132px; height: 132px; color: var(--accent); border-radius: 50%; background: var(--bg); }
-  .carimbo .ring { width: 100%; height: 100%; animation: carimbo-gira 22s linear infinite paused; }
-  .carimbo.gira .ring { animation-play-state: running; }
-  .carimbo text { font-family: var(--sans); font-size: 8.6px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; fill: currentColor; }
-  .carimbo :global(.core) { position: absolute; left: 31%; top: 31%; width: 38%; height: 38%; color: var(--ink); }
-  @keyframes carimbo-gira { to { transform: rotate(360deg); } }
+  .carimbo-pos { position: absolute; top: -2.2rem; right: -2.2rem; z-index: 2; }
 
   .copy { display: flex; flex-direction: column; gap: 2rem; }
   .copy .lead { max-width: none; }
@@ -164,8 +155,3 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
     .modelo { flex: 0 0 76%; scroll-snap-align: start; }
   }
 </style>
-
-<script>
-  const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('gira', e.isIntersecting)));
-  document.querySelectorAll('.carimbo').forEach((c) => io.observe(c));
-</script>

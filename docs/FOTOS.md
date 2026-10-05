@@ -22,7 +22,7 @@ O site encontra a foto pelo nome: não precisa mexer em código.
 | `ingredientes/` | `destaque` (a foto da seção Ingredientes; não pode mostrar manteiga, leite nem trigo) | sim |
 | `sobre/` | `jhessica` (retrato da Jhessica) | sim |
 | | `jhessica-cozinha` (ela trabalhando) | não |
-| `depoimentos/` | o nome do print indicado em `src/data/depoimentos.ts` (ex.: `karen-1`) | sim, se o depoimento estiver autorizado |
+| `depoimentos/` | o print original da conversa, com o nome indicado em `src/data/depoimentos.ts` (ex.: `karen-1`). **O site não o usa:** rode `npm run prints` para gerar `depoimentos/balao/<nome em minúsculas>.webp`, só com o balão da mensagem (sem foto de perfil, nome nem telefone do contato), e confira o resultado | sim, a cópia em `balao/`, se o depoimento estiver autorizado |
 
 A quantidade de modelos do Bento muda em `src/data/site.ts` (`fotosBento.modelos`).
 

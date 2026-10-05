@@ -7,6 +7,8 @@ import { subtotal, precoItem } from '../src/lib/pedido/precos.ts';
 import { prazoDoPedido, inicioDaContagem, datasValidas, diaCurto } from '../src/lib/pedido/prazos.ts';
 import { urlAbsoluta } from '../src/lib/absoluta.ts';
 import { linkProduto, textoCompartilhar } from '../src/lib/pedido/compartilhar.ts';
+import { perguntas, perguntasPendentes, respostaPrazos, respostaEntrega, respostaAlergenos } from '../src/data/perguntas.ts';
+import { regrasPedido, fraseTracos, diasDeEntrega } from '../src/data/site.ts';
 import { montarMensagem, linhaItem, linkWhatsApp, numeroPedido, entregaGratis } from '../src/lib/pedido/mensagem.ts';
 
 const item = (id, variante, extra = {}) => ({ id, variante, adicionais: [], opcoes: {}, semOvo: false, sabores: {}, quantidade: 1, ...extra });
@@ -144,4 +146,32 @@ test('textoCompartilhar: nome, preço "a partir de" e a receita só quando o car
   }
   const caixa = produtos.find((p) => p.id === 'caixa-de-brigadeiros');
   assert.match(textoCompartilhar(caixa).texto, /a partir de R\$/);
+});
+
+test('perguntas: as respostas saem dos dados e a pergunta com pendência fica oculta', () => {
+  const todas = perguntas.map((p) => p.resposta.join(' ')).join(' ');
+  assert.ok(perguntas.every((p) => !p.pendente && p.resposta.length > 0));
+  assert.ok(perguntasPendentes.some((p) => p.id === 'bento-nome-idade'));
+  assert.ok(!perguntas.some((p) => p.id === 'bento-nome-idade'));
+  assert.match(respostaPrazos().join(' '), new RegExp(`${regrasPedido.prazoMinimoDias} dias`));
+  assert.match(respostaPrazos().join(' '), new RegExp(`${regrasPedido.limiteBrigadeirosUnidades} unidades pedem ${regrasPedido.prazoEspecialDias} dias`));
+  assert.match(respostaEntrega().join(' '), /domingos/);
+  assert.match(respostaEntrega().join(' '), new RegExp(regrasPedido.entrega.gratisNoBairro));
+  assert.match(todas, /celíaca/, 'a resposta de glúten e leite traz o aviso de traços');
+  assert.ok(!/seguro para celíac/i.test(todas));
+});
+
+test('perguntas: alérgenos pelos dados do cardápio (coco no beijinho, amendoim na paçoca, brigadeiro sem ovo)', () => {
+  const r = respostaAlergenos().join(' ');
+  assert.match(r, /Brigadeiros não levam ovo/);
+  assert.match(r, /amendoim \(brigadeiro de paçoca\)/);
+  assert.match(r, /coco \(bolo de maçã e brigadeiro de beijinho\)/);
+  assert.match(r, /traços de glúten, leite e soja/);
+});
+
+test('rodapé: a frase de traços só aparece com a cozinha confirmada como não livre; entrega por extenso dos dados', () => {
+  assert.match(fraseTracos({ cozinhaSemGluten: false, cozinhaSemLeite: false }), /não é livre de traços.*celíaca/);
+  assert.equal(fraseTracos({ cozinhaSemGluten: true, cozinhaSemLeite: false }), null);
+  assert.equal(fraseTracos({ cozinhaSemGluten: null, cozinhaSemLeite: null }), null);
+  assert.equal(diasDeEntrega(), 'domingos');
 });

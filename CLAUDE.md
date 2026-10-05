@@ -27,6 +27,11 @@ src/
   assets/images/cardapio/  fotos da vitrine ({categoria}.jpg|webp) + FONTES-PROVISORIAS.md
   assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
   assets/images/produtos/{id}/, bento/, sobre/, depoimentos/  fotos por convenção de nome (docs/FOTOS.md)
+  data/depoimentos.ts    falas dos clientes (só `autorizado: true` vai ao ar) + recorte do balão de cada print
+  scripts/recortar-prints.mjs  npm run prints: recorta SÓ o balão de cada print em depoimentos/balao/ (o original, com foto e nome
+                         do contato, nunca é importado pelo site)
+  data/perguntas.ts      perguntas frequentes; respostas montadas dos dados (regrasPedido, compromisso, conservacao, cardápio);
+                         `pendente` oculta a pergunta
   scripts/checar-fotos.mjs  npm run fotos: confere as fotos esperadas
   components/pedido/     ProdutoCard (card .produto) e ProdutoPainel (<dialog> "Detalhes", um por produto, abre com
                          [data-abrir="{id}"] ou ?produto={id}; o voltar do navegador fecha)
@@ -41,7 +46,8 @@ src/
   tests/                 npm test (node:test, importa os .ts direto; Node ≥ 23.6)
   layouts/BaseLayout     <head>, fontes, tema sem piscar, fundo, Header, Footer e o script do [data-rv]
   components/layout/     Header (nav de vidro + gaveta com foco preso), Footer
-  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, SectionHeading, CenaIngrediente (verso de "O que entra"),
+  components/ui/         Button, Icon, Logo, ThemeSwitch, Doodle, Carimbo (texto girando; Bento e Contato), SectionHeading,
+                         CenaIngrediente (verso de "O que entra"),
                          PedidoFlutuante (pílula "Fazer pedido" até 1180px; esconda-a com data-esconde-pilula)
   components/sections/   Hero + uma seção por item de `secoes` (Sobre: retrato `sobre/jhessica.png` que "sai da forma", máscara de duas camadas com um --blob só; texto em `historia`)
   pages/index.astro      Hero + seções percorrendo `secoes`
@@ -100,6 +106,8 @@ src/
   Convenção de pastas e nomes em `docs/FOTOS.md`.
 - **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
   `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
+- **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
+- **Perguntas (`data/perguntas.ts`), pendências da cliente:** o brigadeiro leva castanha/amêndoa? (hoje: "pode conter"); a versão sem ovos muda o prazo? (a resposta não cita prazo); o Bento aceita nome ou idade escritos? (pergunta oculta até responder).
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; **confirmar com a cliente desde quando a loja existe** (hoje a seção não cita data nem tempo de loja) e revisar o texto.
 - Ainda a confirmar com a cliente (TODO nos dados): **a versão sem ovos muda o prazo?** (mantido o prazo atual, igual ao do produto normal, até ela responder), se o brigadeiro leva castanha
   ou amêndoa, textos de "O que entra" e o texto do depoimento da Karen.
