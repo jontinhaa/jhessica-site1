@@ -50,6 +50,10 @@ src/
                          CenaIngrediente (verso de "O que entra"),
                          PedidoFlutuante (pílula "Fazer pedido" até 1180px; esconda-a com data-esconde-pilula)
   components/sections/   Hero + uma seção por item de `secoes` (Sobre: retrato `sobre/jhessica.png` que "sai da forma", máscara de duas camadas com um --blob só; texto em `historia`)
+  components/sections/Contato.astro  última dobra (DS .cta-sec): título com letras 3D e círculo à mão em "você", rastro de doces no mouse
+                         (leque de fotos no toque), botão magnético, comanda e carimbo. Fotos PROVISÓRIAS do cardápio.
+  components/sections/FaixaVideo.astro  faixa só de vídeo (o da hero) antes do Contato, com a largura e as bordas do .ticker da hero e o DOBRO da altura dele
+                         (altura = 2 × --faixa-h, valor em global.css que também é a altura do .ticker); toca só na tela; o botão de pausar da hero também a pausa
   pages/index.astro      Hero + seções percorrendo `secoes`
   pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)
   pages/404.astro
@@ -62,7 +66,7 @@ src/
 - Fontes pela API de fontes do Astro (`astro.config.mjs`), variáveis `--font-serif/-sans/-poster/-hand`.
   Serif é a Newsreader: a Cormorant solta o circunflexo (ê, â, ô), não voltar para ela.
 - Ícones: `<Icon name="solar:…" />` (Solar Linear) ou `simple-icons:…` para redes. SVG gerado no build.
-- Rabiscos: `<Doodle name="batedor" />`, no máximo um por dobra de tela (exceção: os cartões de "O que entra").
+- Rabiscos: `<Doodle name="batedor" />`, no máximo um por dobra de tela (exceções: os cartões de "O que entra" e o Contato, que tem a seta e o carimbo com o batedor, por pedido do cliente).
 - Keyframes têm nome GLOBAL no Astro: prefixe os de componente (as cenas usam `c-`) para não colidir com `boil`, `spin`…
 - Conteúdo repetido (produtos, depoimentos) vem de dados, não escrito à mão no markup.
 - Seção nova da home: item em `secoes` (site.ts) + componente em `pages/index.astro`. Número do sobretítulo = posição.

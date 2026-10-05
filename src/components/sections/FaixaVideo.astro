@@ -1,0 +1,48 @@
+---
+// FAIXA DE VÍDEO · o vídeo da hero numa faixa contínua, só imagem, antes da última dobra (Contato).
+// Mesma largura e mesmas bordas do marquee abaixo da hero (.ticker em Hero.astro), com o DOBRO da altura dele:
+// 2 × --faixa-h (global.css, a altura do .ticker).
+// Reaproveita os arquivos da hero (public/videos): nada de vídeo novo para baixar. Só toca na tela; com movimento reduzido
+// ou economia de dados fica o pôster. Decorativa: fora da leitura de tela. O botão de pausar da hero também pausa esta faixa
+// (a hero marca <html data-video-pausado> e avisa pelo evento `video:pausa`).
+import { url } from '../../lib/url';
+---
+
+<div class="faixa-video" aria-hidden="true">
+  <video muted loop playsinline preload="none" tabindex="-1" disablepictureinpicture poster={url('/videos/hero-poster.webp')}>
+    <source src={url('/videos/hero-1080.mp4')} type="video/mp4" media="(min-width: 768px)" />
+    <source src={url('/videos/hero-retrato.mp4')} type="video/mp4" />
+  </video>
+</div>
+
+<style>
+  .faixa-video {
+    position: relative; overflow: hidden; height: calc(var(--faixa-h) * 2);
+    border-block: 1px solid var(--line); background: rgba(var(--bg-rgb), .55);
+  }
+  video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 58%; filter: brightness(var(--hero-dim)) contrast(1.04); }
+</style>
+
+<script>
+  const faixa = document.querySelector<HTMLElement>('.faixa-video');
+  const video = faixa?.querySelector('video');
+  if (faixa && video) {
+    const reduzir = matchMedia('(prefers-reduced-motion: reduce)');
+    const conexao = (navigator as Navigator & { connection?: EventTarget & { saveData?: boolean } }).connection;
+    let visible = false;
+    let trocandoTema = false;
+    const sync = () => {
+      const pausadoNaHero = document.documentElement.hasAttribute('data-video-pausado');
+      const on = !reduzir.matches && !conexao?.saveData && !pausadoNaHero && visible && !trocandoTema && !document.hidden;
+      if (on) video.play().catch(() => {}); // modo economia do iOS recusa: fica o pôster
+      else video.pause();
+    };
+    // começa a carregar um pouco antes de entrar na tela (preload="none": só baixa quando vai tocar)
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }, { rootMargin: '200px 0px' }).observe(faixa);
+    document.addEventListener('visibilitychange', sync);
+    addEventListener('video:pausa', sync);
+    addEventListener('tema:transicao', (e) => { trocandoTema = (e as CustomEvent<boolean>).detail; sync(); });
+    reduzir.addEventListener('change', sync);
+    conexao?.addEventListener('change', sync);
+  }
+</script>

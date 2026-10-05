@@ -1,6 +1,7 @@
 ---
 // Página inicial: Hero e, depois, as seções na ordem de `secoes` (src/data/site.ts).
 // Número do sobretítulo = posição no array. Seção nova: componente aqui + item em `secoes`.
+// A faixa de vídeo (FaixaVideo) não é seção: entra sozinha antes do Contato.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/sections/Hero.astro';
 import Cardapio from '../components/sections/Cardapio.astro';
@@ -11,6 +12,7 @@ import Sobre from '../components/sections/Sobre.astro';
 import Depoimentos from '../components/sections/Depoimentos.astro';
 import Perguntas from '../components/sections/Perguntas.astro';
 import Contato from '../components/sections/Contato.astro';
+import FaixaVideo from '../components/sections/FaixaVideo.astro';
 import { secoes } from '../data/site';
 
 const componentes = {
@@ -32,6 +34,9 @@ if (faltando.length) throw new Error(`Seção sem componente em pages/index.astr
   <Hero />
   {secoes.map((secao, i) => {
     const Secao = componentes[secao.id as keyof typeof componentes];
-    return <Secao secao={secao} numero={i + 1} />;
+    // faixa de vídeo antes da última dobra (Contato)
+    return secao.id === 'contato'
+      ? [<FaixaVideo />, <Secao secao={secao} numero={i + 1} />]
+      : <Secao secao={secao} numero={i + 1} />;
   })}
 </BaseLayout>

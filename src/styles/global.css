@@ -27,6 +27,9 @@ ul, ol { list-style: none; }
 @media (max-width: 768px) { .grain { inset: 0; animation: none; mix-blend-mode: normal; } }
 
 /* ---------- layout ---------- */
+/* altura da faixa corrida: o marquee da hero (.ticker) e a faixa de vídeo (FaixaVideo) usam esta MESMA conta, para nunca divergirem:
+   2,3rem de respiro (1,15rem em cima e embaixo) + o texto do marquee + 2px de borda */
+:root { --faixa-h: calc(2.3rem + clamp(1.8rem, 3.5vw, 2.8rem) + 2px); }
 .wrapx { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--pad); }
 .sec { position: relative; padding: var(--sec-y) 0; scroll-margin-top: var(--nav-h); } /* âncora para abaixo do header fixo */
 /* celular: fora da tela, a seção não calcula estilo, layout nem pintura (carregamento e troca de tema mais leves);

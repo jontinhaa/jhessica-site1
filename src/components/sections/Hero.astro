@@ -202,7 +202,7 @@ const faixa = [
   .hero.is-paused .hero-pause :global(.i-pause), .hero:not(.is-paused) .hero-pause :global(.i-play) { display: none; }
 
   /* ---------- faixa corrente (Sable .ann) ---------- */
-  .ticker { position: relative; overflow: hidden; padding: 1.15rem 0; border-block: 1px solid var(--line); background: rgba(var(--bg-rgb), .55); }
+  .ticker { position: relative; overflow: hidden; height: var(--faixa-h); padding: 1.15rem 0; border-block: 1px solid var(--line); background: rgba(var(--bg-rgb), .55); }
   .sprite { position: absolute; width: 0; height: 0; }
   .run { display: flex; width: max-content; animation: tick 42s linear infinite; }
   @media (hover: hover) { .ticker:hover .run { animation-play-state: paused; } } /* no toque o :hover fica preso */
@@ -377,6 +377,12 @@ const faixa = [
     if (on) video.play().catch(() => {}); // modo economia do iOS recusa: fica o pôster
     else video.pause();
     sugar(on && !celular.matches);
+    // a pausa vale também para a faixa de vídeo mais abaixo (FaixaVideo): vídeo que se mexe sozinho precisa de como parar
+    const raiz = document.documentElement;
+    if (raiz.hasAttribute('data-video-pausado') !== paused) {
+      raiz.toggleAttribute('data-video-pausado', paused);
+      dispatchEvent(new CustomEvent('video:pausa'));
+    }
     hero.classList.toggle('is-paused', paused);
     ticker.classList.toggle('is-paused', paused || trocandoTema);
     btn.setAttribute('aria-label', paused ? 'Reproduzir vídeo' : 'Pausar vídeo');
