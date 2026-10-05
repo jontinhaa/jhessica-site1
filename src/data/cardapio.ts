@@ -16,8 +16,8 @@ export interface Opcao { id: string; rotulo: string; artigo?: 'a' | 'o'; valores
 
 export type CategoriaId = 'bolos' | 'paes' | 'fatias' | 'brigadeiros' | 'bento';
 
-/** tipo = ocasião, no sobretítulo da vitrine ("Café da tarde"). */
-export interface Categoria { id: CategoriaId; nome: string; tipo: string; chamada: string }
+/** tipo = ocasião, no sobretítulo da vitrine ("Café da tarde"). oculta = fica nos dados, mas fora do site inteiro. */
+export interface Categoria { id: CategoriaId; nome: string; tipo: string; chamada: string; oculta?: boolean }
 
 export interface Produto {
   id: string;
@@ -38,10 +38,12 @@ export interface Produto {
   opcoes?: Opcao[];
 }
 
-export const categorias: Categoria[] = [
+// Lista completa. O site lê `categorias` e `produtos` (logo depois dos produtos), que já vêm sem as categorias ocultas.
+export const todasCategorias: Categoria[] = [
   { id: 'bolos', nome: 'Bolos caseirinhos', tipo: 'Café da tarde', chamada: 'O bolo do café da tarde, em 500 g.' },
   { id: 'paes', nome: 'Pães artesanais', tipo: 'Pão de todo dia', chamada: 'Batata-doce e grãos, de 600 a 800 g.' },
-  { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.' },
+  // pronta para lançar: apague `oculta` quando as fotos das fatias chegarem (vitrine, /pedido e textos voltam sozinhos)
+  { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.', oculta: true },
   { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6 ou 12.' },
   { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem glúten e sem leite, para a festa inteira dividir.' },
 ];
@@ -66,7 +68,7 @@ const base = {
 };
 
 // TODO: descrições finais com a cliente; as de agora só repetem o que já foi combinado.
-export const produtos: Produto[] = [
+export const todosProdutos: Produto[] = [
   // leva leite de coco
   { ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), variantes: bolo500(40), adicionais: cobertura, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'coco'] } },
   { ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'), variantes: bolo500(40), adicionais: cobertura },
@@ -109,6 +111,10 @@ export const produtos: Produto[] = [
     ],
   },
 ];
+
+/** Categorias e produtos que aparecem no site (sem as categorias ocultas). */
+export const categorias = todasCategorias.filter((c) => !c.oculta);
+export const produtos = todosProdutos.filter((p) => categorias.some((c) => c.id === p.categoria));
 
 export const getProdutosPorCategoria = (categoriaId: CategoriaId) => produtos.filter((p) => p.categoria === categoriaId);
 

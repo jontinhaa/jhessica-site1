@@ -20,10 +20,11 @@ const dados = Object.fromEntries(Object.entries(dadosCompartilhar(p, Astro.site 
 
 <article class:list={['produto', !p.disponivel && 'is-out']} data-tilt data-rv>
   <div class:list={['produto-pic', !capa && ['ph', 'ph-empty']]} data-ph={capa ? undefined : `produtos/${p.id}/capa`}>
-    {capa && <Image src={capa} alt={p.nome} widths={[360, 720]} sizes="(max-width: 1023px) 50vw, 33vw" loading="lazy" />}
+    {/* card ≈ 450px no desktop: até 1200px cobre tela de densidade 2+; webp 85 evita borrar o granulado e as texturas */}
+    {capa && <Image src={capa} alt={p.nome} widths={[360, 720, 960, 1200]} sizes="(max-width: 359px) 100vw, (max-width: 1023px) 50vw, (max-width: 1400px) 33vw, 450px" quality={85} loading="lazy" />}
     <div class="tags">
       {p.maisPedido && <span class="tag tag--vidro">Mais pedido</span>}
-      {semOvo && <span class="tag tag--pista">Sem ovo</span>}
+      {semOvo && <span class="tag tag--pista-forte">Sem ovo</span>}
     </div>
     {!p.disponivel ? (
       <button class="add-bar" type="button" disabled>Esgotado nesta semana</button>

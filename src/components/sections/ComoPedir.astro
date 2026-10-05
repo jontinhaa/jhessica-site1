@@ -12,11 +12,14 @@ import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
 import { contato, faixaAtendimento, passosPedido, redes, regrasPedido, type Secao } from '../../data/site';
+import { categorias } from '../../data/cardapio';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
 
 const limite = regrasPedido.limiteBrigadeirosUnidades;
+// fatias só entram no texto enquanto a categoria estiver no site (oculta em cardapio.ts)
+const massas = categorias.some((c) => c.id === 'fatias') ? 'bolos, pães, fatias' : 'bolos, pães';
 const [de, , ate] = faixaAtendimento().split(' ');
 const horario = contato.atendimento.texto.slice(contato.atendimento.texto.indexOf('das '));
 ---
@@ -50,7 +53,7 @@ const horario = contato.atendimento.texto.slice(contato.atendimento.texto.indexO
     <div class="prazos-lista" data-rv>
       <p class="hand">encomende com calma</p>
       <ul class="stat-list">
-        <li><span>bolos, pães, fatias e até {limite - 1} brigadeiros</span><b>{regrasPedido.prazoMinimoDias}<em>dias</em></b></li>
+        <li><span>{massas} e até {limite - 1} brigadeiros</span><b>{regrasPedido.prazoMinimoDias}<em>dias</em></b></li>
         <li><span>Bento Cake, bolos de aniversário e a partir de {limite} brigadeiros</span><b>{regrasPedido.prazoEspecialDias}<em>dias</em></b></li>
         <li><span>atendimento {horario}</span><b>{de}<em> a </em>{ate}</b></li>
       </ul>

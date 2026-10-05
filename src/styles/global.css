@@ -107,6 +107,8 @@ ul, ol { list-style: none; }
 .toast .icon { font-size: 22px; color: var(--pista); }
 @media (prefers-reduced-motion: reduce) { .toast { transform: translate(-50%, 0); } }
 .tag--pista { border-color: transparent; background: color-mix(in srgb, var(--pista) 18%, transparent); color: var(--pista); }
+/* selo sólido ("Sem ovo"): legível até sobre foto clara; texto na cor do fundo dá contraste no dia e na noite */
+.tag--pista-forte { border-color: transparent; background: var(--pista); color: var(--bg); }
 .tag--vidro { border-color: rgba(255, 255, 255, .3); background: rgba(20, 13, 10, .34); color: #FBF3E6; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 /* .risco = o traço desenhado embaixo; .icon = a seta que anda 4px */
 .link-r { position: relative; display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; font-weight: 500; color: var(--ink); transition: color .3s; }

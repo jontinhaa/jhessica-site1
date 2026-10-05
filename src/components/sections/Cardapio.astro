@@ -22,13 +22,16 @@ const fotoDe = (id: string) => Object.entries(fotos).find(([caminho]) => caminho
 const largo = { widths: [400, 640, 900, 1200], sizes: '(max-width: 860px) calc(100vw - 40px), (max-width: 1400px) 46vw, 600px' };
 const estreito = { widths: [300, 450, 640], sizes: '(max-width: 860px) 50vw, (max-width: 1400px) 23vw, 300px' };
 const bloco: Record<CategoriaId, { ph: string; alt: string; img: typeof largo }> = {
-  // TODO: alt final com a foto real
-  bolos: { ph: 'ph--caramelo', img: largo, alt: 'Fatia alta de bolo com frutas vermelhas e calda, num prato de cerâmica sobre mesa de madeira' },
-  paes: { ph: 'ph--pista', img: estreito, alt: 'Pão de fôrma fatiado sobre uma tábua de madeira, sob luz quente' },
-  fatias: { ph: 'ph--fruta', img: estreito, alt: 'Torta de limão com merengue tostado e uma fatia servida ao lado' },
-  brigadeiros: { ph: 'ph--noite', img: estreito, alt: 'Caixa kraft aberta com brigadeiros de cacau, pistache e coco' },
-  bento: { ph: 'ph--noite', img: { ...largo, sizes: '(max-width: 860px) 50vw, (max-width: 1400px) 46vw, 600px' }, alt: 'Bento cake branco com vela acesa, numa embalagem aberta' },
+  bolos: { ph: 'ph--caramelo', img: largo, alt: 'Bolo caseiro de maracujá coberto de calda com sementes, num prato branco sobre a bancada de granito' },
+  paes: { ph: 'ph--pista', img: estreito, alt: 'Pão de fôrma dourado com sementes de abóbora por cima, sobre um pano branco' },
+  // alt da foto provisória (fatias.webp): conferir contra a foto real ao reativar a categoria
+  fatias: { ph: 'ph--fruta', img: estreito, alt:'Torta de limão com merengue tostado e uma fatia servida ao lado' },
+  brigadeiros: { ph: 'ph--noite', img: estreito, alt: 'Caixa branca com seis brigadeiros de granulado, amarrada com laço de barbante' },
+  bento: { ph: 'ph--noite', img: { ...largo, sizes: '(max-width: 860px) 50vw, (max-width: 1400px) 46vw, 600px' }, alt: 'Bolo de chocolate coberto de morangos e uvas, numa embalagem transparente' },
 };
+// sem a categoria Fatias (oculta em cardapio.ts), Pães e Brigadeiros viram colunas altas e o Bento ocupa a largura no celular
+const semFatias = !categorias.some((c) => c.id === 'fatias');
+if (semFatias) bloco.bento.img = { ...largo, sizes: '(max-width: 860px) calc(100vw - 40px), (max-width: 1400px) 46vw, 600px' };
 
 const vitrine = categorias.map((cat) => {
   const produtos = getProdutosPorCategoria(cat.id);
@@ -46,12 +49,13 @@ const vitrine = categorias.map((cat) => {
     <div class="sec-body">
       <p class="lead">Receitas sem glúten e sem leite, feitas em pequenas fornadas.</p>
 
-      <div class="bento">
+      <div class:list={['bento', semFatias && 'bento--sem-fatias']}>
         {vitrine.map((c) => (
           <a
-            class:list={['tile', 'cat', c.id === 'bolos' && 'cat--largo', !c.foto && ['ph', 'ph-empty', c.ph], c.esgotado && 'is-out']}
+            class:list={['tile', 'cat', (c.id === 'bolos' || (semFatias && c.id === 'bento')) && 'cat--largo', !c.foto && ['ph', 'ph-empty', c.ph], c.esgotado && 'is-out']}
             href={url(`/pedido#${c.id}`)}
             style={`grid-area: ${c.id}`}
+            data-cat={c.id}
             data-ph={c.foto ? undefined : `${c.id}.jpg`}
             data-ico={c.id === 'brigadeiros' ? 'doce' : undefined}
             data-rv
@@ -84,7 +88,8 @@ const vitrine = categorias.map((cat) => {
 <style>
   .lead { margin: -1.5rem 0 2.5rem; }
 
-  /* grade por áreas, sem buracos: Bolos 2×2 · Pães 1×2 · Fatias e Brigadeiros 1×1 · Bento e bloco à mão 2×1 */
+  /* grade por áreas, sem buracos: Bolos 2×2 · Pães 1×2 · Fatias e Brigadeiros 1×1 · Bento e bloco à mão 2×1
+     (o layout com Fatias fica pronto para quando a categoria voltar) */
   .bento {
     --linha: 210px;
     display: grid; gap: 1rem;
@@ -92,6 +97,9 @@ const vitrine = categorias.map((cat) => {
     grid-template-rows: repeat(3, minmax(var(--linha), auto));
     grid-template-areas: 'bolos bolos paes fatias' 'bolos bolos paes brigadeiros' 'bento bento mao mao';
   }
+  /* sem Fatias: Pães e Brigadeiros 1×2 lado a lado; a foto dos brigadeiros (horizontal, caixa à direita) puxa para a direita */
+  .bento--sem-fatias { grid-template-areas: 'bolos bolos paes brigadeiros' 'bolos bolos paes brigadeiros' 'bento bento mao mao'; }
+  .bento--sem-fatias [data-cat='brigadeiros'] :global(.foto) { object-position: 75% center; }
   @media (max-width: 1023px) { .bento { --linha: 240px; } }
   @media (max-width: 860px) {
     .bento {
@@ -99,6 +107,7 @@ const vitrine = categorias.map((cat) => {
       grid-template-rows: repeat(3, minmax(170px, auto)) auto;
       grid-template-areas: 'bolos bolos' 'paes fatias' 'brigadeiros bento' 'mao mao';
     }
+    .bento--sem-fatias { grid-template-areas: 'bolos bolos' 'paes brigadeiros' 'bento bento' 'mao mao'; }
   }
 
   .tile { position: relative; overflow: hidden; border-radius: var(--r-lg); background: var(--bg-2); }

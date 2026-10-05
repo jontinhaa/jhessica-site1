@@ -13,13 +13,17 @@ import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import Doodle from '../ui/Doodle.astro';
 import Carimbo from '../ui/Carimbo.astro';
+import { categorias } from '../../data/cardapio';
 import { contato, diasDeEntrega, entregaConfirmada, pedido, redes, regrasPedido, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
 
 const fotosGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/cardapio/*.{jpg,jpeg,png,webp}', { eager: true });
-const fotos = Object.values(fotosGlob).map((m) => m.default);
+// só as fotos das categorias que estão no site (a de uma categoria oculta fica de fora)
+const fotos = Object.entries(fotosGlob)
+  .filter(([caminho]) => categorias.some((c) => c.id === caminho.split('/').pop()!.replace(/\.\w+$/, '')))
+  .map(([, m]) => m.default);
 
 // letras em 3D, agrupadas por palavra (a quebra de linha só acontece entre palavras)
 let n = 0;

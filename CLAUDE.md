@@ -23,9 +23,11 @@ src/
                          rotulosAlergenos,
                          secoes (ordem da home) e menu
   data/cardapio.ts       categorias e produtos (variantes, opções com alérgenos, contem/podeConter), precoMinimo, emBreve,
-                         formatarPreco, getImagensProduto (produtos/{id}/capa|corte|extra-N)
+                         formatarPreco, getImagensProduto (produtos/{id}/capa|corte|extra-N). `todasCategorias`/`todosProdutos`
+                         são os dados completos; `categorias`/`produtos` (o que o site lê) já vêm sem as categorias `oculta: true`.
+                         Fatias está OCULTA até as fotos chegarem: apague `oculta` e vitrine, /pedido, textos e fotos voltam sozinhos
   assets/images/cardapio/  fotos da vitrine ({categoria}.jpg|webp) + FONTES-PROVISORIAS.md
-  assets/images/ingredientes/  destaque.webp + FONTES-PROVISORIAS.md
+  assets/images/ingredientes/  destaque.jpg + FONTES-PROVISORIAS.md
   assets/images/produtos/{id}/, bento/, sobre/, depoimentos/  fotos por convenção de nome (docs/FOTOS.md)
   data/depoimentos.ts    falas dos clientes (só `autorizado: true` vai ao ar) + recorte do balão de cada print
   scripts/recortar-prints.mjs  npm run prints: recorta SÓ o balão de cada print em depoimentos/balao/ (o original, com foto e nome
@@ -55,7 +57,7 @@ src/
   components/sections/FaixaVideo.astro  faixa só de vídeo (o da hero) antes do Contato, com a largura e as bordas do .ticker da hero e o DOBRO da altura dele
                          (altura = 2 × --faixa-h, valor em global.css que também é a altura do .ticker); toca só na tela; o botão de pausar da hero também a pausa
   pages/index.astro      Hero + seções percorrendo `secoes`
-  pages/pedido.astro     cardápio completo (placeholder; âncoras #bolos #paes #fatias #brigadeiros #bento)
+  pages/pedido.astro     cardápio completo (âncoras #bolos #paes #brigadeiros #bento; #fatias enquanto a categoria não for oculta)
   pages/404.astro
 ```
 
@@ -108,16 +110,19 @@ src/
 
 - **Antes de publicar, rode `npm run fotos`: nenhuma obrigatória pode faltar e nenhuma provisória pode continuar.**
   Convenção de pastas e nomes em `docs/FOTOS.md`.
-- **Foto da seção Ingredientes é PROVISÓRIA** (recorte de uma imagem do DS, ver
-  `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não pode mostrar manteiga, leite ou trigo.
+- **Foto da seção Ingredientes é PROVISÓRIA** (ver `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não
+  pode mostrar manteiga, leite ou trigo, nem aveia se ela não for certificada sem glúten.
 - **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
 - Ainda a confirmar com a cliente (TODO nos dados): **ingredientes e frase de descrição de cada produto** (ela vai mandar), textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
 - **Prévia do link (/p/{id}) usa a imagem padrão `src/assets/images/og-padrao.jpg`** (1200×630, recorte do poster da hero; será a OG padrão do site) enquanto os produtos não têm `capa`: trocar quando as fotos reais chegarem.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
-- **Fotos da vitrine do Cardápio são PROVISÓRIAS** (3 geradas para o DS + 2 do Unsplash, ver
-  `src/assets/images/cardapio/FONTES-PROVISORIAS.md`): substituir pelas fotos reais da Jhessica e ajustar os `alt`.
+- **Fotos provisórias** (listadas nos `FONTES-PROVISORIAS.md` de cada pasta; `npm run fotos` cobra): vitrine (brigadeiros,
+  bento), Bento (destaque e modelos; a foto de agora é um bolo redondo com frutas, não um bento), Bento Cake (capa e corte)
+  e Pão de cebola (crosta parece queijo). Substituir pelas fotos reais e ajustar os `alt`.
+- **Pão de grãos:** a capa é um pão liso, sem grãos; `produtos/pao-de-batata-doce/pao2.jpeg` (girassol e chia) parece ser o
+  de grãos. Confirmar com a cliente qual foto é de qual pão.
 - Página /design-system não pode ir para produção (já garantido: a rota só existe no dev).
 - **No lançamento, remover PUBLIC_NOINDEX.** Hoje o deploy de teste (`.github/workflows/deploy.yml`, GitHub Pages em
   https://jontinhaa.github.io/jhessica-site1/) usa `PUBLIC_NOINDEX=true` e `BASE_PATH=/jhessica-site1/`.

@@ -35,6 +35,9 @@ Uma pasta por produto, com o mesmo código usado em `src/data/cardapio.ts`:
 `fatia-maracuja` · `caixa-de-brigadeiros` · `bento-cake`
 
 Exemplo: a foto principal do bolo de chocolate vai em `src/assets/images/produtos/bolo-de-chocolate/capa.jpg`.
+
+As fatias estão ocultas no site por enquanto (`oculta: true` na categoria, em `src/data/cardapio.ts`): o verificador não cobra
+as fotos delas. Quando forem lançadas, salve as capas das três pastas `fatia-…` e apague o `oculta`.
 Produto novo no cardápio? Crie a pasta com o código dele; o verificador já passa a cobrar a capa.
 
 ## Fotos provisórias

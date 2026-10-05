@@ -49,7 +49,7 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
         <figure class="foto" data-rv>
           <div class:list={['media', 'assenta', !destaque && ['ph', 'ph-empty', 'ph--noite']]} data-ph={destaque ? undefined : 'bento/destaque'}>
             {/* TODO: alt final com a foto real */}
-            {destaque && <Image src={destaque} alt="Bento cake branco com vela acesa, numa embalagem aberta" widths={[480, 720, 960, 1280]} sizes="(max-width: 860px) calc(100vw - 40px), (max-width: 1400px) 52vw, 720px" loading="lazy" />}
+            {destaque && <Image src={destaque} alt="Bolo de chocolate coberto de morangos e uvas, numa embalagem transparente sobre a bancada" widths={[480, 720, 960, 1280]} sizes="(max-width: 860px) calc(100vw - 40px), (max-width: 1400px) 52vw, 720px" loading="lazy" />}
           </div>
           <div class="carimbo-pos"><Carimbo id="bento" texto={`feito à mão · por encomenda · ${contato.cidade} · `} /></div>
         </figure>

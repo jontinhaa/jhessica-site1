@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { categorias, produtos } from '../src/data/cardapio.ts';
+import { categorias, produtos, todasCategorias } from '../src/data/cardapio.ts';
 import { depoimentosPublicos } from '../src/data/depoimentos.ts';
 import { fotosBento } from '../src/data/site.ts';
 
@@ -24,6 +24,9 @@ const grupos = [
   // o site usa só a cópia recortada (npm run prints), nunca o print original (tem foto e nome do contato)
   ['depoimentos/balao', depoimentosPublicos.filter((d) => d.print).map((d) => [d.print.toLowerCase(), true, MIN_PRINT])],
 ];
+
+// fotos de categoria oculta (cardapio/{id}.*) ficam guardadas para quando ela voltar: não cobram nem contam como erro de nome
+const ocultas = new Set(todasCategorias.filter((c) => c.oculta).map((c) => c.id));
 
 const largura = 46;
 const linha = (s, caminho, nota) => console.log(`  ${s} ${caminho.padEnd(largura)} ${nota}`);
@@ -60,7 +63,10 @@ for (const [pasta, itens] of grupos) {
     linha(notas.length ? '!' : '✓', `${pasta}/${f}`, `(${width}×${height}${notas.length ? ' · ' + notas.join(' · ') : ''})`);
   }
   if (opcFaltando.length) linha('·', `${pasta}/${opcFaltando.join(', ')}`, '(opcionais, faltando)');
-  for (const f of arquivos.filter((f) => !usados.has(f))) { avisos++; linha('?', `${pasta}/${f}`, '(nome fora da convenção: não é usado)'); }
+  for (const f of arquivos.filter((f) => !usados.has(f))) {
+    if (pasta === 'cardapio' && ocultas.has(f.replace(EXT, '').toLowerCase())) { linha('·', `${pasta}/${f}`, '(guardada: categoria oculta em cardapio.ts)'); continue; }
+    avisos++; linha('?', `${pasta}/${f}`, '(nome fora da convenção: não é usado)');
+  }
 }
 
 console.log(`\n${obrigOk} de ${obrig} fotos obrigatórias no lugar · ${opcOk} de ${opc} opcionais`);
