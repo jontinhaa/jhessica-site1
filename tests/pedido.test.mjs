@@ -1,14 +1,15 @@
 // npm test · lógica do pedido (src/lib/pedido), com node:test e a remoção de tipos do Node (≥ 23.6).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { produtos } from '../src/data/cardapio.ts';
+import { levaAveia, produtos } from '../src/data/cardapio.ts';
 import { juntar, chaveItem } from '../src/lib/pedido/itens.ts';
 import { subtotal, precoItem } from '../src/lib/pedido/precos.ts';
 import { prazoDoPedido, inicioDaContagem, datasValidas, diaCurto } from '../src/lib/pedido/prazos.ts';
 import { urlAbsoluta } from '../src/lib/absoluta.ts';
 import { linkProduto, textoCompartilhar } from '../src/lib/pedido/compartilhar.ts';
 import { perguntas, perguntasPendentes, respostaPrazos, respostaEntrega, respostaAlergenos } from '../src/data/perguntas.ts';
-import { regrasPedido, fraseTracos, diasDeEntrega } from '../src/data/site.ts';
+import { regrasPedido, diasDeEntrega } from '../src/data/site.ts';
+import { fraseTracos } from '../src/data/promessa.ts';
 import { montarMensagem, linhaItem, linkWhatsApp, numeroPedido, entregaGratis } from '../src/lib/pedido/mensagem.ts';
 
 const item = (id, variante, extra = {}) => ({ id, variante, adicionais: [], opcoes: {}, semOvo: false, sabores: {}, quantidade: 1, ...extra });
@@ -141,9 +142,12 @@ test('textoCompartilhar: nome, preço "a partir de" e a receita só quando o car
     const { titulo, texto } = textoCompartilhar(p);
     assert.equal(titulo, p.nome);
     assert.ok(texto.startsWith(p.nome));
-    assert.equal(/sem glúten e sem leite/.test(texto), !p.alergenos.contem.some((a) => a === 'gluten' || a === 'leite'));
-    assert.ok(!/celíac/i.test(texto));
+    assert.equal(/sem glúten e sem leite/.test(texto), !p.alergenos.contem.some((a) => a === 'gluten' || a === 'aveia' || a === 'leite') && !levaAveia(p));
+    if (levaAveia(p)) assert.ok(!/sem glúten/.test(texto), `${p.id} leva aveia e não pode dizer "sem glúten"`);
+    assert.ok(!/seguro para celíac/i.test(texto));
   }
+  assert.match(textoCompartilhar(produtos.find((p) => p.id === 'bolo-de-chocolate')).texto, /sem leite na receita · leva aveia comum, não indicado para celíacos/);
+  assert.match(textoCompartilhar(produtos.find((p) => p.id === 'bento-cake')).texto, /sem leite na receita · com massa de chocolate, leva aveia comum, não indicado para celíacos/);
   const caixa = produtos.find((p) => p.id === 'caixa-de-brigadeiros');
   assert.match(textoCompartilhar(caixa).texto, /a partir de R\$/);
 });
@@ -169,6 +173,8 @@ test('perguntas: alérgenos pelos dados do cardápio (coco no beijinho, amendoim
   assert.match(r, /amendoim \(brigadeiro de paçoca\)/);
   assert.match(r, /coco \(bolo de maçã e brigadeiro de beijinho\)/);
   assert.match(r, /traços de glúten, leite e soja/);
+  assert.match(r, /Bolo de chocolate e Bento Cake com massa de chocolate levam glúten \(aveia comum\): não indicados para celíacos/);
+  assert.match(r, /Pães artesanais levam ovo\./, 'o pão de grãos não leva castanhas: elas saem do comum dos pães');
 });
 
 test('rodapé: a frase de traços só aparece com a cozinha confirmada como não livre; entrega por extenso dos dados', () => {

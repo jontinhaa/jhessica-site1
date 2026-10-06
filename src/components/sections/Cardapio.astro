@@ -10,6 +10,7 @@ import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
 import Doodle from '../ui/Doodle.astro';
 import type { Secao } from '../../data/site';
+import { promessaFrase } from '../../data/promessa';
 import { categorias, formatarPreco, getProdutosPorCategoria, precoMinimo, precosDe, type CategoriaId } from '../../data/cardapio';
 
 interface Props { secao: Secao; numero: number }
@@ -47,7 +48,7 @@ const vitrine = categorias.map((cat) => {
   <div class="wrapx">
     <SectionHeading numero={numero} rotulo={secao.rotulo} titulo={secao.titulo} tituloDestaque={secao.tituloDestaque} />
     <div class="sec-body">
-      <p class="lead">Receitas sem glúten e sem leite, feitas em pequenas fornadas.</p>
+      <p class="lead">Receitas {promessaFrase()}, feitas em pequenas fornadas.</p>
 
       <div class:list={['bento', semFatias && 'bento--sem-fatias']}>
         {vitrine.map((c) => (

@@ -7,7 +7,7 @@
 import { Image } from 'astro:assets';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
-import { formatarPreco, getImagensProduto, type Produto } from '../../data/cardapio';
+import { acrescimosVisiveis, formatarPreco, getImagensProduto, ingredientesVisiveis, levaAveia, ondeNaOpcao, opcoesComAveia, type Produto } from '../../data/cardapio';
 import { dadosCompartilhar } from '../../lib/pedido/compartilhar';
 import { conservacao, prazoDias, redes, regrasPedido, rotulosAlergenos } from '../../data/site';
 
@@ -23,9 +23,18 @@ const semOvo = !p.alergenos.contem.includes('ovo');
 const tituloId = `t-painel-${p.id}`;
 const dados = Object.fromEntries(Object.entries(dadosCompartilhar(p, Astro.site ?? Astro.url.origin, import.meta.env.BASE_URL)).map(([k, v]) => [`data-${k}`, v]));
 
-// alérgenos: os do produto + os que vêm com um sabor/recheio ("Amendoim (paçoca)")
+// alérgenos: os do produto + os que vêm com um sabor/massa ("Amendoim (paçoca)", "Glúten (aveia comum, massa de chocolate)")
 const rotulos = (lista: string[]) => lista.map((a) => rotulosAlergenos[a as keyof typeof rotulosAlergenos]);
-const dasOpcoes = (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.contem ?? []).map((a) => `${rotulosAlergenos[a]} (${v.nome.toLowerCase()})`)));
+const comOnde = (rotulo: string, onde: string) => (rotulo.endsWith(')') ? `${rotulo.slice(0, -1)}, ${onde})` : `${rotulo} (${onde})`);
+const dasOpcoes = (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.contem ?? []).map((a) => comOnde(rotulosAlergenos[a], ondeNaOpcao(p, o, v.nome)))));
+// aveia comum: aviso para celíacos no produto inteiro ou em cada opção que a leva (massa de chocolate do Bento)
+const aveia = levaAveia(p);
+const avisosAveia = aveia === true
+  ? ['Leva aveia comum: não indicado para celíacos.']
+  : opcoesComAveia(p).map(({ opcao, valor }) => `Com ${ondeNaOpcao(p, opcao, valor)}, leva aveia comum: não indicado para celíacos.`);
+const ingredientes = ingredientesVisiveis(p);
+// brigadeiros: a lista do produto é a base, e cada sabor acrescenta o seu
+const acrescimos = acrescimosVisiveis(p);
 const contem = [...rotulos(p.alergenos.contem), ...dasOpcoes];
 const contemSemOvo = [...rotulos(p.alergenos.contem.filter((a) => a !== 'ovo')), ...dasOpcoes];
 const conserva = conservacao.porCategoria[p.categoria];
@@ -64,10 +73,11 @@ const brigadeiros = p.categoria === 'brigadeiros';
       )}
 
       <header class="cabeca">
-        {(p.maisPedido || semOvo) && (
+        {(p.maisPedido || semOvo || aveia) && (
           <div class="tags">
-            {p.maisPedido && <span class="tag tag--caramelo">Mais pedido</span>}
+            {p.maisPedido && <span class="tag tag--caramelo tag--onda">Mais pedido</span>}
             {semOvo && <span class="tag tag--pista-forte">Sem ovo</span>}
+            {aveia && <span class="tag tag--alerta">{aveia === true ? 'Leva aveia' : 'Opção com aveia'}</span>}
           </div>
         )}
         <h2 class="h3" id={tituloId} tabindex="-1">{p.nome}</h2>
@@ -103,7 +113,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
         <fieldset class="campo" data-opcao data-artigo={o.artigo ?? 'o'} data-nome={o.rotulo.toLowerCase()}>
           <legend class="kicker">{o.rotulo}</legend>
           <div class="seg seg--solta">
-            {o.valores.map((v) => <label><input type="radio" name={`opcao-${o.id}`} value={v.nome} data-rotulo={o.rotulo} /><span>{v.nome}</span></label>)}
+            {o.valores.map((v) => <label><input type="radio" name={`opcao-${o.id}`} value={v.nome} data-rotulo={o.rotulo} /><span>{v.nome}{v.contem?.includes('aveia') && ' (leva aveia)'}</span></label>)}
           </div>
         </fieldset>
       ))}
@@ -158,6 +168,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
         {contem.length > 0 && (
           <p><b>Contém:</b> <span data-com-ovo>{contem.join(', ')}</span>{contemSemOvo.length !== contem.length && <span data-sem-ovo hidden>{contemSemOvo.join(', ') || '—'}</span>}</p>
         )}
+        {avisosAveia.map((aviso) => <p class="aviso">{aviso}</p>)}
         <p><b>Pode conter:</b> {rotulos(p.alergenos.podeConter).join(', ')}</p>
         <p>{conserva}{/congel/i.test(conserva) && ` ${conservacao.observacaoCongelados}`}</p>
         <p data-prazo>Encomende com {prazo} dias de antecedência.</p>
@@ -165,10 +176,12 @@ const brigadeiros = p.categoria === 'brigadeiros';
       </section>
 
       <section class="ingredientes" aria-label="Ingredientes">
-        {p.ingredientes?.length ? (
+        {ingredientes.length ? (
           <>
-            <span class="kicker">Ingredientes</span>
-            <p class="t-m">{p.ingredientes.join(', ')}.</p>
+            <span class="kicker">{p.coberturaPendente ? 'Ingredientes da massa' : 'Ingredientes'}</span>
+            <p class="t-m">{acrescimos.length > 0 && 'Base: '}{ingredientes.join(', ')}.</p>
+            {acrescimos.length > 0 && <p class="t-m">{acrescimos.map((a) => `${a.nome}: ${a.ingredientes.join(', ')}`).join(' · ')}</p>}
+            {p.coberturaPendente && <p class="t-s">A cobertura ainda não está nesta lista: {redes.whatsapp ? <a href={redes.whatsapp} target="_blank" rel="noopener">pergunte no WhatsApp.</a> : 'pergunte no WhatsApp.'}</p>}
           </>
         ) : (
           <p class="t-s">Quer saber a receita completa? {redes.whatsapp ? <a href={redes.whatsapp} target="_blank" rel="noopener">Pergunte no WhatsApp.</a> : 'Pergunte no WhatsApp.'}</p>
@@ -212,6 +225,8 @@ const brigadeiros = p.categoria === 'brigadeiros';
   .cabeca .h3 { font-size: clamp(1.8rem, 5vw, 2.3rem); outline: none; }
   .tags { display: flex; flex-wrap: wrap; gap: .35rem; }
   .tag--caramelo { border-color: transparent; background: rgba(var(--accent-rgb), .16); color: var(--accent-ink); }
+  /* com a onda dourada, --accent-ink cai abaixo de 4,5:1 no ponto mais claro: o texto escurece só neste selo */
+  .tag--caramelo.tag--onda { color: var(--ink); }
   .preco-linha { display: flex; align-items: baseline; gap: .7rem; }
   .compartilhar-bloco :global(.btn) { --h: 44px; } /* alvo de toque */
   .compartilhar-bloco { display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; }
@@ -244,6 +259,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
 
   .bom-saber { display: flex; flex-direction: column; gap: .55rem; padding: 1.3rem 1.4rem; font-size: .875rem; line-height: 1.55; color: var(--ink-2); }
   .bom-saber b { font-weight: 600; color: var(--ink); }
+  .bom-saber .aviso { font-weight: 600; color: var(--danger); }
   .ingredientes a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
 
   /* rodapé fixo: total + adicionar */

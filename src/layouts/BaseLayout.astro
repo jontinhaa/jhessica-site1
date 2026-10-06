@@ -2,6 +2,7 @@
 import { Font, getImage } from 'astro:assets';
 import ogPadrao from '../assets/images/og-padrao.jpg';
 import { marca, seo } from '../data/site';
+import { descricaoSite } from '../data/promessa';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import PedidoFlutuante from '../components/ui/PedidoFlutuante.astro';
@@ -30,7 +31,7 @@ interface Props {
   /** Tela de carregamento "o forno preaquecendo" (só a home), uma vez por sessão. */
   carregando?: boolean;
 }
-const { title = seo.titulo, description = seo.descricao, imageAlt, canonical, redirect, noindex, jsonLd, carregando } = Astro.props;
+const { title = seo.titulo, description = descricaoSite(), imageAlt, canonical, redirect, noindex, jsonLd, carregando } = Astro.props;
 
 // prévia padrão: jpeg 1200×630 (o WhatsApp ignora imagem pesada ou em webp em alguns aparelhos)
 const padrao = Astro.props.image ? undefined : await getImage({ src: ogPadrao, width: 1200, height: 630, format: 'jpeg', quality: 82 });
@@ -134,6 +135,12 @@ const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
         if (!reduzido) el.style.setProperty('--rv-d', `${([...el.parentElement!.children].indexOf(el) % 4) * 80}ms`);
         io.observe(el);
       });
+
+      // .tag--onda ("Mais pedido"): a faixa dourada só corre na tela, como os rabiscos (no <dialog> fechado, fica parada)
+      if (!reduzido) {
+        const onda = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('longe', !e.isIntersecting)));
+        document.querySelectorAll('.tag--onda').forEach((t) => onda.observe(t));
+      }
 
       // âncoras na mesma página: com content-visibility (global.css), as seções ainda não vistas têm altura estimada;
       // depois do salto elas renderizam e empurram o alvo. Reposiciona até ele parar (no máximo 6 quadros).

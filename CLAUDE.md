@@ -19,9 +19,12 @@ src/
   styles/tokens.css      cores dia/noite e tokens fixos (copiados do design system, não inventar valores)
   styles/global.css      reset, fundo com grão, tipografia (.h1…, .lead, .eyebrow, .hand…), superfícies (.panel, .glass…),
                          .tag, .link-r, placeholder .ph e o revelar [data-rv]
-  data/site.ts           marca, seo, contato/redes, regrasPedido, entregaConfirmada, passosPedido, conservacao, compromisso (+ textoAcucar/textoCozinha),
+  data/site.ts           marca, seo, contato/redes, regrasPedido, entregaConfirmada, passosPedido, conservacao, compromisso (+ textoAcucar),
                          rotulosAlergenos,
-                         secoes (ordem da home) e menu
+                         secoes (ordem da home) e menu. Só IMPORTA TIPOS do cardápio: scripts do navegador leem este arquivo
+  data/promessa.ts       promessa de glúten e leite tirada do cardápio (comAveia): promessaFrase ("sem leite e sem glúten, exceto …"),
+                         promessaCurta ("sem leite · sem trigo"), descricaoSite, textoCozinha, fraseTracos. Sem aveia, volta a
+                         "sem glúten e sem leite". Nenhum .astro escreve "sem glúten" à mão (tests/cardapio.test.mjs trava)
   data/cardapio.ts       categorias e produtos (variantes, opções com alérgenos, contem/podeConter), precoMinimo, emBreve,
                          formatarPreco, getImagensProduto (produtos/{id}/capa|corte|extra-N). `todasCategorias`/`todosProdutos`
                          são os dados completos; `categorias`/`produtos` (o que o site lê) já vêm sem as categorias `oculta: true`.
@@ -79,7 +82,10 @@ src/
   Links internos sempre `/#id` (funcionam fora da home). Produto e preço só em `data/cardapio.ts`.
 - Toda animação precisa respeitar `prefers-reduced-motion`.
 - Promessa ao cliente (sem glúten, sem leite, sem açúcar…) só aparece se o dado estiver confirmado em `compromisso`;
-  null = não afirmar.
+  null = não afirmar. Glúten e leite saem de `data/promessa.ts`: produto ou opção com `'aveia'` (aveia comum) mostra
+  "Glúten (aveia comum)", a etiqueta "Leva aveia" e o aviso "não indicado para celíacos", e entra no "exceto …" dos textos gerais.
+- Ingredientes: só os nomes que a cliente mandou (nunca receita, quantidade ou print). `ingredientesPendente` guarda a lista
+  sem mostrar; `coberturaPendente` mostra "Ingredientes da massa". Os testes conferem a lista contra os alérgenos.
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
 - Cena fixada (Como pedir): CSS nativo, sem GSAP/Lenis: `position: sticky` + `animation-timeline` (view-timeline no
   contêiner alto). Sem suporte ou com movimento reduzido, vira grade estática.
@@ -118,7 +124,10 @@ src/
   pode mostrar manteiga, leite ou trigo, nem aveia se ela não for certificada sem glúten.
 - **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
-- Ainda a confirmar com a cliente (TODO nos dados): **ingredientes e frase de descrição de cada produto** (ela vai mandar), textos de "O que entra" e o texto do depoimento da Karen.
+- **Aveia comum:** a cliente pode trocar a farinha de aveia do bolo de chocolate (aí sai `'aveia'` do bolo e da fatia Matilda).
+  **Bento:** a massa de chocolate conta como aveia até ela responder; a chamada da categoria em `cardapio.ts` é texto fixo e
+  volta a "sem glúten e sem leite" à mão. Lista completa de ingredientes pendentes em `docs/LANCAMENTO.md`.
+- Ainda a confirmar com a cliente (TODO nos dados): **ingredientes pendentes e frase de descrição de cada produto** (as descrições novas esperam a aprovação dela), textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
 - **Domínio de produção ainda não escolhido** (a cliente vai decidir): `<domínio>` em `docs/LANCAMENTO.md` e o `SITE_URL` do Cloudflare Pages dependem dele.
 - **Prévia de link padrão `src/assets/images/og-padrao.jpg`** (1200×630, gerada por `npm run imagens` a partir do poster da hero, com a forma no centro para o recorte quadrado do WhatsApp): vale na home, no /pedido, na 404 e nos /p/{id} de produto sem `capa`.

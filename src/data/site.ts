@@ -1,4 +1,6 @@
 // Configuração central. Header, Footer, SEO e a ordem das seções da home leem daqui.
+// Só tipos do cardápio aqui: scripts do navegador (sacola, prazos, mensagem) importam este arquivo, e o cardápio não pode ir junto.
+// O que depende do cardápio (a promessa de glúten e leite, a frase da cozinha, a descrição do site) fica em promessa.ts.
 import type { Alergeno, CategoriaId } from './cardapio';
 import { url } from '../lib/url.ts';
 
@@ -11,7 +13,7 @@ export const marca = {
 
 export const seo = {
   titulo: `${marca.nome} · Confeitaria artesanal em Marabá`,
-  descricao: 'Bolos, pães e doces sem glúten e sem leite, feitos à mão em Marabá.',
+  // a descrição (meta e prévia de link) sai do cardápio: descricaoSite em promessa.ts
   idioma: 'pt-BR',
   // barra do navegador no celular (<meta name="theme-color">): meta tag não lê variável CSS, então os valores
   // repetem o --bg de src/styles/tokens.css (modo dia e modo noite). Mudou o token, mude aqui.
@@ -120,7 +122,7 @@ export const compromisso = {
   // TODO: revisar textos com a cliente
   ingredientesQueEntram: [
     { nome: 'Farinha de arroz', rabisco: 'arroz', cena: 'arroz', legenda: 'colhido grão por grão', porque: 'A base leve das massas, no lugar do trigo.' },
-    { nome: 'Farinha de aveia', rabisco: 'aveia', cena: 'aveia', legenda: 'do campo pro moinho', porque: 'Textura macia e sabor de bolo caseiro.' },
+    { nome: 'Farinha de aveia', rabisco: 'aveia', cena: 'aveia', legenda: 'do campo pro moinho', porque: 'Textura macia e sabor de bolo caseiro. É aveia comum, não certificada.' },
     { nome: 'Amêndoas e castanha de caju', rabisco: 'castanhas', cena: 'castanhas', legenda: 'caju no pé, castanha na cesta', porque: 'Dão corpo, umidade e um sabor amanteigado, sem manteiga.' },
     { nome: 'Leites vegetais', rabisco: 'leite', cena: 'leite', legenda: 'do coco pro copo', porque: 'De amêndoas, de caju ou de coco, no lugar do leite em massas, cremes e recheios.' },
     { nome: 'Açúcar demerara', rabisco: 'acucar', cena: 'acucar', legenda: 'da cana pro açúcar', porque: 'No lugar do refinado. Em algumas receitas de chocolate, mascavo.' },
@@ -128,29 +130,13 @@ export const compromisso = {
   ] as { nome: string; rabisco: IngredienteId; cena: IngredienteId; legenda: string; porque: string }[],
 };
 
-type Cozinha = Pick<typeof compromisso, 'cozinhaSemGluten' | 'cozinhaSemLeite'>;
-
 /** Linha do açúcar: "nada de" só quando confirmado; nos outros casos, "evitamos". */
 export const textoAcucar = (semAcucarRefinado = compromisso.semAcucarRefinado) =>
   semAcucarRefinado === true ? 'E nada de açúcar refinado.' : 'E evitamos açúcar refinado e o excesso de industrializados.';
 
-/** Frase sobre a cozinha; null (não mostra nada) enquanto glúten ou leite não estiver confirmado. */
-export function textoCozinha({ cozinhaSemGluten: gluten, cozinhaSemLeite: leite }: Cozinha = compromisso): string | null {
-  if (gluten === null || leite === null) return null;
-  if (gluten && leite) return 'Na nossa cozinha não entram glúten nem leite, em receita nenhuma.';
-  const manipula = !gluten && !leite ? 'esses ingredientes' : !gluten ? 'glúten' : 'leite';
-  return `Nossas receitas não levam glúten nem leite, mas são feitas numa cozinha que também manipula ${manipula}. Por isso, podem conter traços. Se você tem doença celíaca ou alergia grave, fale com a gente antes de pedir.`;
-}
-
-/** Frase curta de traços do rodapé. Só aparece enquanto a cozinha está confirmada como NÃO livre de glúten e de leite;
- *  se virar livre (true) ou ficar sem confirmação (null), não afirma nada. */
-export const fraseTracos = (c: Cozinha = compromisso) =>
-  c.cozinhaSemGluten === false && c.cozinhaSemLeite === false
-    ? 'Receitas sem glúten e sem leite. Produzidas em cozinha que não é livre de traços. Em caso de doença celíaca ou alergia grave, fale com a gente antes de pedir.'
-    : null;
-
 export const rotulosAlergenos: Record<Alergeno, string> = {
   gluten: 'Glúten',
+  aveia: 'Glúten (aveia comum)',
   leite: 'Leite',
   ovo: 'Ovo',
   amendoim: 'Amendoim',

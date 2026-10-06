@@ -12,4 +12,5 @@ o placeholder do design system e o build não quebra. Depois, ajuste o `alt` em 
 Observações:
 - A foto mostra uma tigela de flocos de AVEIA. Aveia comum costuma ter contaminação cruzada com glúten: só manter se a
   Jhessica usa aveia certificada sem glúten. Senão, a foto real não deve mostrá-la.
+  Confirmado em 2026-10-06: ela usa aveia comum, NÃO certificada. A foto real não deve mostrar aveia.
 - Na foto real, evitar qualquer ingrediente que a receita não usa (manteiga, leite, creme, farinha de trigo identificável).

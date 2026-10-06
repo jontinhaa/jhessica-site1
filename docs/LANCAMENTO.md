@@ -74,6 +74,12 @@ Rode na pasta `jhess-site/`:
 - [ ] **/design-system fora do build:** a pasta `dist/` não pode ter `design-system` (a rota só existe no `npm run dev`).
 - [ ] **Revisão das promessas** com a cliente: preços e prazos (`cardapio.ts`, `regrasPedido`), "sem glúten e sem leite na
       receita", traços da cozinha, versões sem ovo, nada de "seguro para celíacos", Nossa história e depoimentos autorizados.
+- [ ] **Aveia comum** (bolo de chocolate, fatia Matilda e, até a cliente responder, a massa de chocolate do Bento): o site mostra
+      "sem leite e sem glúten, exceto …" e "sem leite · sem trigo". Se a cliente trocar a farinha de aveia, tire `'aveia'` de
+      `cardapio.ts` e confira que tudo voltou a "sem glúten e sem leite" (inclusive a chamada do Bento, que é texto fixo).
+- [ ] **Ingredientes pendentes** (`ingredientesPendente`, `coberturaPendente` e TODO em `cardapio.ts`): leite de coco do bolo de
+      maçã, coberturas, açúcar do bolo de cenoura (só demerara?), açúcar e líquido do pão de batata-doce, gergelim do pão de
+      grãos, pão de cebola, massa das fatias e Bento.
 - [ ] Variáveis de produção conferidas: `SITE_URL=https://<domínio>`, `BASE_PATH=/`, **sem** `PUBLIC_NOINDEX`.
 - [ ] Depois do deploy: `https://<domínio>/robots.txt` mostra `Allow: /` e a linha `Sitemap:`, e a prévia do link
       aparece no WhatsApp (home e um `/p/{produto}`).

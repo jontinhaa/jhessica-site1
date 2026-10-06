@@ -1,7 +1,8 @@
 ---
 // Rodapé em faixa cacau (Asagiri footer): marca, colunas de links, social e linha legal.
 // Links saem de `menu` e `redes` (src/data/site.ts). Rede sem endereço aparece desabilitada, nunca aponta para "#".
-import { contato, diasDeEntrega, entregaConfirmada, fraseTracos, marca, menu, pedido, redes } from '../../data/site';
+import { contato, diasDeEntrega, entregaConfirmada, marca, menu, pedido, redes } from '../../data/site';
+import { fraseTracos } from '../../data/promessa';
 import Logo from '../ui/Logo.astro';
 import { url } from '../../lib/url';
 import Icon from '../ui/Icon.astro';
@@ -12,6 +13,15 @@ const social = [
   { label: 'Instagram da Jhessica', icon: 'simple-icons:instagram', href: redes.instagram },
   { label: 'WhatsApp da Jhessica', icon: 'simple-icons:whatsapp', href: redes.whatsapp },
 ] as const;
+// crédito do site: o nome leva ao LinkedIn; Instagram e GitHub vão em ícones discretos ao lado (links sem parâmetro de rastreio)
+const autor = {
+  nome: 'Jhonatan Almeida',
+  linkedin: 'https://www.linkedin.com/in/jhonatanalmeidaalvs/',
+  redes: [
+    { label: 'Instagram do Jhonatan', icon: 'simple-icons:instagram', href: 'https://www.instagram.com/jhonatanl.exe/' },
+    { label: 'GitHub do Jhonatan', icon: 'simple-icons:github', href: 'https://github.com/jontinhaa' },
+  ],
+} as const;
 ---
 
 <footer class="foot band">
@@ -49,7 +59,10 @@ const social = [
     {tracos && <p class="tracos">{tracos}</p>}
     <div class="fbot">
       <span>© {ano} {marca.nome}</span>
-      <span>Feito à mão, como os bolos. · Site por <a href="https://www.linkedin.com/in/jhonatanalmeidaalvs/" target="_blank" rel="noopener">Jhonatan Almeida</a></span>
+      <span class="autor">
+        Site por:&nbsp;<a href={autor.linkedin} target="_blank" rel="noopener">{autor.nome}</a>
+        {autor.redes.map((r) => <a class="autor-ico" href={r.href} aria-label={r.label} target="_blank" rel="noopener"><Icon name={r.icon} /></a>)}
+      </span>
     </div>
   </div>
 </footer>
@@ -74,4 +87,9 @@ const social = [
   .fbot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3.5rem; padding-top: 1.6rem; border-top: 1px solid var(--band-line); font-size: .68rem; letter-spacing: .04em; color: var(--on-band-2); }
   .fbot a { display: inline-block; padding-block: .7rem; color: var(--on-band); text-decoration: underline; text-decoration-color: var(--band-line); text-underline-offset: 3px; transition: text-decoration-color .3s; }
   .fbot a:hover { text-decoration-color: var(--accent-2); }
+  /* ícones do crédito: pequenos e na cor do texto do rodapé; a área de toque continua com 44px */
+  .autor { display: inline-flex; align-items: center; gap: .25rem; }
+  .autor a:first-of-type { margin-right: .5rem; } /* respiro entre o nome e os ícones */
+  .fbot .autor-ico { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; font-size: 13px; color: var(--on-band-2); text-decoration: none; transition: color .3s; }
+  .fbot .autor-ico:hover, .fbot .autor-ico:focus-visible { color: var(--accent-2); }
 </style>

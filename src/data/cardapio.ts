@@ -4,15 +4,17 @@
 import type { ImageMetadata } from 'astro';
 import { url } from '../lib/url.ts';
 
-export type Alergeno = 'gluten' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'soja';
+// 'aveia' = aveia comum, não certificada: aparece como "Glúten (aveia comum)" e tira o "sem glúten" de quem a leva.
+// Os textos gerais do site saem de comAveia() (fim do arquivo): sem nenhum produto com aveia, voltam a "sem glúten e sem leite".
+export type Alergeno = 'gluten' | 'aveia' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'soja';
 
 /** Muda o preço (peso, tamanho da caixa). `unidades` conta para o prazo especial dos brigadeiros. */
 export interface Variante { id: string; rotulo: string; preco: number | null; unidades?: number }
 /** Soma ao preço (cobertura). */
 export interface Adicional { id: string; rotulo: string; preco: number }
-/** Escolha que não muda o preço (massa, recheio, sabor). `contem` soma alérgenos aos do produto.
- *  artigo: para o aviso "Escolha a massa" / "Escolha o recheio". */
-export interface Opcao { id: string; rotulo: string; artigo?: 'a' | 'o'; valores: { nome: string; contem?: Alergeno[] }[] }
+/** Escolha que não muda o preço (massa, recheio, sabor). `contem` soma alérgenos aos do produto; `ingredientes` é o que o
+ *  valor acrescenta à base ("Paçoca: amendoim"). artigo: para o aviso "Escolha a massa" / "Escolha o recheio". */
+export interface Opcao { id: string; rotulo: string; artigo?: 'a' | 'o'; valores: { nome: string; contem?: Alergeno[]; ingredientes?: string[] }[] }
 
 export type CategoriaId = 'bolos' | 'paes' | 'fatias' | 'brigadeiros' | 'bento';
 
@@ -31,8 +33,12 @@ export interface Produto {
   maisPedido?: boolean;
   /** Caixa montada pelo cliente com sabores misturados (um contador por valor da opção "sabor"). */
   montarCaixa?: boolean;
-  /** Lista de ingredientes; sem ela, o painel convida a perguntar no WhatsApp. TODO: lista por produto com a cliente */
+  /** Só os nomes, como a cliente mandou (sem quantidade nem modo de preparo). Sem lista, o painel convida a perguntar no WhatsApp. */
   ingredientes?: string[];
+  /** O que falta a cliente responder. Enquanto existir, a lista fica guardada aqui, mas o painel não a mostra. */
+  ingredientesPendente?: string;
+  /** A lista é só da massa: o painel avisa que a cobertura ainda não está nela. Tire quando a cobertura entrar na lista. */
+  coberturaPendente?: boolean;
   variantes: Variante[];
   adicionais?: Adicional[];
   opcoes?: Opcao[];
@@ -45,7 +51,9 @@ export const todasCategorias: Categoria[] = [
   // pronta para lançar: apague `oculta` quando as fotos das fatias chegarem (vitrine, /pedido e textos voltam sozinhos)
   { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.', oculta: true },
   { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6 ou 12.' },
-  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem glúten e sem leite, para a festa inteira dividir.' },
+  // PENDÊNCIA: se a massa de chocolate do Bento não levar aveia, volta "O bolo de aniversário sem glúten e sem leite, …"
+  // (os testes não deixam uma chamada prometer "sem glúten" quando algum produto da categoria leva aveia)
+  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem leite, para a festa inteira dividir.' },
 ];
 
 const img = (id: string) => url(`/images/cardapio/${id}.webp`); // TODO: fotos reais
@@ -66,47 +74,95 @@ const base = {
   permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço e pelo mesmo prazo
   disponivel: true,
 };
+// bolos: a cobertura (opcional ou inclusa) ainda não tem ingredientes confirmados
+const bolo = { ...base, coberturaPendente: true };
 
+// Ingredientes: só os NOMES que a cliente mandou. Receita, quantidade e print nunca entram no repositório.
 // TODO: descrições finais com a cliente; as de agora só repetem o que já foi combinado.
 export const todosProdutos: Produto[] = [
-  // leva leite de coco
-  { ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'), variantes: bolo500(40), adicionais: cobertura, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'coco'] } },
-  { ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'), variantes: bolo500(40), adicionais: cobertura },
-  { ...base, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'), variantes: bolo500(45), maisPedido: true },
-  { ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'), variantes: bolo500(45) },
+  // "coco" fica até a cliente confirmar o leite de coco (ela disse que leva; o print não mostra)
   {
-    ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
+    ...bolo, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'),
+    variantes: bolo500(40), adicionais: cobertura, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'coco'] },
+    ingredientes: ['maçã com casca', 'ovo', 'óleo de girassol', 'melado de cana ou rapadura', 'açúcar mascavo', 'canela', 'farinha de arroz integral', 'farinha de castanha de caju', 'polvilho doce', 'sal', 'fermento em pó'],
+  },
+  {
+    ...bolo, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'),
+    variantes: bolo500(40), adicionais: cobertura,
+    ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'suco e raspas de laranja-pera', 'farinha de amêndoas', 'farinha de arroz integral', 'polvilho doce', 'amido de milho', 'sal', 'fermento em pó'],
+  },
+  // aveia comum, não certificada. PENDÊNCIA: se a cliente trocar a farinha de aveia, tire 'aveia' daqui e da fatia Matilda
+  {
+    ...bolo, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'),
+    variantes: bolo500(45), maisPedido: true, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'aveia'] },
+    ingredientes: ['ovos', 'óleo de girassol', 'açúcar mascavo', 'açúcar demerara', 'farinha de aveia', 'farinha de castanha de caju', 'polvilho doce', 'cacau em pó', 'extrato de baunilha', 'fermento em pó', 'bicarbonato'],
+  },
+  // TODO: confirmar que é só demerara (a fonte cita "ou cristal", que derrubaria o "nada de açúcar refinado")
+  {
+    ...bolo, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'),
+    variantes: bolo500(45),
+    ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'cenoura', 'laranja', 'farinha de amêndoas', 'farinha de arroz integral', 'amido de milho', 'sal', 'fermento em pó'],
+  },
+  {
+    ...bolo, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
     variantes: bolo500(40), adicionais: [{ id: 'cobertura-geleia', rotulo: 'Cobertura de geleia', preco: 10 }],
+    ingredientes: ['ovo', 'óleo de girassol', 'açúcar demerara', 'polpa de maracujá', 'farinha de amêndoas', 'farinha de arroz', 'amido de milho', 'polvilho doce', 'sal', 'fermento em pó'],
   },
 
-  { ...base, permiteSemOvo: true, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true },
-  { ...base, permiteSemOvo: true, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao },
+  // "castanhas" fica até a cliente dizer o líquido (água ou qual leite vegetal)
+  {
+    ...base, permiteSemOvo: true, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true,
+    ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'batata-doce', 'ovo', 'óleo de girassol', 'fermento biológico', 'fermento em pó', 'goma xantana', 'sal'],
+    ingredientesPendente: 'o tipo de açúcar e o líquido (água ou qual leite vegetal)',
+  },
+  // sem castanha nem amêndoa na receita: "castanhas" é traço da cozinha. TODO: gergelim (se confirmar, vira alérgeno novo)
+  {
+    ...base, permiteSemOvo: true, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao,
+    alergenos: { contem: ['ovo'], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
+    ingredientes: ['farinha de arroz', 'polvilho doce', 'fécula de batata', 'açúcar demerara', 'linhaça dourada', 'chia', 'semente de girassol', 'goma xantana', 'sal', 'fermento biológico', 'ovos', 'óleo de girassol', 'água'],
+  },
+  // PENDÊNCIA: ingredientes do pão de cebola
   { ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao },
 
-  { ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia },
-  { ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia },
-  { ...base, id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), variantes: fatia },
+  // fatias: por enquanto a lista é só do recheio; a massa é PENDÊNCIA (por isso nenhuma lista aparece)
+  {
+    ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia,
+    ingredientes: ['inhame', 'limão', 'amido', 'ovos', 'açúcar demerara', 'geleia artesanal de frutas vermelhas'], ingredientesPendente: 'a massa',
+  },
+  {
+    ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia,
+    alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'aveia'] },
+    ingredientes: ['cacau', 'inhame', 'creme de amêndoas', 'açúcar mascavo'], ingredientesPendente: 'a massa',
+  },
+  {
+    ...base, id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), variantes: fatia,
+    ingredientes: ['maracujá', 'açúcar demerara', 'inhame', 'creme de amêndoas'], ingredientesPendente: 'a massa',
+  },
 
   {
     ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 ou 12 brigadeiros, com sabores misturados.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
     // brigadeiro não leva ovo (selo "sem ovo"); a base é de inhame, sem castanha nem amêndoa ("castanhas" em podeConter é traço da cozinha)
     alergenos: { contem: [], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
+    // a base é a mesma em todos; cada sabor acrescenta o seu (o painel mostra "Base: …" e "Cacau: cacau · Paçoca: amendoim …")
+    ingredientes: ['inhame', 'açúcar mascavo'],
     variantes: [
       { id: 'caixa-6', rotulo: 'Caixa com 6', preco: 30, unidades: 6 },
       { id: 'caixa-12', rotulo: 'Caixa com 12', preco: 55, unidades: 12 },
     ],
     opcoes: [{ id: 'sabor', rotulo: 'Sabor', artigo: 'o', valores: [
-      { nome: 'Cacau' },
-      { nome: 'Paçoca', contem: ['amendoim'] },
-      { nome: 'Beijinho', contem: ['coco'] },
+      { nome: 'Cacau', ingredientes: ['cacau'] },
+      { nome: 'Paçoca', contem: ['amendoim'], ingredientes: ['amendoim'] },
+      { nome: 'Beijinho', contem: ['coco'], ingredientes: ['coco'] },
     ] }],
   },
 
+  // PENDÊNCIA: ingredientes do Bento (massas e recheios)
   {
     ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário, com massa e recheio à escolha.', imagem: img('bento-cake'),
     variantes: [{ id: 'unico', rotulo: 'Bento Cake', preco: 150 }],
     opcoes: [
-      { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate' }] },
+      // PENDÊNCIA: até a cliente dizer se a massa de chocolate leva a farinha de aveia do bolo, conta como se levasse
+      { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate', contem: ['aveia'] }] },
       { id: 'recheio', rotulo: 'Recheio', artigo: 'o', valores: [{ nome: 'Maracujá' }, { nome: 'Creme branco com morangos' }, { nome: 'Chocolate' }, { nome: 'Limão siciliano com frutas vermelhas' }] },
     ],
   },
@@ -129,6 +185,36 @@ export function precoMinimo(categoriaId: CategoriaId): number | null {
   const precos = getProdutosPorCategoria(categoriaId).filter((p) => p.disponivel).flatMap(precosDe);
   return precos.length ? Math.min(...precos) : null;
 }
+
+/** Lista de ingredientes que o painel pode mostrar: vazia enquanto não houver lista ou houver pendência. */
+export const ingredientesVisiveis = (p: Produto) => (p.ingredientesPendente ? [] : (p.ingredientes ?? []));
+
+/** O que cada valor de opção acrescenta à base ("Paçoca: amendoim"); vazia quando a lista do produto não aparece. */
+export const acrescimosVisiveis = (p: Produto) => (ingredientesVisiveis(p).length
+  ? (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.ingredientes?.length ? [{ nome: v.nome, ingredientes: v.ingredientes }] : [])))
+  : []);
+
+/** Nome no meio de uma frase: "bolo de chocolate", mas "Bento Cake" e "Chocolate Matilda" (nome próprio) ficam como estão. */
+export const nomeNaFrase = (nome: string) => (/\s\p{Lu}/u.test(nome) ? nome : nome.charAt(0).toLowerCase() + nome.slice(1));
+
+/** Onde a opção entra na frase: "paçoca" (produto com uma opção só) ou "massa de chocolate" (o Bento tem massa e recheio). */
+export const ondeNaOpcao = (p: Produto, o: Opcao, valor: string) =>
+  `${(p.opcoes?.length ?? 0) > 1 ? `${o.rotulo.toLowerCase()} de ` : ''}${valor.toLowerCase()}`;
+
+/** As opções de um produto que levam aveia comum (ex.: a massa de chocolate do Bento). */
+export const opcoesComAveia = (p: Produto) =>
+  (p.opcoes ?? []).flatMap((o) => o.valores.filter((v) => v.contem?.includes('aveia')).map((v) => ({ opcao: o, valor: v.nome })));
+
+/** Leva aveia comum no produto inteiro (true), só em alguma opção ('opcao') ou não leva (false). */
+export const levaAveia = (p: Produto): boolean | 'opcao' =>
+  p.alergenos.contem.includes('aveia') ? true : opcoesComAveia(p).length ? 'opcao' : false;
+
+/** O que leva aveia comum, como entra numa frase ("bolo de chocolate", "Bento Cake com massa de chocolate").
+ *  Daqui saem o "sem glúten, exceto …" e as etiquetas curtas do site; lista vazia = tudo volta a "sem glúten e sem leite". */
+export const comAveia = (lista: Produto[] = produtos) =>
+  lista.flatMap((p) => (levaAveia(p) === true
+    ? [nomeNaFrase(p.nome)]
+    : opcoesComAveia(p).map(({ opcao, valor }) => `${nomeNaFrase(p.nome)} com ${ondeNaOpcao(p, opcao, valor)}`)));
 
 /** "R$ 30" quando inteiro, "R$ 32,50" quando não. */
 export const formatarPreco = (valor: number) =>

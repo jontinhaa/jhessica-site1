@@ -10,8 +10,9 @@ import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
 import Doodle from '../ui/Doodle.astro';
 import CenaIngrediente from '../ui/CenaIngrediente.astro';
-import { categorias, produtos } from '../../data/cardapio';
-import { compromisso, redes, rotulosAlergenos, textoAcucar, textoCozinha, type Secao } from '../../data/site';
+import { categorias, comAveia, nomeNaFrase, produtos } from '../../data/cardapio';
+import { compromisso, redes, rotulosAlergenos, textoAcucar, type Secao } from '../../data/site';
+import { textoCozinha } from '../../data/promessa';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
@@ -19,15 +20,21 @@ const { secao, numero } = Astro.props;
 const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/images/ingredientes/destaque.{jpg,jpeg,png,webp}', { eager: true });
 const foto = Object.values(fotos)[0]?.default;
 
-const zeros = ['ingredientes com glúten', 'com leite ou derivados', 'conservantes'];
+// com aveia comum no cardápio não dá para dizer "0 ingredientes com glúten"; trigo continua fora de tudo
+const zeros = [comAveia().length ? 'farinha de trigo' : 'ingredientes com glúten', 'com leite ou derivados', 'conservantes'];
 const cozinha = textoCozinha();
 const entram = compromisso.ingredientesQueEntram;
-// glúten e leite já têm o bloco deles; aqui só os "outros"
 // quem tem versão sem ovos sai do campo permiteSemOvo de cada produto (nada de lista escrita à mão)
 const semOvos = new Intl.ListFormat('pt-BR').format(produtos.filter((p) => p.permiteSemOvo).map((p) => p.nome.charAt(0).toLowerCase() + p.nome.slice(1)));
 // fatias só entram no texto enquanto a categoria estiver no site (oculta em cardapio.ts)
 const massas = categorias.some((c) => c.id === 'fatias') ? 'Bolos, pães e fatias' : 'Bolos e pães';
-const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' && k !== 'leite').map(([, r]) => r);
+// quem dessas categorias não leva castanha nem amêndoa na receita (o pão de grãos), tirado do `contem` de cada produto
+const semCastanha = produtos.filter((p) => ['bolos', 'paes', 'fatias'].includes(p.categoria) && !p.alergenos.contem.includes('castanhas'));
+const semOleaginosas = semCastanha.length
+  ? `, menos ${new Intl.ListFormat('pt-BR').format(semCastanha.map((p) => nomeNaFrase(p.nome)))}, que não ${semCastanha.length > 1 ? 'levam' : 'leva'} oleaginosas`
+  : '';
+// glúten (com a aveia comum) e leite já têm o bloco deles
+const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' && k !== 'aveia' && k !== 'leite').map(([, r]) => r);
 ---
 
 <section class="sec sec--tint" id={secao.id}>
@@ -77,7 +84,7 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
           <div class="alergenos" data-rv>
             <h3 class="t-bold-s">Outros alérgenos</h3>
             <ul class="tags">{outros.map((r) => <li class="tag">{r}</li>)}</ul>
-            <p class="t-s">{massas} levam ovo e oleaginosas (amêndoas ou castanha de caju); os brigadeiros não levam ovo. Tudo pode conter soja. Têm opção sem ovos: {semOvos}.</p>
+            <p class="t-s">{massas} levam ovo e oleaginosas (amêndoas ou castanha de caju){semOleaginosas}; os brigadeiros não levam ovo. Tudo pode conter soja. Têm opção sem ovos: {semOvos}.</p>
             <a class="link-r" href={url('/pedido')}>
               Ver o cardápio<Icon name="solar:arrow-right-linear" />
               <svg class="risco" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 8.5C18 4 34 10 52 6.5S88 9.5 104 5.8c6-1.2 10-.8 14 .7" /></svg>

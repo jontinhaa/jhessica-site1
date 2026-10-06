@@ -10,17 +10,18 @@ import ProdutoCard from '../components/pedido/ProdutoCard.astro';
 import ProdutoPainel from '../components/pedido/ProdutoPainel.astro';
 import Sacola from '../components/pedido/Sacola.astro';
 import { marca, regrasPedido } from '../data/site';
+import { promessaCurta, promessaFrase } from '../data/promessa';
 import { categorias, getProdutosPorCategoria, produtos } from '../data/cardapio';
 ---
 
 <BaseLayout
   title={`Cardápio completo · ${marca.nome}`}
-  description="Monte seu pedido de bolos, pães, brigadeiros e Bento Cake sem glúten e sem leite na receita e envie pelo WhatsApp."
+  description={`Monte seu pedido de bolos, pães, brigadeiros e Bento Cake ${promessaCurta().join(' e ')} na receita e envie pelo WhatsApp.`}
 >
   <section class="sec topo" data-aba={categorias[0].id}>
     <div class="wrapx">
       <SectionHeading rotulo="Cardápio" titulo="Monte seu" tituloDestaque="pedido." as="h1" />
-      <p class="lead">Receitas sem glúten e sem leite. Escolha, monte e mande pelo WhatsApp.</p>
+      <p class="lead">Receitas {promessaFrase()}. Escolha, monte e mande pelo WhatsApp.</p>
       <p class="t-s prazos">Pedidos com {regrasPedido.prazoMinimoDias} dias de antecedência · Bento Cake e bolos de aniversário com {regrasPedido.prazoEspecialDias} dias</p>
     </div>
   </section>

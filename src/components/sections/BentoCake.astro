@@ -14,13 +14,15 @@ import Icon from '../ui/Icon.astro';
 import Carimbo from '../ui/Carimbo.astro';
 import { url } from '../../lib/url';
 import { linkWhatsApp } from '../../lib/pedido/mensagem';
-import { formatarPreco, precosDe, produtos } from '../../data/cardapio';
+import { formatarPreco, levaAveia, precosDe, produtos } from '../../data/cardapio';
 import { contato, fotosBento, prazoDias, type Secao } from '../../data/site';
 
 interface Props { secao: Secao; numero: number }
 const { secao, numero } = Astro.props;
 
 const bento = produtos.find((p) => p.categoria === 'bento')!;
+// PENDÊNCIA: enquanto a massa de chocolate contar como aveia comum, o texto não promete "sem glúten"
+const receita = levaAveia(bento) ? 'sem leite' : 'sem glúten e sem leite';
 const preco = precosDe(bento)[0];
 const valores = (opcao: string) => bento.opcoes?.find((o) => o.id === opcao)?.valores.map((v) => v.nome) ?? [];
 const massas = valores('massa');
@@ -55,7 +57,7 @@ const modelos = Array.from({ length: fotosBento.modelos }, (_, i) => ({ n: i + 1
         </figure>
 
         <div class="copy">
-          <p class="lead" data-rv>Um bolo de aniversário bonito e macio, com receita sem glúten e sem leite, para a festa inteira dividir.</p>
+          <p class="lead" data-rv>Um bolo de aniversário bonito e macio, com receita {receita}, para a festa inteira dividir.</p>
 
           <div class="stats" data-rv>
             <ul class="stat-list">
