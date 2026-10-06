@@ -7,7 +7,7 @@
 import { Image } from 'astro:assets';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
-import { acrescimosVisiveis, formatarPreco, getImagensProduto, ingredientesVisiveis, levaAveia, ondeNaOpcao, opcoesComAveia, type Produto } from '../../data/cardapio';
+import { acrescimosVisiveis, formatarPreco, getImagensProduto, ingredientesVisiveis, levaAveia, ondeNaOpcao, opcoesComAveia, podeConterSemRepetir, type Produto } from '../../data/cardapio';
 import { dadosCompartilhar } from '../../lib/pedido/compartilhar';
 import { conservacao, prazoDias, redes, regrasPedido, rotulosAlergenos } from '../../data/site';
 
@@ -169,7 +169,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
           <p><b>Contém:</b> <span data-com-ovo>{contem.join(', ')}</span>{contemSemOvo.length !== contem.length && <span data-sem-ovo hidden>{contemSemOvo.join(', ') || '—'}</span>}</p>
         )}
         {avisosAveia.map((aviso) => <p class="aviso">{aviso}</p>)}
-        <p><b>Pode conter:</b> {rotulos(p.alergenos.podeConter).join(', ')}</p>
+        {podeConterSemRepetir(p).length > 0 && <p><b>Pode conter:</b> {rotulos(podeConterSemRepetir(p)).join(', ')}</p>}
         <p>{conserva}{/congel/i.test(conserva) && ` ${conservacao.observacaoCongelados}`}</p>
         <p data-prazo>Encomende com {prazo} dias de antecedência.</p>
         {brigadeiros && <p class="t-s">A partir de {regrasPedido.limiteBrigadeirosUnidades} brigadeiros no pedido, o prazo é de {regrasPedido.prazoEspecialDias} dias.</p>}

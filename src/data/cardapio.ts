@@ -194,6 +194,13 @@ export const acrescimosVisiveis = (p: Produto) => (ingredientesVisiveis(p).lengt
   ? (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.ingredientes?.length ? [{ nome: v.nome, ingredientes: v.ingredientes }] : [])))
   : []);
 
+/** "Pode conter" sem repetir o que o produto inteiro já contém (aveia comum conta como glúten). O que vem só de uma
+ *  opção (massa de chocolate do Bento) continua como traço possível, porque as outras opções não o levam. */
+export const podeConterSemRepetir = (p: Produto) => {
+  const contem = new Set<Alergeno>(p.alergenos.contem.flatMap((a) => (a === 'aveia' ? ['aveia', 'gluten'] : [a])));
+  return p.alergenos.podeConter.filter((a) => !contem.has(a));
+};
+
 /** Nome no meio de uma frase: "bolo de chocolate", mas "Bento Cake" e "Chocolate Matilda" (nome próprio) ficam como estão. */
 export const nomeNaFrase = (nome: string) => (/\s\p{Lu}/u.test(nome) ? nome : nome.charAt(0).toLowerCase() + nome.slice(1));
 

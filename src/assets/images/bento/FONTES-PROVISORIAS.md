@@ -1,19 +1,18 @@
-# Fotos da seção Bento Cake · PROVISÓRIAS
+# Fotos da seção Bento Cake · definitivas
 
-**PROVISÓRIAS — substituir pelas fotos reais da Jhessica antes de publicar.**
+Nenhuma foto provisória nesta pasta. Para marcar uma foto como provisória de novo, acrescente uma tabela
+`| Arquivo | Origem | Autor | Licença |` com uma linha por arquivo: o `npm run fotos` cobra cada linha.
+Se um arquivo faltar, a seção mostra o placeholder do design system e o build não quebra; o `alt` fica em
+`src/components/sections/BentoCake.astro`.
 
-Para trocar, salve a foto real como `destaque` (.jpg, .png ou .webp) e apague a provisória. Se o arquivo faltar, a seção
-mostra o placeholder do design system e o build não quebra. Depois, ajuste o `alt` em `src/components/sections/BentoCake.astro`.
-Os modelos (`modelo-1`, `modelo-2`, `modelo-3`) ficam na mesma pasta; sem eles, a fileira mostra placeholders.
+Fotos mantidas como definitivas por decisão do Jhonatan (2026-10-06):
 
-| Arquivo | Origem | Autor | Licença |
-| --- | --- | --- | --- |
-| destaque.jpg | Chegou no commit 29b19f6 (a mesma de `../produtos/bento-cake/capa.jpg`) | a confirmar | a confirmar |
-| modelo-1.jpg | Chegou no commit 29b19f6; cara de gerada (IA) | a confirmar | a confirmar |
-| modelo-2.jpg | Chegou no commit 29b19f6; cara de gerada (IA) | a confirmar | a confirmar |
-| modelo-3.jpg | Chegou no commit 29b19f6; cara de gerada (IA) | a confirmar | a confirmar |
+- `destaque.jpg`: mantida como definitiva por decisão do Jhonatan. Chegou no commit 29b19f6 (a mesma de `../produtos/bento-cake/capa.jpg`).
+- `modelo-1.jpg`: mantida como definitiva por decisão do Jhonatan. Chegou no commit 29b19f6; cara de gerada (IA).
+- `modelo-2.jpg`: mantida como definitiva por decisão do Jhonatan. Chegou no commit 29b19f6; cara de gerada (IA).
+- `modelo-3.jpg`: mantida como definitiva por decisão do Jhonatan. Chegou no commit 29b19f6; cara de gerada (IA).
 
-Observações:
+Observações registradas antes da decisão:
 - `destaque.jpg` mostra um bolo redondo de chocolate com morangos e uvas, não um bento cake.
 - Os modelos são bolos altos de andares (naked cake), não bentos. O `modelo-2` tem recheio que lembra doce de leite e
-  o `modelo-1` tem coco ralado por cima: na foto real, mostrar só o que a receita usa de fato (sem leite).
+  o `modelo-1` tem coco ralado por cima.

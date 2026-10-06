@@ -1,16 +1,14 @@
-# Foto da seção Ingredientes · PROVISÓRIA
+# Foto da seção Ingredientes · definitiva
 
-**PROVISÓRIA — substituir pela foto real da Jhessica antes de publicar.**
+Nenhuma foto provisória nesta pasta. Para marcar uma foto como provisória de novo, acrescente uma tabela
+`| Arquivo | Origem | Autor | Licença |` com uma linha por arquivo: o `npm run fotos` cobra cada linha.
 
-Para trocar, salve a foto real como `destaque` (.jpg, .png ou .webp) e apague a provisória. Se o arquivo faltar, o bloco mostra
-o placeholder do design system e o build não quebra. Depois, ajuste o `alt` em `src/components/sections/Ingredientes.astro`.
+Fotos mantidas como definitivas:
 
-| Arquivo | Origem | Autor | Licença |
-| --- | --- | --- | --- |
-| destaque.jpg | Chegou no commit 29b19f6; cara de gerada (IA) | a confirmar | a confirmar |
+- `destaque.jpg`: mantida como definitiva por decisão do Jhonatan (2026-10-06). Origem: gerada por IA no Google Flow,
+  ilustração de ingredientes. Chegou no commit 29b19f6.
 
-Observações:
-- A foto mostra uma tigela de flocos de AVEIA. Aveia comum costuma ter contaminação cruzada com glúten: só manter se a
-  Jhessica usa aveia certificada sem glúten. Senão, a foto real não deve mostrá-la.
-  Confirmado em 2026-10-06: ela usa aveia comum, NÃO certificada. A foto real não deve mostrar aveia.
-- Na foto real, evitar qualquer ingrediente que a receita não usa (manteiga, leite, creme, farinha de trigo identificável).
+Observações registradas antes da decisão:
+- A foto mostra uma tigela de flocos de aveia. A Jhessica usa aveia comum, não certificada (confirmado em 2026-10-06), e o
+  bolo de chocolate leva farinha de aveia: a foto não promete nada além do que a receita tem.
+- Na foto, evitar ingrediente que a receita não usa (manteiga, leite, creme, farinha de trigo identificável).

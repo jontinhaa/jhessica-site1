@@ -60,7 +60,7 @@ src/
                          PedidoFlutuante (pílula "Fazer pedido" até 1180px; esconda-a com data-esconde-pilula)
   components/sections/   Hero + uma seção por item de `secoes` (Sobre: retrato `sobre/jhessica.png` que "sai da forma", máscara de duas camadas com um --blob só; texto em `historia`)
   components/sections/Contato.astro  última dobra (DS .cta-sec): título com letras 3D e círculo à mão em "você", rastro de doces no mouse
-                         (leque de fotos no toque), botão magnético, comanda e carimbo. Fotos PROVISÓRIAS do cardápio.
+                         (leque de fotos no toque), botão magnético, comanda e carimbo. Fotos do cardápio.
   components/sections/FaixaVideo.astro  faixa só de vídeo (o da hero) antes do Contato, com a largura e as bordas do .ticker da hero e o DOBRO da altura dele
                          (altura = 2 × --faixa-h, valor em global.css que também é a altura do .ticker); toca só na tela; o botão de pausar da hero também a pausa
   pages/index.astro      Hero + seções percorrendo `secoes`
@@ -120,8 +120,6 @@ src/
 
 - **Antes de publicar, rode `npm run fotos`: nenhuma obrigatória pode faltar e nenhuma provisória pode continuar.**
   Convenção de pastas e nomes em `docs/FOTOS.md`.
-- **Foto da seção Ingredientes é PROVISÓRIA** (ver `src/assets/images/ingredientes/FONTES-PROVISORIAS.md`): a foto real não
-  pode mostrar manteiga, leite ou trigo, nem aveia se ela não for certificada sem glúten.
 - **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
 - **Aveia comum:** a cliente pode trocar a farinha de aveia do bolo de chocolate (aí sai `'aveia'` do bolo e da fatia Matilda).
@@ -132,9 +130,8 @@ src/
 - **Domínio de produção ainda não escolhido** (a cliente vai decidir): `<domínio>` em `docs/LANCAMENTO.md` e o `SITE_URL` do Cloudflare Pages dependem dele.
 - **Prévia de link padrão `src/assets/images/og-padrao.jpg`** (1200×630, gerada por `npm run imagens` a partir do poster da hero, com a forma no centro para o recorte quadrado do WhatsApp): vale na home, no /pedido, na 404 e nos /p/{id} de produto sem `capa`.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
-- **Fotos provisórias** (listadas nos `FONTES-PROVISORIAS.md` de cada pasta; `npm run fotos` cobra): vitrine (brigadeiros,
-  bento), Bento (destaque e modelos; a foto de agora é um bolo redondo com frutas, não um bento), Bento Cake (capa e corte)
-  e Pão de cebola (crosta parece queijo). Substituir pelas fotos reais e ajustar os `alt`.
+- **Fotos:** todas as atuais ficaram como definitivas por decisão do Jhonatan (2026-10-06), registrado nos `FONTES-PROVISORIAS.md`
+  de cada pasta. Para marcar uma foto como provisória de novo, ponha uma linha `| arquivo | … |` na tabela desse arquivo.
 - **Pão de grãos:** a capa é um pão liso, sem grãos; `produtos/pao-de-batata-doce/pao2.jpeg` (girassol e chia) parece ser o
   de grãos. Confirmar com a cliente qual foto é de qual pão.
 - Página /design-system não pode ir para produção (já garantido: a rota só existe no dev).

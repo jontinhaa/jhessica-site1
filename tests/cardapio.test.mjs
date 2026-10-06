@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { acrescimosVisiveis, categorias, comAveia, ingredientesVisiveis, levaAveia, nomeNaFrase, produtos, todasCategorias, todosProdutos } from '../src/data/cardapio.ts';
+import { acrescimosVisiveis, categorias, comAveia, ingredientesVisiveis, podeConterSemRepetir, levaAveia, nomeNaFrase, produtos, todasCategorias, todosProdutos } from '../src/data/cardapio.ts';
 import { descricaoSite, fraseTracos, promessaCurta, promessaFrase, textoCozinha, tudoSemGlutenNemLeite } from '../src/data/promessa.ts';
 import { perguntas } from '../src/data/perguntas.ts';
 
@@ -35,6 +35,17 @@ test('brigadeiros: base de inhame e açúcar mascavo; cada sabor mostra o que ac
     { nome: 'Paçoca', ingredientes: ['amendoim'] },
     { nome: 'Beijinho', ingredientes: ['coco'] },
   ]);
+});
+
+test('"Pode conter" não repete o que o produto já contém (aveia comum conta como glúten)', () => {
+  for (const p of todosProdutos) {
+    const contem = p.alergenos.contem.flatMap((a) => (a === 'aveia' ? ['aveia', 'gluten'] : [a]));
+    assert.ok(podeConterSemRepetir(p).every((a) => !contem.includes(a)), p.id);
+  }
+  assert.deepEqual(podeConterSemRepetir(produtos.find((p) => p.id === 'bolo-de-chocolate')), ['soja', 'leite']);
+  // no Bento a aveia vem só da massa de chocolate: com a de baunilha, glúten continua como traço possível
+  assert.ok(podeConterSemRepetir(produtos.find((p) => p.id === 'bento-cake')).includes('gluten'));
+  assert.deepEqual(podeConterSemRepetir(produtos.find((p) => p.id === 'bolo-de-laranja')), ['soja', 'gluten', 'leite']);
 });
 
 test('ingredientes: pendência guarda a lista, mas o painel não a mostra', () => {

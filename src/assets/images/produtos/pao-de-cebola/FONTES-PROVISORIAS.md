@@ -1,11 +1,10 @@
-# Foto do Pão de cebola · PROVISÓRIA
+# Foto do Pão de cebola · definitiva
 
-**PROVISÓRIA — substituir pela foto real da Jhessica antes de publicar.**
+Nenhuma foto provisória nesta pasta. Para marcar uma foto como provisória de novo, acrescente uma tabela
+`| Arquivo | Origem | Autor | Licença |` com uma linha por arquivo: o `npm run fotos` cobra cada linha.
 
-Para trocar, salve a foto real como `capa` (.jpg, .png ou .webp), apague a provisória e este arquivo.
+Fotos mantidas como definitivas:
 
-| Arquivo | Origem | Autor | Licença |
-| --- | --- | --- | --- |
-| capa.jpg | Chegou no commit 29b19f6; cara de gerada (IA) | a confirmar | a confirmar |
+- `capa.jpg`: mantida como definitiva por decisão do Jhonatan (2026-10-06). Chegou no commit 29b19f6; cara de gerada (IA).
 
-Observação: a crosta da foto parece de queijo gratinado, o que contradiz "sem leite".
+Observação registrada antes da decisão: a crosta da foto parece de queijo gratinado, o que contradiz "sem leite".
