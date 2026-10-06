@@ -88,16 +88,16 @@ const recheios = {
 // cobertura dos bolos: creme de amêndoas e açúcar demerara, mais o sabor (cacau, raspas de laranja, polpa de maracujá);
 // opcional = adicional pago (laranja e maracujá): o painel diz "Cobertura (opcional)"
 const coberturaCom = (sabor: string, opcional = false) => [{ nome: opcional ? 'Cobertura (opcional)' : 'Cobertura', ingredientes: ['creme de amêndoas', 'açúcar demerara', sabor] }];
-// TODO: descrições finais com a cliente; as de agora só repetem o que já foi combinado.
+// Descrições aprovadas pela cliente em 06/10 (as das fatias e do Bento continuam as de antes).
 export const todosProdutos: Produto[] = [
   // sem cobertura e sem leite de coco (o líquido é água)
   {
-    ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g.', imagem: img('bolo-de-maca'),
+    ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Maçã com casca, canela e açúcar mascavo: cheirinho de bolo de vó.', imagem: img('bolo-de-maca'),
     variantes: bolo500(40),
     ingredientes: ['maçã com casca', 'ovo', 'óleo de girassol', 'melado de cana ou rapadura', 'açúcar mascavo', 'canela', 'farinha de arroz integral', 'farinha de castanha de caju', 'polvilho doce', 'água', 'sal', 'fermento em pó'],
   },
   {
-    ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'),
+    ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Feito com suco e raspas de laranja-pera, macio e perfumado.', imagem: img('bolo-de-laranja'),
     variantes: bolo500(40), adicionais: [{ id: 'cobertura', rotulo: 'Cobertura', preco: 10 }],
     ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'suco e raspas de laranja-pera', 'farinha de amêndoas', 'farinha de arroz integral', 'polvilho doce', 'amido de milho', 'sal', 'fermento em pó'],
     partes: coberturaCom('raspas de laranja', true),
@@ -105,19 +105,19 @@ export const todosProdutos: Produto[] = [
   // aveia comum, não certificada. Se a cliente trocar a farinha de aveia, tire 'aveia' daqui, da fatia Matilda e da massa
   // de chocolate do Bento
   {
-    ...base, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'),
+    ...base, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Cacau, açúcar mascavo e baunilha. O mais pedido da casa.', imagem: img('bolo-de-chocolate'),
     variantes: bolo500(45), maisPedido: true, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'aveia'] },
     ingredientes: massaChocolate, partes: coberturaCom('cacau'),
   },
   // açúcar só demerara (confirmado): vale o "nada de açúcar refinado"
   {
-    ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'),
+    ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Cenoura com um toque de laranja, do jeitinho que a gente gosta.', imagem: img('bolo-de-cenoura'),
     variantes: bolo500(45),
     ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'cenoura', 'laranja', 'farinha de amêndoas', 'farinha de arroz integral', 'amido de milho', 'sal', 'fermento em pó'],
     partes: coberturaCom('cacau'),
   },
   {
-    ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
+    ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Com polpa de maracujá de verdade, azedinho na medida.', imagem: img('bolo-de-maracuja'),
     variantes: bolo500(40), adicionais: [{ id: 'cobertura-geleia', rotulo: 'Cobertura de geleia', preco: 10 }],
     ingredientes: ['ovo', 'óleo de girassol', 'açúcar demerara', 'polpa de maracujá', 'farinha de amêndoas', 'farinha de arroz', 'amido de milho', 'polvilho doce', 'sal', 'fermento em pó'],
     partes: coberturaCom('polpa de maracujá', true),
@@ -125,18 +125,18 @@ export const todosProdutos: Produto[] = [
 
   // "castanhas" = o creme de amêndoas
   {
-    ...base, permiteSemOvo: true, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true,
+    ...base, permiteSemOvo: true, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Feito com batata-doce de verdade. O pão mais pedido.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true,
     ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'batata-doce', 'açúcar demerara', 'ovo', 'óleo de girassol', 'creme de amêndoas dissolvido em água', 'fermento biológico', 'fermento em pó', 'goma xantana', 'sal'],
   },
   // sem castanha nem amêndoa na receita: "castanhas" é traço da cozinha. Leva gergelim.
   {
-    ...base, permiteSemOvo: true, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao,
+    ...base, permiteSemOvo: true, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Linhaça, chia e semente de girassol em cada fatia.', imagem: img('pao-de-graos'), variantes: pesosPao,
     alergenos: { contem: ['ovo', 'gergelim'], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
     ingredientes: ['farinha de arroz', 'polvilho doce', 'fécula de batata', 'açúcar demerara', 'linhaça dourada', 'chia', 'semente de girassol', 'gergelim', 'goma xantana', 'sal', 'fermento biológico', 'ovos', 'óleo de girassol', 'água'],
   },
   // "castanhas" = o creme de amêndoas
   {
-    ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao,
+    ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Salpicado de cebolinha, perfeito pro café da tarde.', imagem: img('pao-de-cebola'), variantes: pesosPao,
     ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'açúcar demerara', 'fermento biológico seco', 'fermento químico', 'goma xantana', 'cebolinha desidratada', 'ovos', 'óleo de girassol', 'creme de amêndoas dissolvido em água'],
   },
 
@@ -156,7 +156,7 @@ export const todosProdutos: Produto[] = [
   },
 
   {
-    ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Caixa com 6 ou 12 brigadeiros, com sabores misturados.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
+    ...base, id: 'caixa-de-brigadeiros', categoria: 'brigadeiros', nome: 'Caixa de brigadeiros', descricao: 'Base de inhame, em três sabores: cacau, paçoca e beijinho.', imagem: img('caixa-de-brigadeiros'), montarCaixa: true,
     // brigadeiro não leva ovo (selo "sem ovo"); a base é de inhame, sem castanha nem amêndoa ("castanhas" em podeConter é traço da cozinha)
     alergenos: { contem: [], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
     // a base é a mesma em todos; cada sabor acrescenta o seu (o painel mostra "Base: …" e "Cacau: cacau · Paçoca: amendoim …")

@@ -131,9 +131,10 @@ src/
   A cobertura do Bento só aparece nos ingredientes, sem escolha no pedido, até a cliente dizer quem escolhe.
 - **Coco e gergelim:** nenhum produto leva leite de coco (o coco fica só no brigadeiro de beijinho); o gergelim só no pão de
   grãos. Traços de gergelim nos outros produtos seguem o critério do amendoim e do coco (não aparecem) até a cliente responder.
-- Ainda a confirmar com a cliente (TODO nos dados): **frase de descrição de cada produto** (as descrições novas esperam a aprovação dela), textos de "O que entra" e o texto do depoimento da Karen.
+- Descrições dos produtos aprovadas pela cliente em 06/10. Ainda a confirmar (TODO nos dados): textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
-- **Domínio de produção ainda não escolhido** (a cliente vai decidir): `<domínio>` em `docs/LANCAMENTO.md` e o `SITE_URL` do Cloudflare Pages dependem dele.
+- **Domínio de produção:** https://jhessicaemcozinhasaudavel.com (Cloudflare Registrar), com o Pages ligado ao repositório
+  público `jontinhaa/jhessica-site1`. Passo a passo e variáveis em `docs/LANCAMENTO.md`.
 - **Prévia de link padrão `src/assets/images/og-padrao.jpg`** (1200×630, gerada por `npm run imagens` a partir do poster da hero, com a forma no centro para o recorte quadrado do WhatsApp): vale na home, no /pedido, na 404 e nos /p/{id} de produto sem `capa`.
 - Endereço completo de retirada NUNCA entra no repositório: só o bairro (contato.bairroRetirada).
 - **Fotos:** todas as atuais ficaram como definitivas por decisão do Jhonatan (2026-10-06), registrado nos `FONTES-PROVISORIAS.md`
