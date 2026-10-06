@@ -90,7 +90,11 @@ const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
         if (raiz.hasAttribute('data-forno')) {
           var visto = false;
           try { visto = sessionStorage.getItem('jhessica:forno') === '1'; } catch (e) {}
-          if (!visto) raiz.classList.add('carregando');
+          if (!visto) {
+            raiz.classList.add('carregando');
+            // trava independente: se o script da tela não rodar (rede, bloqueador, erro), a página libera sozinha em 8 s
+            setTimeout(function () { raiz.classList.remove('carregando'); }, 8000);
+          }
         }
         function aplicar() {
           var t = null;

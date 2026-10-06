@@ -3,26 +3,28 @@
 // sobe até 180 °C conforme as fontes e o pôster da hero carregam, e a tela some com "no ponto · pode servir".
 // Só na home e uma vez por sessão: o BaseLayout marca <html data-forno> e o script inline do <head> põe
 // html.carregando antes do primeiro quadro (sem JS, ou já vista na sessão, a tela nem aparece).
-// Enquanto ela está na tela, a entrada da hero fica pausada e começa quando a tela some.
+// Enquanto ela está na tela, a entrada da hero fica pausada e o resto da página fica inerte (teclado e leitor de tela).
+// Se este script não rodar, o <head> do BaseLayout libera a página sozinho em 8 s.
 import { marca } from '../../data/site';
 import { scallop } from '../ui/mark';
 
 const graus = Array.from({ length: 181 }, (_, i) => String(i).padStart(3, '0'));
 ---
 
-<div class="forno" role="status" aria-label="Carregando">
-  <div class="lw" aria-hidden="true">
-    <svg class="mark" viewBox="0 0 80 80">
+<!-- role="status": o leitor de tela ouve a nota mudar para "no ponto · pode servir"; o resto é decoração -->
+<div class="forno" role="status">
+  <div class="lw">
+    <svg class="mark" viewBox="0 0 80 80" aria-hidden="true">
       <path class="sc" pathLength="1" d={scallop} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
       <g class="jj">
         <circle cx="40" cy="40" r="23" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2.5 3.2" opacity=".7" />
         <text x="40.5" y="51" text-anchor="middle" style="font-family: var(--serif)" font-style="italic" font-size="31" fill="currentColor">J</text>
       </g>
     </svg>
-    <div class="wordmark">{marca.nomeCurto}</div>
-    <div class="lsub">confeitaria artesanal</div>
-    <div class="odo"><span class="br">[</span><span class="win"><span class="reel">{graus.map((g) => <div>{g}</div>)}</span></span><span class="br">/ 180 <em>°C</em> ]</span></div>
-    <div class="lbar"><i></i></div>
+    <div class="wordmark" aria-hidden="true">{marca.nomeCurto}</div>
+    <div class="lsub" aria-hidden="true">confeitaria artesanal</div>
+    <div class="odo" aria-hidden="true"><span class="br">[</span><span class="win"><span class="reel">{graus.map((g) => <div>{g}</div>)}</span></span><span class="br">/ 180 <em>°C</em> ]</span></div>
+    <div class="lbar" aria-hidden="true"><i></i></div>
     <div class="lnote">preaquecendo o forno</div>
   </div>
 </div>
@@ -69,6 +71,9 @@ const graus = Array.from({ length: 181 }, (_, i) => String(i).padStart(3, '0'));
   const raiz = document.documentElement;
   const forno = document.querySelector<HTMLElement>('.forno');
   if (forno && raiz.classList.contains('carregando')) {
+    // enquanto a tela cobre a página, o resto fica inerte: o Tab e o leitor de tela não entram no que está por baixo
+    const resto = [...document.body.children].filter((e) => e !== forno);
+    resto.forEach((e) => e.setAttribute('inert', ''));
     const reel = forno.querySelector<HTMLElement>('.reel')!;
     const nota = forno.querySelector<HTMLElement>('.lnote')!;
     const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -96,6 +101,7 @@ const graus = Array.from({ length: 181 }, (_, i) => String(i).padStart(3, '0'));
         try { sessionStorage.setItem('jhessica:forno', '1'); } catch {}
         forno.classList.add('saindo'); // mantém a tela visível só para o fade
         raiz.classList.remove('carregando'); // a hero começa a entrar
+        resto.forEach((e) => e.removeAttribute('inert'));
         forno.addEventListener('transitionend', () => forno.remove(), { once: true });
       }, 420);
     };
