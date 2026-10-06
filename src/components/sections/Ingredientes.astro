@@ -44,8 +44,7 @@ const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' &
       <div class="split rev">
         <figure class:list={['media', !foto && ['ph', 'ph-empty', 'ph--caramelo']]} data-ph={foto ? undefined : 'ingredientes/destaque.webp'} data-clip>
           {foto && (
-            // TODO: alt final com a foto real
-            <Image class="par" src={foto} alt="Tigelas de farinha, arroz e flocos, castanhas de caju, amêndoas, coco aberto, óleo e açúcar mascavo sobre uma mesa de madeira"
+            <Image class="par" src={foto} alt="Tigelas de farinha de arroz, arroz e flocos de aveia, castanhas de caju, amêndoas, açúcar demerara, óleo de girassol, um caju, um pedaço de cana e um copo de leite de amêndoas sobre uma mesa de madeira"
               widths={[400, foto.width]} sizes="(max-width: 860px) calc(100vw - 40px), 55vw" loading="lazy" data-par />
           )}
           <figcaption class="cap">Mesa do ateliê</figcaption>

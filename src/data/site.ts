@@ -124,7 +124,7 @@ export const compromisso = {
     { nome: 'Farinha de arroz', rabisco: 'arroz', cena: 'arroz', legenda: 'colhido grão por grão', porque: 'A base leve das massas, no lugar do trigo.' },
     { nome: 'Farinha de aveia', rabisco: 'aveia', cena: 'aveia', legenda: 'do campo pro moinho', porque: 'Textura macia e sabor de bolo caseiro. É aveia comum, não certificada.' },
     { nome: 'Amêndoas e castanha de caju', rabisco: 'castanhas', cena: 'castanhas', legenda: 'caju no pé, castanha na cesta', porque: 'Dão corpo, umidade e um sabor amanteigado, sem manteiga.' },
-    { nome: 'Leites vegetais', rabisco: 'leite', cena: 'leite', legenda: 'do coco pro copo', porque: 'De amêndoas, de caju ou de coco, no lugar do leite em massas, cremes e recheios.' },
+    { nome: 'Leites vegetais', rabisco: 'leite', cena: 'leite', legenda: 'da amêndoa pro copo', porque: 'De amêndoas e de castanha, no lugar do leite em massas, cremes e recheios.' },
     { nome: 'Açúcar demerara', rabisco: 'acucar', cena: 'acucar', legenda: 'da cana pro açúcar', porque: 'No lugar do refinado. Em algumas receitas de chocolate, mascavo.' },
     { nome: 'Óleo de girassol', rabisco: 'girassol', cena: 'girassol', legenda: 'o girassol segue o sol', porque: 'Deixa a massa macia, no lugar da manteiga.' },
   ] as { nome: string; rabisco: IngredienteId; cena: IngredienteId; legenda: string; porque: string }[],
@@ -142,6 +142,7 @@ export const rotulosAlergenos: Record<Alergeno, string> = {
   amendoim: 'Amendoim',
   coco: 'Coco',
   castanhas: 'Castanhas',
+  gergelim: 'Gergelim',
   soja: 'Soja',
 };
 

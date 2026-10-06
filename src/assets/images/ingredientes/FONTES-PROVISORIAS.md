@@ -5,10 +5,12 @@ Nenhuma foto provisória nesta pasta. Para marcar uma foto como provisória de n
 
 Fotos mantidas como definitivas:
 
-- `destaque.jpg`: mantida como definitiva por decisão do Jhonatan (2026-10-06). Origem: gerada por IA no Google Flow,
-  ilustração de ingredientes. Chegou no commit 29b19f6.
+- `destaque.jpg`: trocada em 2026-10-06 por decisão do Jhonatan, porque a anterior mostrava um coco aberto e nenhum produto
+  leva leite de coco. Origem: gerada por IA com o Gemini (via agy), fotografia editorial de ingredientes, ampliada 2× de
+  896×1200 para 1792×2400. A anterior (gerada no Google Flow) chegou no commit 29b19f6.
 
-Observações registradas antes da decisão:
-- A foto mostra uma tigela de flocos de aveia. A Jhessica usa aveia comum, não certificada (confirmado em 2026-10-06), e o
-  bolo de chocolate leva farinha de aveia: a foto não promete nada além do que a receita tem.
-- Na foto, evitar ingrediente que a receita não usa (manteiga, leite, creme, farinha de trigo identificável).
+Observações:
+- A foto mostra flocos de aveia. A Jhessica usa aveia comum, não certificada (confirmado em 2026-10-06), e o bolo de chocolate
+  leva farinha de aveia: a foto não promete nada além do que a receita tem.
+- O copo é de leite de amêndoas (o creme de amêndoas dissolvido em água entra em várias receitas).
+- Na foto, evitar ingrediente que a receita não usa (coco, manteiga, leite, creme, farinha de trigo identificável).

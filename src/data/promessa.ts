@@ -1,7 +1,7 @@
 // Promessa de glúten e leite, tirada do cardápio. Enquanto algum produto (ou opção, como a massa do Bento) levar aveia comum,
 // nada no site diz "sem glúten" sem a exceção. Sem aveia no cardápio, tudo volta sozinho a "sem glúten e sem leite".
 // Fica fora de site.ts de propósito: scripts do navegador importam site.ts, e o cardápio não pode ir junto.
-import { comAveia } from './cardapio.ts';
+import { comAveia, levaAveia, opcoesComAveia, type Produto } from './cardapio.ts';
 import { compromisso } from './site.ts';
 
 const lista = (itens: string[]) => new Intl.ListFormat('pt-BR', { style: 'long', type: 'conjunction' }).format(itens);
@@ -16,6 +16,17 @@ export const promessaCurta = (nomes = aveia): [string, string] => (nomes.length 
 
 /** Descrição do site (meta da home, prévia de link e frase de abertura da hero). */
 export const descricaoSite = (nomes = aveia) => `Bolos, pães e doces ${promessaCurta(nomes).join(' e ')}, feitos à mão em Marabá.`;
+
+/** Receita de um produto com massa à escolha (seção Bento da home). Sem aveia: "sem glúten e sem leite". Aveia só em
+ *  parte das massas: "sem leite e sem glúten na massa de baunilha (a de chocolate leva aveia comum)". Senão: "sem leite". */
+export function promessaPorMassa(p: Produto): string {
+  const aveia = levaAveia(p);
+  if (!aveia) return 'sem glúten e sem leite';
+  const massas = p.opcoes?.find((o) => o.id === 'massa')?.valores ?? [];
+  const nomes = (comAveia: boolean) => lista(massas.filter((v) => !!v.contem?.includes('aveia') === comAveia).map((v) => v.nome.toLowerCase()));
+  const soNaMassa = aveia === 'opcao' && opcoesComAveia(p).every(({ opcao }) => opcao.id === 'massa');
+  return soNaMassa && nomes(false) ? `sem leite e sem glúten na massa de ${nomes(false)} (a de ${nomes(true)} leva aveia comum)` : 'sem leite';
+}
 
 type Cozinha = Pick<typeof compromisso, 'cozinhaSemGluten' | 'cozinhaSemLeite'>;
 

@@ -44,7 +44,7 @@ export function respostaAlergenos(): string[] {
   const semOvo = porCategoria.filter((g) => !comuns(g).includes('ovo')).map((g) => g.categoria.nome);
   if (semOvo.length) frases.push(`${lista(semOvo)} não levam ovo.`);
 
-  // o que algum produto ou sabor leva além do comum da categoria (ex.: coco no bolo de maçã, amendoim na paçoca)
+  // o que algum produto ou sabor leva além do comum da categoria (ex.: amendoim na paçoca, coco no beijinho, gergelim no pão de grãos)
   const extras = new Map<Alergeno, string[]>();
   const somar = (a: Alergeno, onde: string) => extras.set(a, [...(extras.get(a) ?? []), onde]);
   for (const g of porCategoria) {

@@ -6,7 +6,7 @@ import { url } from '../lib/url.ts';
 
 // 'aveia' = aveia comum, não certificada: aparece como "Glúten (aveia comum)" e tira o "sem glúten" de quem a leva.
 // Os textos gerais do site saem de comAveia() (fim do arquivo): sem nenhum produto com aveia, voltam a "sem glúten e sem leite".
-export type Alergeno = 'gluten' | 'aveia' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'soja';
+export type Alergeno = 'gluten' | 'aveia' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'gergelim' | 'soja';
 
 /** Muda o preço (peso, tamanho da caixa). `unidades` conta para o prazo especial dos brigadeiros. */
 export interface Variante { id: string; rotulo: string; preco: number | null; unidades?: number }
@@ -37,8 +37,8 @@ export interface Produto {
   ingredientes?: string[];
   /** O que falta a cliente responder. Enquanto existir, a lista fica guardada aqui, mas o painel não a mostra. */
   ingredientesPendente?: string;
-  /** A lista é só da massa: o painel avisa que a cobertura ainda não está nela. Tire quando a cobertura entrar na lista. */
-  coberturaPendente?: boolean;
+  /** Partes fixas da receita (cobertura dos bolos, massa e recheio das fatias, coberturas do Bento), cada uma com a sua lista. */
+  partes?: { nome: string; ingredientes: string[] }[];
   variantes: Variante[];
   adicionais?: Adicional[];
   opcoes?: Opcao[];
@@ -51,14 +51,13 @@ export const todasCategorias: Categoria[] = [
   // pronta para lançar: apague `oculta` quando as fotos das fatias chegarem (vitrine, /pedido e textos voltam sozinhos)
   { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.', oculta: true },
   { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6 ou 12.' },
-  // PENDÊNCIA: se a massa de chocolate do Bento não levar aveia, volta "O bolo de aniversário sem glúten e sem leite, …"
-  // (os testes não deixam uma chamada prometer "sem glúten" quando algum produto da categoria leva aveia)
+  // a massa de chocolate do Bento leva aveia comum: a chamada curta fica só "sem leite" (os testes não deixam prometer
+  // "sem glúten" aqui); o "sem glúten na massa de baunilha" fica na seção Bento da home (promessaPorMassa, em promessa.ts)
   { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem leite, para a festa inteira dividir.' },
 ];
 
 const img = (id: string) => url(`/images/cardapio/${id}.webp`); // TODO: fotos reais
 const bolo500 = (preco: number | null): Variante[] => [{ id: '500g', rotulo: '500 g', preco }];
-const cobertura: Adicional[] = [{ id: 'cobertura', rotulo: 'Cobertura', preco: 10 }];
 const pesosPao: Variante[] = [
   { id: '600g', rotulo: '600 g', preco: 30 },
   { id: '700g', rotulo: '700 g', preco: 35 },
@@ -74,69 +73,86 @@ const base = {
   permiteSemOvo: false, // onde é true, a versão sem ovos sai pelo mesmo preço e pelo mesmo prazo
   disponivel: true,
 };
-// bolos: a cobertura (opcional ou inclusa) ainda não tem ingredientes confirmados
-const bolo = { ...base, coberturaPendente: true };
 
 // Ingredientes: só os NOMES que a cliente mandou. Receita, quantidade e print nunca entram no repositório.
+// Massas e recheios que se repetem (bolo de chocolate, fatias e Bento) ficam aqui uma vez só.
+const massaChocolate = ['ovos', 'óleo de girassol', 'açúcar mascavo', 'açúcar demerara', 'farinha de aveia', 'farinha de castanha de caju', 'polvilho doce', 'cacau em pó', 'extrato de baunilha', 'fermento em pó', 'bicarbonato'];
+const massaBaunilha = ['ovos', 'farinha de arroz', 'amido de milho', 'polvilho doce', 'açúcar demerara', 'óleo de girassol', 'creme de amêndoas dissolvido em água'];
+const recheios = {
+  limao: ['inhame', 'limão', 'amido', 'ovos', 'açúcar demerara', 'geleia artesanal de frutas vermelhas'],
+  maracuja: ['maracujá', 'açúcar demerara', 'inhame', 'creme de amêndoas'],
+  chocolate: ['cacau', 'inhame', 'creme de amêndoas', 'açúcar mascavo'],
+  // os ovos entram no creme conforme o preparo
+  cremeBranco: ['creme de confeiteiro (amido, leite de castanha, extrato de baunilha, açúcar demerara e ovos)', 'morangos'],
+};
+// cobertura dos bolos: creme de amêndoas e açúcar demerara, mais o sabor (cacau, raspas de laranja, polpa de maracujá);
+// opcional = adicional pago (laranja e maracujá): o painel diz "Cobertura (opcional)"
+const coberturaCom = (sabor: string, opcional = false) => [{ nome: opcional ? 'Cobertura (opcional)' : 'Cobertura', ingredientes: ['creme de amêndoas', 'açúcar demerara', sabor] }];
 // TODO: descrições finais com a cliente; as de agora só repetem o que já foi combinado.
 export const todosProdutos: Produto[] = [
-  // "coco" fica até a cliente confirmar o leite de coco (ela disse que leva; o print não mostra)
+  // sem cobertura e sem leite de coco (o líquido é água)
   {
-    ...bolo, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-maca'),
-    variantes: bolo500(40), adicionais: cobertura, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'coco'] },
-    ingredientes: ['maçã com casca', 'ovo', 'óleo de girassol', 'melado de cana ou rapadura', 'açúcar mascavo', 'canela', 'farinha de arroz integral', 'farinha de castanha de caju', 'polvilho doce', 'sal', 'fermento em pó'],
+    ...base, id: 'bolo-de-maca', categoria: 'bolos', nome: 'Bolo de maçã', descricao: 'Bolo caseiro de 500 g.', imagem: img('bolo-de-maca'),
+    variantes: bolo500(40),
+    ingredientes: ['maçã com casca', 'ovo', 'óleo de girassol', 'melado de cana ou rapadura', 'açúcar mascavo', 'canela', 'farinha de arroz integral', 'farinha de castanha de caju', 'polvilho doce', 'água', 'sal', 'fermento em pó'],
   },
   {
-    ...bolo, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'),
-    variantes: bolo500(40), adicionais: cobertura,
+    ...base, id: 'bolo-de-laranja', categoria: 'bolos', nome: 'Bolo de laranja', descricao: 'Bolo caseiro de 500 g. Cobertura opcional.', imagem: img('bolo-de-laranja'),
+    variantes: bolo500(40), adicionais: [{ id: 'cobertura', rotulo: 'Cobertura', preco: 10 }],
     ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'suco e raspas de laranja-pera', 'farinha de amêndoas', 'farinha de arroz integral', 'polvilho doce', 'amido de milho', 'sal', 'fermento em pó'],
+    partes: coberturaCom('raspas de laranja', true),
   },
-  // aveia comum, não certificada. PENDÊNCIA: se a cliente trocar a farinha de aveia, tire 'aveia' daqui e da fatia Matilda
+  // aveia comum, não certificada. Se a cliente trocar a farinha de aveia, tire 'aveia' daqui, da fatia Matilda e da massa
+  // de chocolate do Bento
   {
-    ...bolo, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'),
+    ...base, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-chocolate'),
     variantes: bolo500(45), maisPedido: true, alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'aveia'] },
-    ingredientes: ['ovos', 'óleo de girassol', 'açúcar mascavo', 'açúcar demerara', 'farinha de aveia', 'farinha de castanha de caju', 'polvilho doce', 'cacau em pó', 'extrato de baunilha', 'fermento em pó', 'bicarbonato'],
+    ingredientes: massaChocolate, partes: coberturaCom('cacau'),
   },
-  // TODO: confirmar que é só demerara (a fonte cita "ou cristal", que derrubaria o "nada de açúcar refinado")
+  // açúcar só demerara (confirmado): vale o "nada de açúcar refinado"
   {
-    ...bolo, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'),
+    ...base, id: 'bolo-de-cenoura', categoria: 'bolos', nome: 'Bolo de cenoura', descricao: 'Bolo caseiro de 500 g, com cobertura.', imagem: img('bolo-de-cenoura'),
     variantes: bolo500(45),
     ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'cenoura', 'laranja', 'farinha de amêndoas', 'farinha de arroz integral', 'amido de milho', 'sal', 'fermento em pó'],
+    partes: coberturaCom('cacau'),
   },
   {
-    ...bolo, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
+    ...base, id: 'bolo-de-maracuja', categoria: 'bolos', nome: 'Bolo de maracujá', descricao: 'Bolo caseiro de 500 g. Cobertura de geleia opcional.', imagem: img('bolo-de-maracuja'),
     variantes: bolo500(40), adicionais: [{ id: 'cobertura-geleia', rotulo: 'Cobertura de geleia', preco: 10 }],
     ingredientes: ['ovo', 'óleo de girassol', 'açúcar demerara', 'polpa de maracujá', 'farinha de amêndoas', 'farinha de arroz', 'amido de milho', 'polvilho doce', 'sal', 'fermento em pó'],
+    partes: coberturaCom('polpa de maracujá', true),
   },
 
-  // "castanhas" fica até a cliente dizer o líquido (água ou qual leite vegetal)
+  // "castanhas" = o creme de amêndoas
   {
     ...base, permiteSemOvo: true, id: 'pao-de-batata-doce', categoria: 'paes', nome: 'Pão de batata-doce', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-batata-doce'), variantes: pesosPao, maisPedido: true,
-    ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'batata-doce', 'ovo', 'óleo de girassol', 'fermento biológico', 'fermento em pó', 'goma xantana', 'sal'],
-    ingredientesPendente: 'o tipo de açúcar e o líquido (água ou qual leite vegetal)',
+    ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'batata-doce', 'açúcar demerara', 'ovo', 'óleo de girassol', 'creme de amêndoas dissolvido em água', 'fermento biológico', 'fermento em pó', 'goma xantana', 'sal'],
   },
-  // sem castanha nem amêndoa na receita: "castanhas" é traço da cozinha. TODO: gergelim (se confirmar, vira alérgeno novo)
+  // sem castanha nem amêndoa na receita: "castanhas" é traço da cozinha. Leva gergelim.
   {
     ...base, permiteSemOvo: true, id: 'pao-de-graos', categoria: 'paes', nome: 'Pão artesanal de grãos', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-graos'), variantes: pesosPao,
-    alergenos: { contem: ['ovo'], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
-    ingredientes: ['farinha de arroz', 'polvilho doce', 'fécula de batata', 'açúcar demerara', 'linhaça dourada', 'chia', 'semente de girassol', 'goma xantana', 'sal', 'fermento biológico', 'ovos', 'óleo de girassol', 'água'],
+    alergenos: { contem: ['ovo', 'gergelim'], podeConter: ['castanhas', 'soja', 'gluten', 'leite'] },
+    ingredientes: ['farinha de arroz', 'polvilho doce', 'fécula de batata', 'açúcar demerara', 'linhaça dourada', 'chia', 'semente de girassol', 'gergelim', 'goma xantana', 'sal', 'fermento biológico', 'ovos', 'óleo de girassol', 'água'],
   },
-  // PENDÊNCIA: ingredientes do pão de cebola
-  { ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao },
+  // "castanhas" = o creme de amêndoas
+  {
+    ...base, permiteSemOvo: true, id: 'pao-de-cebola', categoria: 'paes', nome: 'Pão de cebola', descricao: 'Pão artesanal de 600 a 800 g.', imagem: img('pao-de-cebola'), variantes: pesosPao,
+    ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'açúcar demerara', 'fermento biológico seco', 'fermento químico', 'goma xantana', 'cebolinha desidratada', 'ovos', 'óleo de girassol', 'creme de amêndoas dissolvido em água'],
+  },
 
-  // fatias: por enquanto a lista é só do recheio; a massa é PENDÊNCIA (por isso nenhuma lista aparece)
+  // fatias: massa de baunilha (a mesma do Bento), menos a Matilda, que usa a massa do bolo de chocolate (aveia comum)
   {
     ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia,
-    ingredientes: ['inhame', 'limão', 'amido', 'ovos', 'açúcar demerara', 'geleia artesanal de frutas vermelhas'], ingredientesPendente: 'a massa',
+    partes: [{ nome: 'Massa', ingredientes: massaBaunilha }, { nome: 'Recheio', ingredientes: recheios.limao }],
   },
   {
     ...base, id: 'fatia-chocolate-matilda', categoria: 'fatias', nome: 'Chocolate Matilda', descricao: 'Bolo em fatia.', imagem: img('fatia-chocolate-matilda'), variantes: fatia,
     alergenos: { ...base.alergenos, contem: ['ovo', 'castanhas', 'aveia'] },
-    ingredientes: ['cacau', 'inhame', 'creme de amêndoas', 'açúcar mascavo'], ingredientesPendente: 'a massa',
+    partes: [{ nome: 'Massa', ingredientes: massaChocolate }, { nome: 'Recheio', ingredientes: recheios.chocolate }],
   },
   {
     ...base, id: 'fatia-maracuja', categoria: 'fatias', nome: 'Maracujá', descricao: 'Bolo em fatia.', imagem: img('fatia-maracuja'), variantes: fatia,
-    ingredientes: ['maracujá', 'açúcar demerara', 'inhame', 'creme de amêndoas'], ingredientesPendente: 'a massa',
+    partes: [{ nome: 'Massa', ingredientes: massaBaunilha }, { nome: 'Recheio', ingredientes: recheios.maracuja }],
   },
 
   {
@@ -156,14 +172,27 @@ export const todosProdutos: Produto[] = [
     ] }],
   },
 
-  // PENDÊNCIA: ingredientes do Bento (massas e recheios)
+  // Bento: sem base comum; o painel mostra uma linha por massa, recheio e cobertura. A cobertura não é escolha do cliente
+  // no pedido (só aparece nos ingredientes) até a cliente dizer quem escolhe.
   {
     ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário, com massa e recheio à escolha.', imagem: img('bento-cake'),
     variantes: [{ id: 'unico', rotulo: 'Bento Cake', preco: 150 }],
     opcoes: [
-      // PENDÊNCIA: até a cliente dizer se a massa de chocolate leva a farinha de aveia do bolo, conta como se levasse
-      { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [{ nome: 'Baunilha' }, { nome: 'Chocolate', contem: ['aveia'] }] },
-      { id: 'recheio', rotulo: 'Recheio', artigo: 'o', valores: [{ nome: 'Maracujá' }, { nome: 'Creme branco com morangos' }, { nome: 'Chocolate' }, { nome: 'Limão siciliano com frutas vermelhas' }] },
+      // a massa de chocolate é a do bolo de chocolate: leva farinha de aveia comum (confirmado pela cliente)
+      { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [
+        { nome: 'Baunilha', ingredientes: massaBaunilha },
+        { nome: 'Chocolate', contem: ['aveia'], ingredientes: massaChocolate },
+      ] },
+      { id: 'recheio', rotulo: 'Recheio', artigo: 'o', valores: [
+        { nome: 'Maracujá', ingredientes: recheios.maracuja },
+        { nome: 'Creme branco com morangos', ingredientes: recheios.cremeBranco },
+        { nome: 'Chocolate', ingredientes: recheios.chocolate },
+        { nome: 'Limão siciliano com frutas vermelhas', ingredientes: recheios.limao },
+      ] },
+    ],
+    partes: [
+      { nome: 'Cobertura de chocolate', ingredientes: ['inhame', 'amido', 'ovos', 'cacau', 'creme de amêndoas'] },
+      { nome: 'Cobertura branca (merengue suíço)', ingredientes: ['claras de ovos', 'açúcar demerara'] },
     ],
   },
 ];
@@ -189,10 +218,16 @@ export function precoMinimo(categoriaId: CategoriaId): number | null {
 /** Lista de ingredientes que o painel pode mostrar: vazia enquanto não houver lista ou houver pendência. */
 export const ingredientesVisiveis = (p: Produto) => (p.ingredientesPendente ? [] : (p.ingredientes ?? []));
 
-/** O que cada valor de opção acrescenta à base ("Paçoca: amendoim"); vazia quando a lista do produto não aparece. */
-export const acrescimosVisiveis = (p: Produto) => (ingredientesVisiveis(p).length
-  ? (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.ingredientes?.length ? [{ nome: v.nome, ingredientes: v.ingredientes }] : [])))
-  : []);
+const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** Linhas além da base: o que cada valor de opção acrescenta ("Paçoca: amendoim", "Massa de baunilha: …") e as partes
+ *  fixas ("Massa: …", "Cobertura branca: …"). Vazia enquanto houver pendência. */
+export const acrescimosVisiveis = (p: Produto) => (p.ingredientesPendente
+  ? []
+  : [
+    ...(p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => (v.ingredientes?.length ? [{ nome: maiuscula(ondeNaOpcao(p, o, v.nome)), ingredientes: v.ingredientes }] : []))),
+    ...(p.partes ?? []).filter((x) => x.ingredientes.length),
+  ]);
 
 /** "Pode conter" sem repetir o que o produto inteiro já contém (aveia comum conta como glúten). O que vem só de uma
  *  opção (massa de chocolate do Bento) continua como traço possível, porque as outras opções não o levam. */

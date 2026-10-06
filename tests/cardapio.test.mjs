@@ -4,17 +4,20 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { acrescimosVisiveis, categorias, comAveia, ingredientesVisiveis, podeConterSemRepetir, levaAveia, nomeNaFrase, produtos, todasCategorias, todosProdutos } from '../src/data/cardapio.ts';
-import { descricaoSite, fraseTracos, promessaCurta, promessaFrase, textoCozinha, tudoSemGlutenNemLeite } from '../src/data/promessa.ts';
+import { descricaoSite, fraseTracos, promessaCurta, promessaFrase, promessaPorMassa, textoCozinha, tudoSemGlutenNemLeite } from '../src/data/promessa.ts';
 import { perguntas } from '../src/data/perguntas.ts';
 
 const naoConfirmada = { cozinhaSemGluten: false, cozinhaSemLeite: false };
 
 test('ingredientes: cada lista bate com os alérgenos do produto (ou da opção que leva o ingrediente)', () => {
-  const marcas = { aveia: /aveia/, castanhas: /castanha|amêndoa/, coco: /coco/, amendoim: /amendoim/, ovo: /\bovos?\b/, leite: /\bleite\b/, soja: /soja/ };
-  for (const p of todosProdutos.filter((x) => x.ingredientes?.length)) {
+  // "leite de castanha" (e de coco, de amêndoas) é vegetal: conta como castanha/coco, não como leite
+  const marcas = { aveia: /aveia/, castanhas: /castanha|amêndoa/, coco: /coco/, amendoim: /amendoim/, ovo: /\bovos?\b/, leite: /\bleite\b(?! de (castanha|coco|amêndoa))/, gergelim: /gergelim/, soja: /soja/ };
+  for (const p of todosProdutos) {
     const daOpcao = (p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => v.contem ?? []));
+    // base e partes fixas (massa e recheio das fatias, coberturas do Bento) valem para o produto inteiro
+    const fixos = [...(p.ingredientes ?? []), ...(p.partes ?? []).flatMap((x) => x.ingredientes)];
     for (const [alergeno, re] of Object.entries(marcas)) {
-      if (p.ingredientes.some((i) => re.test(i))) {
+      if (fixos.some((i) => re.test(i))) {
         assert.ok(p.alergenos.contem.includes(alergeno) || daOpcao.includes(alergeno), `${p.id}: a lista tem ${alergeno}, o "contem" não`);
       }
       // o que um sabor acrescenta precisa estar no "contem" dele (ou no do produto)
@@ -53,9 +56,82 @@ test('ingredientes: pendência guarda a lista, mas o painel não a mostra', () =
     assert.ok(p.ingredientes?.length, `${p.id}: pendência sem lista guardada`);
     assert.deepEqual(ingredientesVisiveis(p), []);
   }
-  assert.deepEqual(ingredientesVisiveis(produtos.find((p) => p.id === 'pao-de-batata-doce')), []);
+  assert.ok(ingredientesVisiveis(produtos.find((p) => p.id === 'pao-de-batata-doce')).includes('creme de amêndoas dissolvido em água'));
   assert.ok(ingredientesVisiveis(produtos.find((p) => p.id === 'bolo-de-chocolate')).includes('farinha de aveia'));
-  for (const id of ['pao-de-cebola', 'bento-cake']) assert.deepEqual(ingredientesVisiveis(produtos.find((p) => p.id === id)), []);
+  assert.ok(ingredientesVisiveis(produtos.find((p) => p.id === 'pao-de-cebola')).includes('cebolinha desidratada'));
+  // respostas de 06/10: nenhum produto com ingrediente pendente; todos mostram a lista
+  assert.deepEqual(todosProdutos.filter((p) => p.ingredientesPendente).map((p) => p.id), []);
+  assert.deepEqual(todosProdutos.filter((p) => !ingredientesVisiveis(p).length && !acrescimosVisiveis(p).length).map((p) => p.id), []);
+});
+
+test('bolos: cobertura como linha própria; o de maçã não tem cobertura nem coco', () => {
+  const cob = (id) => acrescimosVisiveis(produtos.find((p) => p.id === id)).find((l) => l.nome.startsWith('Cobertura'))?.ingredientes;
+  const nomeCob = (id) => acrescimosVisiveis(produtos.find((p) => p.id === id)).find((l) => l.nome.startsWith('Cobertura'))?.nome;
+  // inclusa no chocolate e na cenoura; adicional pago (opcional) na laranja e no maracujá
+  assert.deepEqual(['bolo-de-chocolate', 'bolo-de-cenoura', 'bolo-de-laranja', 'bolo-de-maracuja'].map(nomeCob), ['Cobertura', 'Cobertura', 'Cobertura (opcional)', 'Cobertura (opcional)']);
+  assert.deepEqual(cob('bolo-de-chocolate'), ['creme de amêndoas', 'açúcar demerara', 'cacau']);
+  assert.deepEqual(cob('bolo-de-cenoura'), ['creme de amêndoas', 'açúcar demerara', 'cacau']);
+  assert.deepEqual(cob('bolo-de-laranja'), ['creme de amêndoas', 'açúcar demerara', 'raspas de laranja']);
+  assert.deepEqual(cob('bolo-de-maracuja'), ['creme de amêndoas', 'açúcar demerara', 'polpa de maracujá']);
+  const maca = produtos.find((p) => p.id === 'bolo-de-maca');
+  assert.equal(cob('bolo-de-maca'), undefined);
+  assert.equal(maca.adicionais, undefined);
+  assert.ok(!/cobertura/i.test(maca.descricao));
+  assert.deepEqual(maca.alergenos.contem, ['ovo', 'castanhas']);
+});
+
+test('coco só no brigadeiro de beijinho; nenhum leite de coco no site', () => {
+  const comCoco = todosProdutos.flatMap((p) => [
+    ...(p.alergenos.contem.includes('coco') ? [p.id] : []),
+    ...(p.opcoes ?? []).flatMap((o) => o.valores.filter((v) => v.contem?.includes('coco')).map((v) => `${p.id}:${v.nome}`)),
+  ]);
+  assert.deepEqual(comCoco, ['caixa-de-brigadeiros:Beijinho']);
+  const textos = [readFileSync('src/data/site.ts', 'utf8'), readFileSync('src/components/ui/CenaIngrediente.astro', 'utf8')];
+  assert.ok(textos.every((t) => !/leite de coco|coqueiro|do coco/i.test(t)));
+});
+
+test('pão de grãos leva gergelim', () => {
+  const p = produtos.find((x) => x.id === 'pao-de-graos');
+  assert.ok(p.alergenos.contem.includes('gergelim'));
+  assert.ok(p.ingredientes.includes('gergelim'));
+});
+
+test('ingredientes: nenhum adoçante (a cliente não usa xilitol nem outro)', () => {
+  const todas = todosProdutos.flatMap((p) => [
+    ...(p.ingredientes ?? []), ...(p.partes ?? []).flatMap((x) => x.ingredientes),
+    ...(p.opcoes ?? []).flatMap((o) => o.valores.flatMap((v) => v.ingredientes ?? [])),
+  ]);
+  assert.ok(todas.length > 0);
+  assert.ok(!todas.some((i) => /xilitol|eritritol|stévia|sucralose|adoçante/i.test(i)));
+});
+
+test('Bento: uma linha por massa, recheio e cobertura; a massa de chocolate é a do bolo (aveia comum)', () => {
+  const bento = produtos.find((p) => p.id === 'bento-cake');
+  const linhas = acrescimosVisiveis(bento);
+  assert.deepEqual(linhas.map((l) => l.nome), [
+    'Massa de baunilha', 'Massa de chocolate',
+    'Recheio de maracujá', 'Recheio de creme branco com morangos', 'Recheio de chocolate', 'Recheio de limão siciliano com frutas vermelhas',
+    'Cobertura de chocolate', 'Cobertura branca (merengue suíço)',
+  ]);
+  const bolo = todosProdutos.find((p) => p.id === 'bolo-de-chocolate');
+  assert.deepEqual(linhas.find((l) => l.nome === 'Massa de chocolate').ingredientes, bolo.ingredientes);
+  assert.ok(!linhas.find((l) => l.nome === 'Massa de baunilha').ingredientes.some((i) => /aveia/.test(i)));
+  assert.deepEqual(bento.alergenos.contem, ['ovo', 'castanhas']);
+  assert.equal(promessaPorMassa(bento), 'sem leite e sem glúten na massa de baunilha (a de chocolate leva aveia comum)');
+  // sem aveia em massa nenhuma, volta a "sem glúten e sem leite"
+  const semAveia = { ...bento, opcoes: bento.opcoes.map((o) => ({ ...o, valores: o.valores.map(({ contem, ...v }) => v) })) };
+  assert.equal(promessaPorMassa(semAveia), 'sem glúten e sem leite');
+});
+
+test('fatias: massa de baunilha, menos a Matilda (massa do bolo de chocolate, aveia comum)', () => {
+  const fatias = todosProdutos.filter((p) => p.categoria === 'fatias');
+  const bolo = todosProdutos.find((p) => p.id === 'bolo-de-chocolate');
+  const baunilha = produtos.find((p) => p.id === 'bento-cake').opcoes[0].valores[0].ingredientes;
+  for (const f of fatias) {
+    const massa = acrescimosVisiveis(f).find((l) => l.nome === 'Massa')?.ingredientes;
+    assert.deepEqual(massa, f.id === 'fatia-chocolate-matilda' ? bolo.ingredientes : baunilha, f.id);
+    assert.equal(!!levaAveia(f), f.id === 'fatia-chocolate-matilda', f.id);
+  }
 });
 
 test('pão de grãos: sem castanha na receita, castanhas só como traço', () => {
@@ -99,11 +175,8 @@ test('categorias: a chamada não promete "sem glúten" quando algum produto dela
 });
 
 test('componentes e páginas não escrevem "sem glúten" à mão: a promessa sai de src/data/promessa.ts', () => {
-  // BentoCake decide pelo levaAveia do próprio produto
-  const permitidos = new Set(['BentoCake.astro']);
   const arquivos = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? arquivos(join(dir, d.name)) : d.name.endsWith('.astro') ? [join(dir, d.name)] : []));
   for (const f of [...arquivos('src/components'), ...arquivos('src/pages'), ...arquivos('src/layouts')]) {
-    if (permitidos.has(f.split(/[\\/]/).pop())) continue;
     assert.ok(!/sem glúten/i.test(readFileSync(f, 'utf8')), `${f} escreve "sem glúten" à mão`);
   }
 });

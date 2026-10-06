@@ -13,7 +13,7 @@ import { fraseTracos } from '../src/data/promessa.ts';
 import { montarMensagem, linhaItem, linkWhatsApp, numeroPedido, entregaGratis } from '../src/lib/pedido/mensagem.ts';
 
 const item = (id, variante, extra = {}) => ({ id, variante, adicionais: [], opcoes: {}, semOvo: false, sabores: {}, quantidade: 1, ...extra });
-const bolo = item('bolo-de-maca', '500g');
+const bolo = item('bolo-de-laranja', '500g'); // cobertura opcional (+R$ 10)
 const pao = item('pao-de-batata-doce', '800g', { semOvo: true, quantidade: 2 });
 const caixa6 = (sabores = { Cacau: 2, 'Paçoca': 2, Beijinho: 2 }, quantidade = 1) => item('caixa-de-brigadeiros', 'caixa-6', { sabores, quantidade });
 const caixa12 = item('caixa-de-brigadeiros', 'caixa-12', { sabores: { Cacau: 12 } });
@@ -54,14 +54,14 @@ test('mesma escolha soma quantidade; escolha diferente vira outro item', () => {
 test('preço recalculado quando o cardápio muda', () => {
   const itens = [{ ...bolo, adicionais: ['cobertura'] }, pao];
   assert.equal(subtotal(itens, produtos), 50 + 80);
-  const novo = produtos.map((p) => (p.id === 'bolo-de-maca' ? { ...p, variantes: [{ ...p.variantes[0], preco: 45 }] } : p));
+  const novo = produtos.map((p) => (p.id === 'bolo-de-laranja' ? { ...p, variantes: [{ ...p.variantes[0], preco: 45 }] } : p));
   assert.equal(precoItem(itens[0], novo), 55);
   assert.equal(subtotal(itens, novo), 55 + 80);
 });
 
-// cardápio do exemplo: o adicional do bolo de maçã com o rótulo "Cobertura de geleia"
-const cardapioExemplo = produtos.map((p) => (p.id === 'bolo-de-maca' ? { ...p, adicionais: [{ id: 'cobertura', rotulo: 'Cobertura de geleia', preco: 10 }] } : p));
-const itensExemplo = [{ ...bolo, adicionais: ['cobertura'] }, caixa6(), pao];
+// exemplo da mensagem: bolo de maracujá com a cobertura de geleia (adicional de verdade do cardápio)
+const cardapioExemplo = produtos;
+const itensExemplo = [item('bolo-de-maracuja', '500g', { adicionais: ['cobertura-geleia'] }), caixa6(), pao];
 const pedidoBase = { numero: '0310-7KM', itens: itensExemplo, data: new Date(2025, 9, 3), nome: 'Marina' };
 
 test('mensagem da retirada idêntica ao formato combinado', () => {
@@ -70,7 +70,7 @@ test('mensagem da retirada idêntica ao formato combinado', () => {
     '',
     'Pedido nº 0310-7KM',
     '',
-    '• 1x Bolo de maçã (500 g) com cobertura de geleia — R$ 50,00',
+    '• 1x Bolo de maracujá (500 g) com cobertura de geleia — R$ 50,00',
     '• 1x Caixa de brigadeiros (6 un.): 2 cacau, 2 paçoca, 2 beijinho — R$ 30,00',
     '• 2x Pão de batata-doce (800 g), sem ovos — R$ 80,00',
     '',
@@ -171,7 +171,9 @@ test('perguntas: alérgenos pelos dados do cardápio (coco no beijinho, amendoim
   const r = respostaAlergenos().join(' ');
   assert.match(r, /Brigadeiros não levam ovo/);
   assert.match(r, /amendoim \(brigadeiro de paçoca\)/);
-  assert.match(r, /coco \(bolo de maçã e brigadeiro de beijinho\)/);
+  // nenhum produto leva leite de coco: o coco fica só no beijinho; o gergelim, só no pão de grãos
+  assert.match(r, /coco \(brigadeiro de beijinho\)/);
+  assert.match(r, /gergelim \(pão artesanal de grãos\)/i);
   assert.match(r, /traços de glúten, leite e soja/);
   assert.match(r, /Bolo de chocolate e Bento Cake com massa de chocolate levam glúten \(aveia comum\): não indicados para celíacos/);
   assert.match(r, /Pães artesanais levam ovo\./, 'o pão de grãos não leva castanhas: elas saem do comum dos pães');

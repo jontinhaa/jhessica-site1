@@ -33,7 +33,7 @@ const avisosAveia = aveia === true
   ? ['Leva aveia comum: não indicado para celíacos.']
   : opcoesComAveia(p).map(({ opcao, valor }) => `Com ${ondeNaOpcao(p, opcao, valor)}, leva aveia comum: não indicado para celíacos.`);
 const ingredientes = ingredientesVisiveis(p);
-// brigadeiros: a lista do produto é a base, e cada sabor acrescenta o seu
+// a lista do produto é a base; cada sabor, massa, recheio ou parte fixa (fatias, coberturas do Bento) ganha uma linha
 const acrescimos = acrescimosVisiveis(p);
 const contem = [...rotulos(p.alergenos.contem), ...dasOpcoes];
 const contemSemOvo = [...rotulos(p.alergenos.contem.filter((a) => a !== 'ovo')), ...dasOpcoes];
@@ -176,12 +176,14 @@ const brigadeiros = p.categoria === 'brigadeiros';
       </section>
 
       <section class="ingredientes" aria-label="Ingredientes">
-        {ingredientes.length ? (
+        {ingredientes.length || acrescimos.length ? (
           <>
-            <span class="kicker">{p.coberturaPendente ? 'Ingredientes da massa' : 'Ingredientes'}</span>
-            <p class="t-m">{acrescimos.length > 0 && 'Base: '}{ingredientes.join(', ')}.</p>
-            {acrescimos.length > 0 && <p class="t-m">{acrescimos.map((a) => `${a.nome}: ${a.ingredientes.join(', ')}`).join(' · ')}</p>}
-            {p.coberturaPendente && <p class="t-s">A cobertura ainda não está nesta lista: {redes.whatsapp ? <a href={redes.whatsapp} target="_blank" rel="noopener">pergunte no WhatsApp.</a> : 'pergunte no WhatsApp.'}</p>}
+            <span class="kicker">Ingredientes</span>
+            {/* com outras linhas, a lista do produto ganha nome: "Base" (sabores dos brigadeiros) ou "Massa" (bolo com cobertura) */}
+            {ingredientes.length > 0 && <p class="t-m">{acrescimos.length > 0 && <b class="parte">{p.opcoes?.length ? 'Base:' : 'Massa:'}</b>} {ingredientes.join(', ')}.</p>}
+            {acrescimos.length > 0 && (
+              <ul class="t-m partes" role="list">{acrescimos.map((a) => <li><b>{a.nome}:</b> {a.ingredientes.join(', ')}.</li>)}</ul>
+            )}
           </>
         ) : (
           <p class="t-s">Quer saber a receita completa? {redes.whatsapp ? <a href={redes.whatsapp} target="_blank" rel="noopener">Pergunte no WhatsApp.</a> : 'Pergunte no WhatsApp.'}</p>
@@ -261,6 +263,9 @@ const brigadeiros = p.categoria === 'brigadeiros';
   .bom-saber b { font-weight: 600; color: var(--ink); }
   .bom-saber .aviso { font-weight: 600; color: var(--danger); }
   .ingredientes a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
+  /* uma linha por sabor, massa, recheio ou cobertura */
+  .partes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+  .partes b, .ingredientes .parte { font-weight: 600; color: var(--ink); }
 
   /* rodapé fixo: total + adicionar */
   .folha-pe { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .4rem 1.2rem; padding: .9rem 1.5rem calc(.9rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }

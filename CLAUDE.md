@@ -85,7 +85,7 @@ src/
   null = não afirmar. Glúten e leite saem de `data/promessa.ts`: produto ou opção com `'aveia'` (aveia comum) mostra
   "Glúten (aveia comum)", a etiqueta "Leva aveia" e o aviso "não indicado para celíacos", e entra no "exceto …" dos textos gerais.
 - Ingredientes: só os nomes que a cliente mandou (nunca receita, quantidade ou print). `ingredientesPendente` guarda a lista
-  sem mostrar; `coberturaPendente` mostra "Ingredientes da massa". Os testes conferem a lista contra os alérgenos.
+  sem mostrar (hoje nenhum produto tem pendência). Os testes conferem a lista contra os alérgenos.
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
 - Cena fixada (Como pedir): CSS nativo, sem GSAP/Lenis: `position: sticky` + `animation-timeline` (view-timeline no
   contêiner alto). Sem suporte ou com movimento reduzido, vira grade estática.
@@ -122,10 +122,16 @@ src/
   Convenção de pastas e nomes em `docs/FOTOS.md`.
 - **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
-- **Aveia comum:** a cliente pode trocar a farinha de aveia do bolo de chocolate (aí sai `'aveia'` do bolo e da fatia Matilda).
-  **Bento:** a massa de chocolate conta como aveia até ela responder; a chamada da categoria em `cardapio.ts` é texto fixo e
-  volta a "sem glúten e sem leite" à mão. Lista completa de ingredientes pendentes em `docs/LANCAMENTO.md`.
-- Ainda a confirmar com a cliente (TODO nos dados): **ingredientes pendentes e frase de descrição de cada produto** (as descrições novas esperam a aprovação dela), textos de "O que entra" e o texto do depoimento da Karen.
+- **Aveia comum:** a cliente pode trocar a farinha de aveia do bolo de chocolate (aí sai `'aveia'` do bolo, da fatia Matilda
+  e da massa de chocolate do Bento, que é a mesma). A frase da seção Bento sai de `promessaPorMassa` (`promessa.ts`); a
+  chamada curta da categoria em `cardapio.ts` é texto fixo e volta a "sem glúten e sem leite" à mão.
+- **Ingredientes compostos:** massa, recheio e cobertura que se repetem ficam numa constante em `cardapio.ts` (`massaBaunilha`,
+  `massaChocolate`, `recheios`, `coberturaCom`). Opção que muda a receita leva `ingredientes` no valor; parte fixa
+  (cobertura dos bolos, massa e recheio das fatias, coberturas do Bento) vai em `partes`.
+  A cobertura do Bento só aparece nos ingredientes, sem escolha no pedido, até a cliente dizer quem escolhe.
+- **Coco e gergelim:** nenhum produto leva leite de coco (o coco fica só no brigadeiro de beijinho); o gergelim só no pão de
+  grãos. Traços de gergelim nos outros produtos seguem o critério do amendoim e do coco (não aparecem) até a cliente responder.
+- Ainda a confirmar com a cliente (TODO nos dados): **frase de descrição de cada produto** (as descrições novas esperam a aprovação dela), textos de "O que entra" e o texto do depoimento da Karen.
   O numeral "0 conservantes" é fixo no componente e também precisa de confirmação.
 - **Domínio de produção ainda não escolhido** (a cliente vai decidir): `<domínio>` em `docs/LANCAMENTO.md` e o `SITE_URL` do Cloudflare Pages dependem dele.
 - **Prévia de link padrão `src/assets/images/og-padrao.jpg`** (1200×630, gerada por `npm run imagens` a partir do poster da hero, com a forma no centro para o recorte quadrado do WhatsApp): vale na home, no /pedido, na 404 e nos /p/{id} de produto sem `capa`.
