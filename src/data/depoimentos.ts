@@ -24,6 +24,10 @@ export const depoimentos: Depoimento[] = [
     nome: 'Sueide', contexto: 'bolo de chocolate', print: 'Sueide-3', recorte: [0.03, 0.365, 0.69, 0.53], autorizado: true,
     texto: 'Jhes.. Que bolo de chocolate maravilhoso! Tô chocada que ele é saudável e gostoso de verdade. Aqui em casa já virou nosso favorito! Super fofinho e molhadinho. E, claro que, não sobra nada. Obrigada, por adoçar o nosso café da manhã de sábado.',
   },
+  {
+    nome: 'Maria', contexto: 'bolos e pães', print: 'maria-4', recorte: [0.028, 0.1375, 0.744, 0.4685], autorizado: true,
+    texto: 'Eu sou suspeita pra falar porque amo demais a cozinheira 😂, mas, pra mim, fica muitoooo mais gostoso! Os bolos e os pães são simplesmente maravilhosos, e o melhor é que são saudáveis também, o que facilita muito minha rotina. O sabor é bem leve, gostoso e nada enjoativo. Sério, eu amo!',
+  },
 ];
 
 export const depoimentosPublicos = depoimentos.filter((d) => d.autorizado === true);
