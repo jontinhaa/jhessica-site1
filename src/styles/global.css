@@ -183,21 +183,32 @@ ul, ol { list-style: none; }
 }
 
 /* ---------- folha (celular) / painel lateral (desktop) em <dialog>: Detalhes do produto e sacola ----------
-   Comportamento (tocar fora, arrastar a .alca) em src/scripts/folha.ts. */
+   Comportamento (abrir, tocar fora, arrastar a .alca) em src/scripts/folha.ts.
+   iPhone com Safari/WebKit antigo: @starting-style (iOS 17.5), transition-behavior: allow-discrete (17.4) e overlay
+   (nenhum Safari) só animam. A folha aberta depende apenas de [open] { display: flex; translate: 0 0 }, que vale em
+   qualquer versão com <dialog> (iOS 15.4); sem o resto, ela aparece e some sem animação. As partes discretas ficam
+   dentro de @supports: num Safari que não as entende, a declaração inteira de transition seria descartada. */
 .folha {
   --fora: 0 100%;
-  position: fixed; inset: auto 0 0 0; margin: 0; padding: 0; border: 0; width: 100%; max-width: 100vw; max-height: 92dvh;
+  position: fixed; inset: auto 0 0 0; margin: 0; padding: 0; border: 0; width: 100%; max-width: 100vw; max-height: 92vh; max-height: 92dvh;
   border-radius: 22px 22px 0 0; overflow: hidden; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-2);
   translate: var(--fora);
-  transition: translate .45s var(--e-out), opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete;
+  transition: translate .45s var(--e-out), opacity .45s var(--e-out);
 }
+.folha:not([open]) { display: none; }
 .folha[open] { display: flex; flex-direction: column; translate: 0 0; }
-@starting-style { .folha[open] { translate: var(--fora); } }
-.folha::backdrop { background: rgba(20, 13, 10, .55); opacity: 0; transition: opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete; }
+.folha::backdrop { background: rgba(20, 13, 10, .55); opacity: 0; transition: opacity .45s var(--e-out); }
 .folha[open]::backdrop { opacity: 1; }
+@supports (transition-behavior: allow-discrete) {
+  .folha { transition: translate .45s var(--e-out), opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete; }
+  .folha::backdrop { transition: opacity .45s var(--e-out), overlay .45s allow-discrete, display .45s allow-discrete; }
+}
+@starting-style { .folha[open] { translate: var(--fora); } }
 @starting-style { .folha[open]::backdrop { opacity: 0; } }
+/* sem <dialog> modal (iOS anterior ao 15.4; folha.ts troca showModal pelo atributo): por cima de tudo, com o fundo escuro na sombra */
+.folha.sem-modal[open] { z-index: 300; box-shadow: 0 0 0 100vmax rgba(20, 13, 10, .55), var(--shadow-2); }
 @media (min-width: 860px) {
-  .folha { --fora: 100% 0; inset: 0 0 0 auto; width: min(480px, 100vw); height: 100dvh; max-height: 100dvh; border-radius: 22px 0 0 22px; }
+  .folha { --fora: 100% 0; inset: 0 0 0 auto; width: min(480px, 100vw); height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; border-radius: 22px 0 0 22px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .folha { --fora: 0 0; opacity: 0; }
@@ -207,6 +218,7 @@ ul, ol { list-style: none; }
 /* página parada atrás. No PC a barra some e fica o gutter vazio (scrollbar-gutter no html, lá em cima);
    o ::backdrop não cobre o gutter, então ele ganha a mesma cor do backdrop sobre o --bg. */
 html:has(dialog.folha[open]) { overflow: hidden; background: color-mix(in srgb, rgb(20, 13, 10) 55%, var(--bg)); }
+/* o fundo é só um ajuste fino: sem color-mix (iOS anterior ao 16.2) a declaração cai e fica o --bg */
 .folha-in { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .alca { flex: none; display: grid; place-items: center; height: 26px; touch-action: none; cursor: grab; }
 .alca i { width: 44px; height: 5px; border-radius: 3px; background: var(--line-2); }

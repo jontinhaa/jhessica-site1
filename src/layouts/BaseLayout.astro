@@ -93,8 +93,13 @@ const ld = jsonLd && JSON.stringify(jsonLd).replace(/</g, '\\u003c');
           try { visto = sessionStorage.getItem('jhessica:forno') === '1'; } catch (e) {}
           if (!visto) {
             raiz.classList.add('carregando');
-            // trava independente: se o script da tela não rodar (rede, bloqueador, erro), a página libera sozinha em 8 s
-            setTimeout(function () { raiz.classList.remove('carregando'); }, 8000);
+            // trava independente: se o script da tela não rodar ou parar no meio (rede, bloqueador, erro, navegador antigo),
+            // a página libera sozinha em 8 s: some a tela e o resto deixa de ser inerte (o script o marca ao começar)
+            setTimeout(function () {
+              if (!raiz.classList.contains('carregando')) return;
+              raiz.classList.remove('carregando');
+              Array.prototype.forEach.call(document.body.children, function (e) { e.removeAttribute('inert'); });
+            }, 8000);
           }
         }
         function aplicar() {

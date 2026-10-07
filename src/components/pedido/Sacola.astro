@@ -211,9 +211,18 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
   .pe { display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; }
   .total { display: flex; flex-direction: column; gap: .15rem; }
   .pe :global(.btn) { flex: 1; max-width: 300px; }
+  /* celular estreito (320–479px): "Enviar pelo WhatsApp" não cabe ao lado do subtotal. Subtotal numa linha em cima,
+     botão com a largura toda embaixo, letras menos espaçadas e menos padding: nada sai da tela nem em 320px */
+  @media (max-width: 479px) {
+    .pe { flex-direction: column; align-items: stretch; gap: .7rem; }
+    .total { flex-direction: row; justify-content: space-between; align-items: baseline; }
+    .pe :global(.btn) { flex: none; max-width: none; width: 100%; padding-inline: 1rem; letter-spacing: .12em; }
+  }
 
   /* aviso dentro da folha (fora dela o <dialog> modal deixaria o "Desfazer" inerte) */
   .sacola .toast { position: absolute; bottom: 6.5rem; z-index: 4; }
+  /* abaixo de 480px o rodapé tem duas linhas (subtotal e botão): o aviso sobe para não cobrir o botão */
+  @media (max-width: 479px) { .sacola .toast { bottom: 9.5rem; } }
 </style>
 
 <script>
@@ -224,7 +233,7 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
   import { contagemAdiada, datasValidas, deIsoDia, diaCurto, isoDia, prazoDoPedido, type Modalidade } from '../../lib/pedido/prazos';
   import { entregaGratis, linkWhatsApp, montarMensagem, numeroPedido } from '../../lib/pedido/mensagem';
   import * as sacola from '../../scripts/sacola';
-  import { prepararFolha } from '../../scripts/folha';
+  import { abrirFolha, prepararFolha, recemAberta } from '../../scripts/folha';
 
   const produtos = JSON.parse(document.getElementById('cardapio-dados')!.textContent!) as Produto[];
   const d = document.getElementById('sacola') as HTMLDialogElement;
@@ -410,9 +419,10 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
   function abrir(empurrar = true) {
     if (d.open) return;
     irPara(enviado ? 3 : 1);
-    d.showModal();
+    abrirFolha(d); // sempre abre; sem o CSS novo do Safari, só não anima (src/scripts/folha.ts)
     titulo.focus({ preventScroll: true });
-    if (empurrar) history.pushState({ sacola: true }, '', urlCom(true));
+    // o histórico é um extra (o voltar do aparelho fecha): se o navegador recusar, a sacola continua aberta
+    if (empurrar) try { history.pushState({ sacola: true }, '', urlCom(true)); } catch { /* segue sem a entrada */ }
   }
   d.addEventListener('close', () => {
     origem?.focus({ preventScroll: true });
@@ -421,9 +431,11 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
     if (history.state?.sacola) history.back();
     else history.replaceState(null, '', urlCom(false));
   });
-  addEventListener('popstate', () => {
-    const quer = new URL(location.href).searchParams.has('sacola');
-    if (!quer && d.open) { fechandoPeloHistorico = true; d.close(); }
+  // voltar do navegador fecha. No Chrome do iPhone um popstate pode chegar logo depois do pushState, com a URL ainda
+  // sem ?sacola: o estado da entrada ({ sacola: true }) também conta, e nada fecha no mesmo toque que abriu.
+  addEventListener('popstate', (e) => {
+    const quer = !!(e.state as { sacola?: boolean } | null)?.sacola || new URL(location.href).searchParams.has('sacola');
+    if (!quer && d.open && !recemAberta(d)) { fechandoPeloHistorico = true; d.close(); }
     if (quer && !d.open) abrir(false);
   });
   document.addEventListener('click', (e) => {

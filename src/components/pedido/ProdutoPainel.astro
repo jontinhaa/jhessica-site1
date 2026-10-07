@@ -273,12 +273,20 @@ const brigadeiros = p.categoria === 'brigadeiros';
   .folha-pe :global(.btn) { width: 100%; }
   .motivo { grid-column: 1 / -1; text-align: right; min-height: 1.2em; }
   .motivo:empty { display: none; }
+  /* celular estreito (320–479px): "Adicionar à sacola" não cabe ao lado do total. Total numa linha em cima, botão com a
+     largura toda embaixo, letras menos espaçadas e menos padding (mesma regra do rodapé da sacola) */
+  @media (max-width: 479px) {
+    .folha-pe { grid-template-columns: 1fr; gap: .7rem; }
+    .total { flex-direction: row; justify-content: space-between; align-items: baseline; }
+    .folha-pe :global(.btn) { padding-inline: 1rem; letter-spacing: .12em; }
+    .motivo { text-align: center; }
+  }
 </style>
 
 <script>
   import { adicionar } from '../../scripts/sacola';
   import { ligarCompartilhar } from '../../scripts/compartilhar';
-  import { prepararFolha } from '../../scripts/folha';
+  import { abrirFolha, prepararFolha, recemAberta } from '../../scripts/folha';
 
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(v) ? 0 : 2 }).format(v);
   const paineis = new Map<string, HTMLDialogElement>();
@@ -295,10 +303,11 @@ const brigadeiros = p.categoria === 'brigadeiros';
   function abrir(id: string, empurrar = true) {
     const d = paineis.get(id);
     if (!d || d.open) return;
-    d.showModal();
+    abrirFolha(d); // sempre abre; sem o CSS novo do Safari, só não anima (src/scripts/folha.ts)
     d.querySelector('.folha-corpo')!.scrollTop = 0;
     d.querySelector<HTMLElement>('[tabindex="-1"]')!.focus({ preventScroll: true });
-    if (empurrar) history.pushState({ painel: id }, '', urlCom(id));
+    // o histórico é um extra (o voltar do aparelho fecha): se o navegador recusar, o painel continua aberto
+    if (empurrar) try { history.pushState({ painel: id }, '', urlCom(id)); } catch { /* segue sem a entrada */ }
   }
 
   // ---------- um painel ----------
@@ -431,11 +440,12 @@ const brigadeiros = p.categoria === 'brigadeiros';
     abrir(b.dataset.abrir!);
   });
 
-  // voltar/avançar do navegador (e do aparelho) fecha ou abre o painel conforme a URL
-  addEventListener('popstate', () => {
-    const id = new URL(location.href).searchParams.get('produto');
+  // voltar/avançar do navegador (e do aparelho) fecha ou abre o painel conforme a URL. No Chrome do iPhone um popstate
+  // pode chegar logo depois do pushState, com a URL antiga: o estado da entrada também conta, e nada fecha no mesmo toque.
+  addEventListener('popstate', (e) => {
+    const id = (e.state as { painel?: string } | null)?.painel ?? new URL(location.href).searchParams.get('produto');
     const aberto = document.querySelector<HTMLDialogElement>('dialog.painel[open]');
-    if (aberto && aberto.dataset.produto !== id) { fechandoPeloHistorico = true; aberto.close(); }
+    if (aberto && aberto.dataset.produto !== id && !recemAberta(aberto)) { fechandoPeloHistorico = true; aberto.close(); }
     if (id && aberto?.dataset.produto !== id) abrir(id, false);
   });
 

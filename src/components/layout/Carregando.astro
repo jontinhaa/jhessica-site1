@@ -89,14 +89,11 @@ const graus = Array.from({ length: 181 }, (_, i) => String(i).padStart(3, '0'));
     if (src) { const img = new Image(); img.onload = img.onerror = () => { poster = true; }; img.src = src; } else poster = true;
     setTimeout(() => { forcado = true; }, 5500);
 
-    let atual = 0;
-    const passo = (t: number) => {
-      const prog = forcado ? 1 : (fontes ? .4 : 0) + (poster ? .6 : 0);
-      const alvo = 180 * Math.min(prog, Math.min(1, (t - t0) / MIN));
-      atual += (alvo - atual) * .16;
-      if (alvo === 180 && 180 - atual < .8) atual = 180;
-      reel.style.transform = `translateY(-${Math.round(atual) * PASSO}em)`;
-      if (atual < 180) { requestAnimationFrame(passo); return; }
+    let atual = 0, saiu = false;
+    const sair = () => {
+      if (saiu) return;
+      saiu = true;
+      reel.style.transform = `translateY(-${180 * PASSO}em)`;
       nota.textContent = 'no ponto · pode servir';
       setTimeout(() => {
         try { sessionStorage.setItem('jhessica:forno', '1'); } catch {}
@@ -104,8 +101,22 @@ const graus = Array.from({ length: 181 }, (_, i) => String(i).padStart(3, '0'));
         raiz.classList.remove('carregando'); // a hero começa a entrar
         resto.forEach((e) => e.removeAttribute('inert'));
         forno.addEventListener('transitionend', () => forno.remove(), { once: true });
+        setTimeout(() => forno.remove(), 800); // plano B: sem transitionend (transição desligada), a tela sai do mesmo jeito
       }, 200);
     };
+    const passo = (t: number) => {
+      if (saiu) return;
+      const prog = forcado ? 1 : (fontes ? .4 : 0) + (poster ? .6 : 0);
+      const alvo = 180 * Math.min(prog, Math.min(1, (t - t0) / MIN));
+      atual += (alvo - atual) * .16;
+      if (alvo === 180 && 180 - atual < .8) atual = 180;
+      reel.style.transform = `translateY(-${Math.round(atual) * PASSO}em)`;
+      if (atual < 180) { requestAnimationFrame(passo); return; }
+      sair();
+    };
     requestAnimationFrame(passo);
+    // o odômetro anda por quadro: com quadros lentos (aparelho econômico, aba em segundo plano) ele demoraria.
+    // Passado o prazo, a tela sai por tempo, sem esperar a animação (a trava de 8 s do BaseLayout fica de reserva)
+    setTimeout(sair, 6500);
   }
 </script>
