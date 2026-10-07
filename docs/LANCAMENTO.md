@@ -51,6 +51,20 @@ O domínio já está na conta do Cloudflare, com o DNS ativo. Não precisa mexer
    redirecionamento → Criar regra → modelo "Redirecionar de WWW para raiz"** → código 301 → salvar.
    As páginas já apontam o endereço sem `www` como o oficial (`canonical`), então a regra só evita endereço duplicado.
 
+## 2.1 Segurança do domínio e das contas
+
+Os cabeçalhos de segurança já saem do site (`public/_headers`: nosniff, referrer, anti-iframe, permissões e CSP de
+`frame-ancestors`/`object-src`/`base-uri`/`form-action`; cache longo só em `/_astro/*`). No painel e nas contas:
+
+1. **Always Use HTTPS:** Cloudflare → o domínio → **SSL/TLS → Edge Certificates → Always Use HTTPS → ligar**.
+2. **HSTS:** na mesma tela, **HTTP Strict Transport Security (HSTS) → Enable**: max-age de 6 meses, **Include subdomains**
+   ligado e **No-Sniff** ligado. Só ative depois de conferir que o site abre por HTTPS com e sem `www`
+   (depois de ativado, o navegador recusa HTTP por esse tempo).
+3. **Verificação em duas etapas** nas contas **Cloudflare**, **GitHub** e **Google** (as que mexem no site, no domínio e
+   no Search Console). Guarde os códigos de recuperação fora do computador.
+4. **Renovação automática do domínio:** Cloudflare → **Registro de domínio → Gerenciar domínios** → o domínio →
+   **Auto-renew ligado**, com cartão válido na conta.
+
 ## 3. Web Analytics (sem código)
 
 No projeto do Pages: **Métricas → Web Analytics → Ativar**. O Cloudflare injeta o script no deploy, sem mexer no código.
@@ -72,6 +86,12 @@ Rode na pasta `jhess-site/`:
 - [ ] `npm test`: tudo passando.
 - [ ] `npm run build`: build sem erro.
 - [ ] `npm audit`: nenhuma vulnerabilidade alta ou crítica.
+- [ ] **dist limpo:** sem arquivo `.map`, sem rota `design-system` e sem `console.log` (conferido em 07/10); `dist/_headers` existe.
+- [ ] **Segurança (seção 2.1):** Always Use HTTPS e HSTS ligados, verificação em duas etapas (Cloudflare, GitHub, Google) e
+      renovação automática do domínio.
+- [ ] Depois do deploy: os cabeçalhos aparecem (`curl -I https://jhessicaemcozinhasaudavel.com` mostra
+      `x-content-type-options`, `x-frame-options`, `content-security-policy`) e home, /pedido e um /p/{produto} abrem sem erro
+      no console do navegador.
 - [ ] **Número do WhatsApp real** em `src/data/site.ts` (`contato.whatsapp` e `whatsappExibicao`): mande uma mensagem de
       teste pelo botão do site e confira que chega no celular da cliente.
 - [ ] **/design-system fora do build:** a pasta `dist/` não pode ter `design-system` (a rota só existe no `npm run dev`).
