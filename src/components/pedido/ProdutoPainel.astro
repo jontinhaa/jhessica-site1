@@ -286,7 +286,8 @@ const brigadeiros = p.categoria === 'brigadeiros';
 <script>
   import { adicionar } from '../../scripts/sacola';
   import { ligarCompartilhar } from '../../scripts/compartilhar';
-  import { abrirFolha, prepararFolha, recemAberta } from '../../scripts/folha';
+  import { abrirFolha, fecharFolha, prepararFolha, recemAberta } from '../../scripts/folha';
+  import { registrar } from '../../scripts/diagnostico';
 
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: Number.isInteger(v) ? 0 : 2 }).format(v);
   const paineis = new Map<string, HTMLDialogElement>();
@@ -378,7 +379,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
     form.addEventListener('change', atualizar);
     d.addEventListener('click', (e) => {
       const t = e.target as Element;
-      if (t.closest('[data-fechar]')) { d.close(); return; }
+      if (t.closest('[data-fechar]')) { fecharFolha(d, 'botão fechar'); return; }
       const b = t.closest<HTMLButtonElement>('[data-mais], [data-menos]');
       if (!b || b.disabled) return;
       const st = b.closest<HTMLElement>('.stepper')!;
@@ -398,7 +399,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
         id: d.dataset.produto!, variante: variante().value, adicionais: adicionais().map((i) => i.value), opcoes, sabores: escolhidos,
         semOvo: form.querySelector<HTMLInputElement>('input[name=semovo]')?.checked ?? false, quantidade: valor(qtd),
       });
-      d.close();
+      fecharFolha(d, 'adicionou à sacola');
     });
 
     // galeria: o ponto acompanha a foto à vista; tocar no ponto leva até ela
@@ -445,7 +446,10 @@ const brigadeiros = p.categoria === 'brigadeiros';
   addEventListener('popstate', (e) => {
     const id = (e.state as { painel?: string } | null)?.painel ?? new URL(location.href).searchParams.get('produto');
     const aberto = document.querySelector<HTMLDialogElement>('dialog.painel[open]');
-    if (aberto && aberto.dataset.produto !== id && !recemAberta(aberto)) { fechandoPeloHistorico = true; aberto.close(); }
+    if (aberto && aberto.dataset.produto !== id) {
+      if (recemAberta(aberto)) registrar(`painel-${aberto.dataset.produto} popstate ignorado`, 'mesmo toque que abriu');
+      else { fechandoPeloHistorico = true; fecharFolha(aberto, 'voltar do aparelho (popstate)'); }
+    }
     if (id && aberto?.dataset.produto !== id) abrir(id, false);
   });
 
