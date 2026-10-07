@@ -114,15 +114,27 @@ export const conservacao = {
 /** Ingrediente de "O que entra": nome do rabisco (Doodle.astro) e da cena do verso (CenaIngrediente.astro). */
 export type IngredienteId = 'arroz' | 'aveia' | 'castanhas' | 'leite' | 'acucar' | 'girassol';
 
+// Interruptor único da aveia. A farinha de aveia que a Jhessica usa (bolo de chocolate, fatia Matilda e massa de chocolate do
+// Bento) traz na embalagem "NÃO CONTÉM GLÚTEN", declarado pelo fabricante (Lei 10.674/2003), sem selo de certificação
+// (confirmado pela cliente em 07/10). true: a aveia aparece só como "Aveia" em "Contém" e os textos voltam a "sem glúten e
+// sem leite", com o aviso no FAQ de que alguns celíacos não toleram aveia. false: aveia comum, conta como glúten
+// ("Glúten (aveia comum)", etiqueta "Leva aveia", aviso "não indicado para celíacos" e "sem leite e sem trigo" nos textos).
+const aveiaSemGluten: boolean = true;
+
+/** Linha da farinha de aveia em "O que entra". */
+export const porqueAveia = (semGluten = aveiaSemGluten) =>
+  `Textura macia e sabor de bolo caseiro. ${semGluten ? 'Declarada sem glúten pelo fabricante, sem selo de certificação.' : 'É aveia comum, não certificada.'}`;
+
 // O que a seção Ingredientes pode afirmar. null = não confirmado: a frase correspondente não promete nada.
 export const compromisso = {
+  aveiaSemGluten,
   cozinhaSemGluten: false as boolean | null,
   cozinhaSemLeite: false as boolean | null,
   semAcucarRefinado: true as boolean | null, // true = nenhum produto usa; false ou null = "evitamos"
   // TODO: revisar textos com a cliente
   ingredientesQueEntram: [
     { nome: 'Farinha de arroz', rabisco: 'arroz', cena: 'arroz', legenda: 'colhido grão por grão', porque: 'A base leve das massas, no lugar do trigo.' },
-    { nome: 'Farinha de aveia', rabisco: 'aveia', cena: 'aveia', legenda: 'do campo pro moinho', porque: 'Textura macia e sabor de bolo caseiro. É aveia comum, não certificada.' },
+    { nome: 'Farinha de aveia', rabisco: 'aveia', cena: 'aveia', legenda: 'do campo pro moinho', porque: porqueAveia() },
     { nome: 'Amêndoas e castanha de caju', rabisco: 'castanhas', cena: 'castanhas', legenda: 'caju no pé, castanha na cesta', porque: 'Dão corpo, umidade e um sabor amanteigado, sem manteiga.' },
     { nome: 'Leites vegetais', rabisco: 'leite', cena: 'leite', legenda: 'da amêndoa pro copo', porque: 'De amêndoas e de castanha, no lugar do leite em massas, cremes e recheios.' },
     { nome: 'Açúcar demerara', rabisco: 'acucar', cena: 'acucar', legenda: 'da cana pro açúcar', porque: 'No lugar do refinado. Em algumas receitas de chocolate, mascavo.' },
@@ -134,9 +146,10 @@ export const compromisso = {
 export const textoAcucar = (semAcucarRefinado = compromisso.semAcucarRefinado) =>
   semAcucarRefinado === true ? 'E nada de açúcar refinado.' : 'E evitamos açúcar refinado e o excesso de industrializados.';
 
-export const rotulosAlergenos: Record<Alergeno, string> = {
+/** Rótulos dos alérgenos ("Contém", FAQ). A aveia vira "Glúten (aveia comum)" só com o interruptor desligado. */
+export const rotulosDosAlergenos = (semGluten = aveiaSemGluten): Record<Alergeno, string> => ({
   gluten: 'Glúten',
-  aveia: 'Glúten (aveia comum)',
+  aveia: semGluten ? 'Aveia' : 'Glúten (aveia comum)',
   leite: 'Leite',
   ovo: 'Ovo',
   amendoim: 'Amendoim',
@@ -144,7 +157,8 @@ export const rotulosAlergenos: Record<Alergeno, string> = {
   castanhas: 'Castanhas',
   gergelim: 'Gergelim',
   soja: 'Soja',
-};
+});
+export const rotulosAlergenos = rotulosDosAlergenos();
 
 /** Seção "Nossa história" (Sobre.astro). Texto a partir do briefing da cliente (seção 2, "História da marca").
  *  Números do .meta não ficam aqui: a seção os calcula do cardápio e de `regrasPedido`. `desde` é data fixa (nada de "há X anos").

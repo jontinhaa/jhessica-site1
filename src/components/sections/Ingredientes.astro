@@ -22,7 +22,7 @@ const foto = Object.values(fotos)[0]?.default;
 
 // com aveia comum no cardápio não dá para dizer "0 ingredientes com glúten"; trigo continua fora de tudo
 const zeros = [comAveia().length ? 'farinha de trigo' : 'ingredientes com glúten', 'com leite ou derivados', 'conservantes'];
-const cozinha = textoCozinha();
+const cozinha = textoCozinha(undefined, undefined, { semExcecoes: true }); // sem a lista de exceções (o FAQ mantém)
 const entram = compromisso.ingredientesQueEntram;
 // quem tem versão sem ovos sai do campo permiteSemOvo de cada produto (nada de lista escrita à mão)
 const semOvos = new Intl.ListFormat('pt-BR').format(produtos.filter((p) => p.permiteSemOvo).map((p) => p.nome.charAt(0).toLowerCase() + p.nome.slice(1)));
@@ -33,8 +33,8 @@ const semCastanha = produtos.filter((p) => ['bolos', 'paes', 'fatias'].includes(
 const semOleaginosas = semCastanha.length
   ? `, menos ${new Intl.ListFormat('pt-BR').format(semCastanha.map((p) => nomeNaFrase(p.nome)))}, que não ${semCastanha.length > 1 ? 'levam' : 'leva'} oleaginosas`
   : '';
-// glúten (com a aveia comum) e leite já têm o bloco deles
-const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' && k !== 'aveia' && k !== 'leite').map(([, r]) => r);
+// glúten (com a aveia comum) e leite já têm o bloco deles; com o interruptor aveiaSemGluten ligado, a aveia entra na lista
+const outros = Object.entries(rotulosAlergenos).filter(([k]) => k !== 'gluten' && (k !== 'aveia' || compromisso.aveiaSemGluten) && k !== 'leite').map(([, r]) => r);
 ---
 
 <section class="sec sec--tint" id={secao.id}>

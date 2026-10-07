@@ -77,10 +77,11 @@ Rode na pasta `jhess-site/`:
 - [ ] **/design-system fora do build:** a pasta `dist/` não pode ter `design-system` (a rota só existe no `npm run dev`).
 - [ ] **Revisão das promessas** com a cliente: preços e prazos (`cardapio.ts`, `regrasPedido`), "sem glúten e sem leite na
       receita", traços da cozinha, versões sem ovo, nada de "seguro para celíacos", Nossa história e depoimentos autorizados.
-- [ ] **Aveia comum** (bolo de chocolate, fatia Matilda e a massa de chocolate do Bento, confirmada em 06/10): o site mostra
-      "sem leite e sem glúten, exceto …" e "sem leite · sem trigo". Se a cliente trocar a farinha de aveia, tire `'aveia'` de
-      `cardapio.ts` e confira que tudo voltou a "sem glúten e sem leite" (a chamada curta do Bento em `cardapio.ts` é texto fixo e
-      muda à mão; a frase da seção Bento na home volta sozinha).
+- [ ] **Aveia** (bolo de chocolate, fatia Matilda e massa de chocolate do Bento): a farinha é declarada "não contém glúten"
+      pelo fabricante na embalagem, sem selo (cliente, 07/10), e o interruptor `aveiaSemGluten` em `src/data/site.ts` está
+      ligado: o site diz "sem glúten e sem leite", mostra "Aveia" em "Contém" e o FAQ avisa que alguns celíacos não toleram
+      aveia. Se a cliente trocar por uma aveia sem essa declaração, mude para `false`: volta "Glúten (aveia comum)", a etiqueta
+      "Leva aveia", o aviso para celíacos e "sem leite e sem trigo" nos textos gerais.
 - [ ] **Perguntas para a cliente:** no Bento, quem escolhe a cobertura (chocolate ou branca), o cliente no pedido ou ela vem
       com o modelo? Hoje só aparece nos ingredientes. Com o gergelim na cozinha, os outros produtos podem ter traços dele?
       Hoje o site não avisa (mesmo critério do amendoim e do coco dos brigadeiros).

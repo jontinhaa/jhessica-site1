@@ -1,6 +1,7 @@
 // Link e texto do "Compartilhar" de um produto. Lógica pura (sem DOM nem Astro), testada em tests/.
 // O link só leva o id do produto: nenhum dado de quem compartilha.
-import { formatarPreco, levaAveia, ondeNaOpcao, opcoesComAveia, precosDe, type Produto } from '../../data/cardapio.ts';
+import { aveiaContaComoGluten, formatarPreco, levaAveia, ondeNaOpcao, opcoesComAveia, precosDe, type Produto } from '../../data/cardapio.ts';
+import { compromisso } from '../../data/site.ts';
 
 /** Endereço absoluto da página de prévia /p/{id}/. `site` (SITE_URL) e `base` aceitam barra final ou não. */
 export function linkProduto(id: string, site: URL | string, base = '/'): string {
@@ -17,18 +18,20 @@ export function textoPreco(produto: Produto): string | null {
 }
 
 /** Só afirma o que o cardápio confirma: a receita não leva glúten nem leite (a cozinha pode manipular, e isso não é dito aqui).
- *  Aveia comum, no produto ou em alguma opção (massa do Bento), tira o "sem glúten". */
-export const receitaSemGlutenNemLeite = (produto: Produto) =>
-  !produto.alergenos.contem.some((a) => a === 'gluten' || a === 'aveia' || a === 'leite') && !levaAveia(produto);
+ *  Aveia comum, no produto ou em alguma opção (massa do Bento), tira o "sem glúten"; declarada sem glúten (interruptor
+ *  `aveiaSemGluten` ligado), não tira. */
+export const receitaSemGlutenNemLeite = (produto: Produto, semGluten = compromisso.aveiaSemGluten) =>
+  !produto.alergenos.contem.some((a) => a === 'gluten' || (a === 'aveia' && aveiaContaComoGluten(semGluten)) || a === 'leite')
+  && !levaAveia(produto, semGluten);
 
 /** Título e texto do compartilhamento (navigator.share) e da descrição da prévia (og:description). */
-export function textoCompartilhar(produto: Produto): { titulo: string; texto: string } {
+export function textoCompartilhar(produto: Produto, semGluten = compromisso.aveiaSemGluten): { titulo: string; texto: string } {
   const preco = textoPreco(produto);
-  const aveia = levaAveia(produto);
+  const aveia = levaAveia(produto, semGluten);
   const semLeite = !produto.alergenos.contem.includes('leite');
-  const receita = receitaSemGlutenNemLeite(produto) ? 'sem glúten e sem leite na receita' : aveia && semLeite ? 'sem leite na receita' : null;
+  const receita = receitaSemGlutenNemLeite(produto, semGluten) ? 'sem glúten e sem leite na receita' : aveia && semLeite ? 'sem leite na receita' : null;
   // aveia só numa opção (massa de chocolate do Bento): o aviso diz qual, no mesmo jeito do painel
-  const ondes = opcoesComAveia(produto).map(({ opcao, valor }) => ondeNaOpcao(produto, opcao, valor));
+  const ondes = opcoesComAveia(produto, semGluten).map(({ opcao, valor }) => ondeNaOpcao(produto, opcao, valor));
   const aviso = aveia === true ? 'leva aveia comum' : aveia ? `com ${new Intl.ListFormat('pt-BR').format(ondes)}, leva aveia comum` : null;
   const partes = [produto.nome, preco, receita, aviso && `${aviso}, não indicado para celíacos`];
   return { titulo: produto.nome, texto: `${partes.filter(Boolean).join(' · ')}. Peça pelo WhatsApp.` };

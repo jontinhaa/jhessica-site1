@@ -10,7 +10,7 @@ import ProdutoCard from '../components/pedido/ProdutoCard.astro';
 import ProdutoPainel from '../components/pedido/ProdutoPainel.astro';
 import Sacola from '../components/pedido/Sacola.astro';
 import { marca, regrasPedido } from '../data/site';
-import { promessaCurta, promessaFrase } from '../data/promessa';
+import { leadCardapio, promessaCurta } from '../data/promessa';
 import { categorias, getProdutosPorCategoria, produtos } from '../data/cardapio';
 ---
 
@@ -21,7 +21,7 @@ import { categorias, getProdutosPorCategoria, produtos } from '../data/cardapio'
   <section class="sec topo" data-aba={categorias[0].id}>
     <div class="wrapx">
       <SectionHeading rotulo="Cardápio" titulo="Monte seu" tituloDestaque="pedido." as="h1" />
-      <p class="lead">Receitas {promessaFrase()}. Escolha, monte e mande pelo WhatsApp.</p>
+      <p class="lead">{leadCardapio()}</p>
       <p class="t-s prazos">Pedidos com {regrasPedido.prazoMinimoDias} dias de antecedência · Bento Cake e bolos de aniversário com {regrasPedido.prazoEspecialDias} dias</p>
     </div>
   </section>

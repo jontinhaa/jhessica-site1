@@ -137,17 +137,28 @@ test('linkProduto: sem base (domínio próprio)', () => {
   assert.equal(linkProduto('bento-cake', 'https://exemplo.com.br', '/'), 'https://exemplo.com.br/p/bento-cake/');
 });
 
-test('textoCompartilhar: nome, preço "a partir de" e a receita só quando o cardápio confirma', () => {
-  for (const p of produtos.filter((x) => x.disponivel)) {
-    const { titulo, texto } = textoCompartilhar(p);
-    assert.equal(titulo, p.nome);
-    assert.ok(texto.startsWith(p.nome));
-    assert.equal(/sem glúten e sem leite/.test(texto), !p.alergenos.contem.some((a) => a === 'gluten' || a === 'aveia' || a === 'leite') && !levaAveia(p));
-    if (levaAveia(p)) assert.ok(!/sem glúten/.test(texto), `${p.id} leva aveia e não pode dizer "sem glúten"`);
-    assert.ok(!/seguro para celíac/i.test(texto));
+test('textoCompartilhar: nome, preço "a partir de" e a receita só quando o cardápio confirma (dois estados da aveia)', () => {
+  for (const semGluten of [true, false]) {
+    for (const p of produtos.filter((x) => x.disponivel)) {
+      const { titulo, texto } = textoCompartilhar(p, semGluten);
+      assert.equal(titulo, p.nome);
+      assert.ok(texto.startsWith(p.nome));
+      const aveiaComum = !semGluten && p.alergenos.contem.includes('aveia');
+      assert.equal(/sem glúten e sem leite/.test(texto), !p.alergenos.contem.some((a) => a === 'gluten' || a === 'leite') && !aveiaComum && !levaAveia(p, semGluten));
+      if (levaAveia(p, semGluten)) assert.ok(!/sem glúten/.test(texto), `${p.id} leva aveia comum e não pode dizer "sem glúten"`);
+      assert.ok(!/seguro para celíac/i.test(texto));
+    }
   }
-  assert.match(textoCompartilhar(produtos.find((p) => p.id === 'bolo-de-chocolate')).texto, /sem leite na receita · leva aveia comum, não indicado para celíacos/);
-  assert.match(textoCompartilhar(produtos.find((p) => p.id === 'bento-cake')).texto, /sem leite na receita · com massa de chocolate, leva aveia comum, não indicado para celíacos/);
+  const chocolate = produtos.find((p) => p.id === 'bolo-de-chocolate');
+  const bento = produtos.find((p) => p.id === 'bento-cake');
+  assert.match(textoCompartilhar(chocolate, false).texto, /sem leite na receita · leva aveia comum, não indicado para celíacos/);
+  assert.match(textoCompartilhar(bento, false).texto, /sem leite na receita · com massa de chocolate, leva aveia comum, não indicado para celíacos/);
+  // aveia declarada sem glúten pelo fabricante: a prévia volta a "sem glúten e sem leite", sem aviso
+  for (const p of [chocolate, bento]) {
+    assert.match(textoCompartilhar(p, true).texto, /sem glúten e sem leite na receita\. Peça pelo WhatsApp\.$/);
+    assert.ok(!/aveia|celíac/.test(textoCompartilhar(p, true).texto));
+  }
+  assert.equal(textoCompartilhar(chocolate).texto, textoCompartilhar(chocolate, true).texto, 'o padrão segue o interruptor (ligado)');
   const caixa = produtos.find((p) => p.id === 'caixa-de-brigadeiros');
   assert.match(textoCompartilhar(caixa).texto, /a partir de R\$/);
 });
@@ -168,15 +179,23 @@ test('perguntas: as respostas saem dos dados e a pergunta com pendência fica oc
 });
 
 test('perguntas: alérgenos pelos dados do cardápio (coco no beijinho, amendoim na paçoca, brigadeiro sem ovo)', () => {
-  const r = respostaAlergenos().join(' ');
-  assert.match(r, /Brigadeiros não levam ovo/);
-  assert.match(r, /amendoim \(brigadeiro de paçoca\)/);
-  // nenhum produto leva leite de coco: o coco fica só no beijinho; o gergelim, só no pão de grãos
-  assert.match(r, /coco \(brigadeiro de beijinho\)/);
-  assert.match(r, /gergelim \(pão artesanal de grãos\)/i);
-  assert.match(r, /traços de glúten, leite e soja/);
-  assert.match(r, /Bolo de chocolate e Bento Cake com massa de chocolate levam glúten \(aveia comum\): não indicados para celíacos/);
-  assert.match(r, /Pães artesanais levam ovo\./, 'o pão de grãos não leva castanhas: elas saem do comum dos pães');
+  for (const semGluten of [true, false]) {
+    const r = respostaAlergenos(semGluten).join(' ');
+    assert.match(r, /Brigadeiros não levam ovo/);
+    assert.match(r, /amendoim \(brigadeiro de paçoca\)/);
+    // nenhum produto leva leite de coco: o coco fica só no beijinho; o gergelim, só no pão de grãos
+    assert.match(r, /coco \(brigadeiro de beijinho\)/);
+    assert.match(r, /gergelim \(pão artesanal de grãos\)/i);
+    assert.match(r, /traços de glúten, leite e soja/);
+    assert.match(r, /Pães artesanais levam ovo\./, 'o pão de grãos não leva castanhas: elas saem do comum dos pães');
+  }
+  // desligado: aveia comum, frase própria para celíacos
+  assert.match(respostaAlergenos(false).join(' '), /Bolo de chocolate e Bento Cake com massa de chocolate levam glúten \(aveia comum\): não indicados para celíacos/);
+  // ligado: a aveia entra como alérgeno comum, sem a frase de glúten
+  const ligado = respostaAlergenos(true).join(' ');
+  assert.match(ligado, /aveia \(bolo de chocolate e Bento Cake de chocolate\)/);
+  assert.ok(!/aveia comum|não indicad/.test(ligado));
+  assert.equal(respostaAlergenos().join(' '), ligado, 'o padrão segue o interruptor (ligado)');
 });
 
 test('rodapé: a frase de traços só aparece com a cozinha confirmada como não livre; entrega por extenso dos dados', () => {

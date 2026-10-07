@@ -3,9 +3,12 @@
 // `imagem` ainda é caminho reservado; as fotos por produto seguem a convenção de getImagensProduto (fim do arquivo).
 import type { ImageMetadata } from 'astro';
 import { url } from '../lib/url.ts';
+import { compromisso } from './site.ts';
 
-// 'aveia' = aveia comum, não certificada: aparece como "Glúten (aveia comum)" e tira o "sem glúten" de quem a leva.
-// Os textos gerais do site saem de comAveia() (fim do arquivo): sem nenhum produto com aveia, voltam a "sem glúten e sem leite".
+// 'aveia' = a farinha de aveia (bolo de chocolate, fatia Matilda, massa de chocolate do Bento). Ela é sempre declarada em
+// "Contém". Se conta como glúten depende de `aveiaSemGluten` em site.ts: desligado, aparece como "Glúten (aveia comum)" e tira
+// o "sem glúten" de quem a leva; ligado (declarada sem glúten pelo fabricante), aparece só como "Aveia".
+// Os textos gerais do site saem de comAveia() (fim do arquivo): lista vazia = tudo em "sem glúten e sem leite".
 export type Alergeno = 'gluten' | 'aveia' | 'leite' | 'ovo' | 'amendoim' | 'coco' | 'castanhas' | 'gergelim' | 'soja';
 
 /** Muda o preço (peso, tamanho da caixa). `unidades` conta para o prazo especial dos brigadeiros. */
@@ -44,6 +47,11 @@ export interface Produto {
   opcoes?: Opcao[];
 }
 
+/** Chamada do Bento na vitrine. A massa de chocolate leva farinha de aveia: com ela contando como glúten (interruptor
+ *  `aveiaSemGluten` desligado), fica só "sem leite" (os testes não deixam a chamada prometer "sem glúten" aí). */
+export const chamadaBento = (semGluten = compromisso.aveiaSemGluten) =>
+  `O bolo de aniversário ${semGluten ? 'sem glúten e sem leite' : 'sem leite'}, para a festa inteira dividir.`;
+
 // Lista completa. O site lê `categorias` e `produtos` (logo depois dos produtos), que já vêm sem as categorias ocultas.
 export const todasCategorias: Categoria[] = [
   { id: 'bolos', nome: 'Bolos caseirinhos', tipo: 'Café da tarde', chamada: 'O bolo do café da tarde, em 500 g.' },
@@ -51,9 +59,7 @@ export const todasCategorias: Categoria[] = [
   // pronta para lançar: apague `oculta` quando as fotos das fatias chegarem (vitrine, /pedido e textos voltam sozinhos)
   { id: 'fatias', nome: 'Bolos em fatia', tipo: 'Sobremesa', chamada: 'Para provar sem encomendar um bolo inteiro.', oculta: true },
   { id: 'brigadeiros', nome: 'Brigadeiros', tipo: 'Docinhos', chamada: 'Cacau, paçoca e beijinho, em caixas com 6 ou 12.' },
-  // a massa de chocolate do Bento leva aveia comum: a chamada curta fica só "sem leite" (os testes não deixam prometer
-  // "sem glúten" aqui); o "sem glúten na massa de baunilha" fica na seção Bento da home (promessaPorMassa, em promessa.ts)
-  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: 'O bolo de aniversário sem leite, para a festa inteira dividir.' },
+  { id: 'bento', nome: 'Bento Cake', tipo: 'Aniversário', chamada: chamadaBento() },
 ];
 
 const img = (id: string) => url(`/images/cardapio/${id}.webp`); // TODO: fotos reais
@@ -102,7 +108,7 @@ export const todosProdutos: Produto[] = [
     ingredientes: ['ovo', 'açúcar demerara', 'óleo de girassol', 'suco e raspas de laranja-pera', 'farinha de amêndoas', 'farinha de arroz integral', 'polvilho doce', 'amido de milho', 'sal', 'fermento em pó'],
     partes: coberturaCom('raspas de laranja', true),
   },
-  // aveia comum, não certificada. Se a cliente trocar a farinha de aveia, tire 'aveia' daqui, da fatia Matilda e da massa
+  // farinha de aveia (conta como glúten ou não pelo interruptor aveiaSemGluten, em site.ts). Se a cliente trocar a farinha, tire 'aveia' daqui, da fatia Matilda e da massa
   // de chocolate do Bento
   {
     ...base, permiteSemOvo: true, id: 'bolo-de-chocolate', categoria: 'bolos', nome: 'Bolo de chocolate', descricao: 'Cacau, açúcar mascavo e baunilha. O mais pedido da casa.', imagem: img('bolo-de-chocolate'),
@@ -140,7 +146,7 @@ export const todosProdutos: Produto[] = [
     ingredientes: ['farinha de arroz', 'polvilho doce', 'amido de milho', 'açúcar demerara', 'fermento biológico seco', 'fermento químico', 'goma xantana', 'cebolinha desidratada', 'ovos', 'óleo de girassol', 'creme de amêndoas dissolvido em água'],
   },
 
-  // fatias: massa de baunilha (a mesma do Bento), menos a Matilda, que usa a massa do bolo de chocolate (aveia comum)
+  // fatias: massa de baunilha (a mesma do Bento), menos a Matilda, que usa a massa do bolo de chocolate (com farinha de aveia)
   {
     ...base, id: 'fatia-limao-frutas-vermelhas', categoria: 'fatias', nome: 'Limão siciliano com frutas vermelhas', descricao: 'Bolo em fatia.', imagem: img('fatia-limao-frutas-vermelhas'), variantes: fatia,
     partes: [{ nome: 'Massa', ingredientes: massaBaunilha }, { nome: 'Recheio', ingredientes: recheios.limao }],
@@ -178,7 +184,7 @@ export const todosProdutos: Produto[] = [
     ...base, id: 'bento-cake', categoria: 'bento', nome: 'Bento Cake', descricao: 'Bolo de aniversário, com massa e recheio à escolha.', imagem: img('bento-cake'),
     variantes: [{ id: 'unico', rotulo: 'Bento Cake', preco: 150 }],
     opcoes: [
-      // a massa de chocolate é a do bolo de chocolate: leva farinha de aveia comum (confirmado pela cliente)
+      // a massa de chocolate é a do bolo de chocolate: leva farinha de aveia (confirmado pela cliente)
       { id: 'massa', rotulo: 'Massa', artigo: 'a', valores: [
         { nome: 'Baunilha', ingredientes: massaBaunilha },
         { nome: 'Chocolate', contem: ['aveia'], ingredientes: massaChocolate },
@@ -229,10 +235,13 @@ export const acrescimosVisiveis = (p: Produto) => (p.ingredientesPendente
     ...(p.partes ?? []).filter((x) => x.ingredientes.length),
   ]);
 
+/** A aveia conta como glúten? Só com o interruptor `aveiaSemGluten` (site.ts) desligado. */
+export const aveiaContaComoGluten = (semGluten = compromisso.aveiaSemGluten) => !semGluten;
+
 /** "Pode conter" sem repetir o que o produto inteiro já contém (aveia comum conta como glúten). O que vem só de uma
  *  opção (massa de chocolate do Bento) continua como traço possível, porque as outras opções não o levam. */
-export const podeConterSemRepetir = (p: Produto) => {
-  const contem = new Set<Alergeno>(p.alergenos.contem.flatMap((a) => (a === 'aveia' ? ['aveia', 'gluten'] : [a])));
+export const podeConterSemRepetir = (p: Produto, semGluten = compromisso.aveiaSemGluten) => {
+  const contem = new Set<Alergeno>(p.alergenos.contem.flatMap((a) => (a === 'aveia' && aveiaContaComoGluten(semGluten) ? ['aveia', 'gluten'] : [a])));
   return p.alergenos.podeConter.filter((a) => !contem.has(a));
 };
 
@@ -243,20 +252,33 @@ export const nomeNaFrase = (nome: string) => (/\s\p{Lu}/u.test(nome) ? nome : no
 export const ondeNaOpcao = (p: Produto, o: Opcao, valor: string) =>
   `${(p.opcoes?.length ?? 0) > 1 ? `${o.rotulo.toLowerCase()} de ` : ''}${valor.toLowerCase()}`;
 
-/** As opções de um produto que levam aveia comum (ex.: a massa de chocolate do Bento). */
-export const opcoesComAveia = (p: Produto) =>
+/** As opções que levam aveia, contando como glúten ou não (ex.: a massa de chocolate do Bento). */
+const opcoesComAveiaSempre = (p: Produto) =>
   (p.opcoes ?? []).flatMap((o) => o.valores.filter((v) => v.contem?.includes('aveia')).map((v) => ({ opcao: o, valor: v.nome })));
 
-/** Leva aveia comum no produto inteiro (true), só em alguma opção ('opcao') ou não leva (false). */
-export const levaAveia = (p: Produto): boolean | 'opcao' =>
-  p.alergenos.contem.includes('aveia') ? true : opcoesComAveia(p).length ? 'opcao' : false;
+/** As opções de um produto que levam aveia comum, a que conta como glúten. Vazio com o interruptor ligado. */
+export const opcoesComAveia = (p: Produto, semGluten = compromisso.aveiaSemGluten) =>
+  (aveiaContaComoGluten(semGluten) ? opcoesComAveiaSempre(p) : []);
+
+/** Leva aveia comum (a que conta como glúten) no produto inteiro (true), só em alguma opção ('opcao') ou não leva (false).
+ *  Com o interruptor ligado, sempre false: some a etiqueta "Leva aveia" e o aviso para celíacos. */
+export const levaAveia = (p: Produto, semGluten = compromisso.aveiaSemGluten): boolean | 'opcao' =>
+  !aveiaContaComoGluten(semGluten) ? false : p.alergenos.contem.includes('aveia') ? true : opcoesComAveia(p, semGluten).length ? 'opcao' : false;
 
 /** O que leva aveia comum, como entra numa frase ("bolo de chocolate", "Bento Cake com massa de chocolate").
  *  Daqui saem o "sem glúten, exceto …" e as etiquetas curtas do site; lista vazia = tudo volta a "sem glúten e sem leite". */
-export const comAveia = (lista: Produto[] = produtos) =>
-  lista.flatMap((p) => (levaAveia(p) === true
+export const comAveia = (lista: Produto[] = produtos, semGluten = compromisso.aveiaSemGluten) =>
+  lista.flatMap((p) => (levaAveia(p, semGluten) === true
     ? [nomeNaFrase(p.nome)]
-    : opcoesComAveia(p).map(({ opcao, valor }) => `${nomeNaFrase(p.nome)} com ${ondeNaOpcao(p, opcao, valor)}`)));
+    : opcoesComAveia(p, semGluten).map(({ opcao, valor }) => `${nomeNaFrase(p.nome)} com ${ondeNaOpcao(p, opcao, valor)}`)));
+
+/** Onde a farinha de aveia entra, com artigo, conte ou não como glúten: "o bolo de chocolate", "a fatia Chocolate Matilda",
+ *  "a massa de chocolate do Bento Cake" (linha do FAQ com o interruptor ligado). Fatia leva "a fatia"; o resto (bolo, pão,
+ *  Bento), "o". */
+export const ondeTemAveia = (lista: Produto[] = produtos) =>
+  lista.flatMap((p) => (p.alergenos.contem.includes('aveia')
+    ? [p.categoria === 'fatias' ? `a fatia ${p.nome}` : `o ${nomeNaFrase(p.nome)}`]
+    : opcoesComAveiaSempre(p).map(({ opcao, valor }) => `${opcao.artigo ?? 'a'} ${ondeNaOpcao(p, opcao, valor)} do ${p.nome}`)));
 
 /** "R$ 30" quando inteiro, "R$ 32,50" quando não. */
 export const formatarPreco = (valor: number) =>

@@ -1,9 +1,9 @@
 // Perguntas frequentes (seção Perguntas). Cada resposta é MONTADA dos dados (regrasPedido, compromisso, conservacao, contato,
 // passosPedido e o cardápio), não é texto solto: mudou um prazo, uma entrega ou um alérgeno, a resposta muda junto.
 // Pergunta com `pendente` fica oculta (ou vai sem a parte pendente) até a cliente responder; tire o campo quando entrar o dado.
-import { categorias, comAveia, produtos, type Alergeno, type CategoriaId } from './cardapio.ts';
-import { compromisso, conservacao, contato, diasDeEntrega, entregaConfirmada, passosPedido, regrasPedido, rotulosAlergenos } from './site.ts';
-import { textoCozinha, tudoSemGlutenNemLeite } from './promessa.ts';
+import { aveiaContaComoGluten, categorias, comAveia, nomeNaFrase, produtos, type Alergeno, type CategoriaId } from './cardapio.ts';
+import { compromisso, conservacao, contato, diasDeEntrega, entregaConfirmada, passosPedido, regrasPedido, rotulosDosAlergenos } from './site.ts';
+import { fraseAveiaDeclarada, textoCozinha, tudoSemGlutenNemLeite } from './promessa.ts';
 
 export interface Pergunta {
   id: string;
@@ -16,9 +16,6 @@ export interface Pergunta {
 
 const lista = (itens: string[]) => new Intl.ListFormat('pt-BR', { style: 'long', type: 'conjunction' }).format(itens);
 const minusculo = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
-// a aveia comum tem frase própria ("…leva glúten (aveia comum): não indicado para celíacos"), fora da conta por categoria
-const ordemAlergenos: Alergeno[] = (Object.keys(rotulosAlergenos) as Alergeno[]).filter((a) => a !== 'aveia');
-const rotulo = (a: Alergeno) => rotulosAlergenos[a].toLowerCase();
 const nomeCategoria = (id: CategoriaId) => categorias.find((c) => c.id === id)!.nome;
 
 const doCardapio = produtos.filter((p) => p.disponivel);
@@ -26,8 +23,16 @@ const porCategoria = categorias
   .map((c) => ({ categoria: c, itens: doCardapio.filter((p) => p.categoria === c.id) }))
   .filter((g) => g.itens.length);
 
-/** Resposta 3: alérgenos, por categoria, a partir de `contem` / `podeConter` e das opções que trazem alérgeno (sabores). */
-export function respostaAlergenos(): string[] {
+/** Resposta 3: alérgenos, por categoria, a partir de `contem` / `podeConter` e das opções que trazem alérgeno (sabores).
+ *  `semGluten`: o interruptor `aveiaSemGluten` de site.ts (os testes passam os dois estados). */
+export function respostaAlergenos(semGluten = compromisso.aveiaSemGluten): string[] {
+  // aveia comum (conta como glúten) tem frase própria ("…leva glúten (aveia comum): não indicado para celíacos"), fora da
+  // conta por categoria; declarada sem glúten, entra como alérgeno comum ("Também levam: aveia (bolo de chocolate…)")
+  const contaComoGluten = aveiaContaComoGluten(semGluten);
+  const rotulos = rotulosDosAlergenos(semGluten);
+  const ordemAlergenos = (Object.keys(rotulos) as Alergeno[]).filter((a) => a !== 'aveia' || !contaComoGluten);
+  const rotulo = (a: Alergeno) => rotulos[a].toLowerCase();
+  const fora = (a: Alergeno) => a === 'aveia' && contaComoGluten;
   const comuns = (g: (typeof porCategoria)[number]) => ordemAlergenos.filter((a) => g.itens.every((p) => p.alergenos.contem.includes(a)));
 
   // categorias com o mesmo conjunto de alérgenos viram uma frase só
@@ -50,13 +55,14 @@ export function respostaAlergenos(): string[] {
   for (const g of porCategoria) {
     const base = comuns(g);
     for (const p of g.itens) {
-      p.alergenos.contem.filter((a) => a !== 'aveia' && !base.includes(a)).forEach((a) => somar(a, minusculo(p.nome)));
-      for (const o of p.opcoes ?? []) for (const v of o.valores) (v.contem ?? []).filter((a) => a !== 'aveia').forEach((a) => somar(a, `${minusculo(g.categoria.nome.replace(/s$/, ''))} de ${minusculo(v.nome)}`));
+      p.alergenos.contem.filter((a) => !fora(a) && !base.includes(a)).forEach((a) => somar(a, minusculo(p.nome)));
+      // "brigadeiro de paçoca", "Bento Cake de chocolate" (nome próprio fica como está)
+      for (const o of p.opcoes ?? []) for (const v of o.valores) (v.contem ?? []).filter((a) => !fora(a)).forEach((a) => somar(a, `${nomeNaFrase(g.categoria.nome.replace(/s$/, ''))} de ${minusculo(v.nome)}`));
     }
   }
   const extra = ordemAlergenos.filter((a) => extras.has(a)).map((a) => `${rotulo(a)} (${lista(extras.get(a)!)})`);
   if (extra.length) frases.push(`Também levam: ${lista(extra)}.`);
-  const aveia = comAveia(doCardapio);
+  const aveia = comAveia(doCardapio, semGluten);
   if (aveia.length) {
     const mais = aveia.length > 1;
     const nomes = lista(aveia);
@@ -96,6 +102,7 @@ export function respostaEntrega(): string[] {
 
 const acucar = compromisso.ingredientesQueEntram.find((i) => i.rabisco === 'acucar');
 const cozinha = textoCozinha();
+const aveiaDeclarada = fraseAveiaDeclarada(produtos.filter((p) => p.disponivel)); // null com o interruptor desligado
 
 const todas: Pergunta[] = [
   {
@@ -103,9 +110,11 @@ const todas: Pergunta[] = [
     pergunta: 'É tudo sem glúten e sem leite?',
     // textoCozinha() é null enquanto glúten/leite da cozinha não estiver confirmado: então não afirmamos nada.
     // "Sim." só com a cozinha confirmada sem glúten e sem leite e nenhuma aveia no cardápio; senão, a frase já diz o que vale.
+    // Com a aveia declarada sem glúten (interruptor ligado), um segundo parágrafo diz onde ela entra.
     resposta: [cozinha
       ? (tudoSemGlutenNemLeite() ? `Sim. ${cozinha}` : cozinha)
-      : 'Fale com a gente pelo WhatsApp antes de pedir: a composição é informada produto a produto.'],
+      : 'Fale com a gente pelo WhatsApp antes de pedir: a composição é informada produto a produto.',
+    ...(aveiaDeclarada ? [aveiaDeclarada] : [])],
   },
   {
     id: 'acucar',

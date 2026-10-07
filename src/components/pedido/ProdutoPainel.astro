@@ -7,7 +7,7 @@
 import { Image } from 'astro:assets';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
-import { acrescimosVisiveis, formatarPreco, getImagensProduto, ingredientesVisiveis, levaAveia, ondeNaOpcao, opcoesComAveia, podeConterSemRepetir, type Produto } from '../../data/cardapio';
+import { acrescimosVisiveis, aveiaContaComoGluten, formatarPreco, getImagensProduto, ingredientesVisiveis, levaAveia, ondeNaOpcao, opcoesComAveia, podeConterSemRepetir, type Produto } from '../../data/cardapio';
 import { dadosCompartilhar } from '../../lib/pedido/compartilhar';
 import { conservacao, prazoDias, redes, regrasPedido, rotulosAlergenos } from '../../data/site';
 
@@ -113,7 +113,7 @@ const brigadeiros = p.categoria === 'brigadeiros';
         <fieldset class="campo" data-opcao data-artigo={o.artigo ?? 'o'} data-nome={o.rotulo.toLowerCase()}>
           <legend class="kicker">{o.rotulo}</legend>
           <div class="seg seg--solta">
-            {o.valores.map((v) => <label><input type="radio" name={`opcao-${o.id}`} value={v.nome} data-rotulo={o.rotulo} /><span>{v.nome}{v.contem?.includes('aveia') && ' (leva aveia)'}</span></label>)}
+            {o.valores.map((v) => <label><input type="radio" name={`opcao-${o.id}`} value={v.nome} data-rotulo={o.rotulo} /><span>{v.nome}{aveiaContaComoGluten() && v.contem?.includes('aveia') && ' (leva aveia)'}</span></label>)}
           </div>
         </fieldset>
       ))}

@@ -23,7 +23,8 @@ src/
                          rotulosAlergenos,
                          secoes (ordem da home) e menu. Só IMPORTA TIPOS do cardápio: scripts do navegador leem este arquivo
   data/promessa.ts       promessa de glúten e leite tirada do cardápio (comAveia): promessaFrase ("sem leite e sem glúten, exceto …"),
-                         promessaCurta ("sem leite · sem trigo"), descricaoSite, textoCozinha, fraseTracos. Sem aveia, volta a
+                         promessaCurta ("sem leite · sem trigo"), leadCardapio, descricaoSite, textoCozinha, fraseTracos,
+                         fraseAveiaDeclarada. Sem aveia comum (ou com `aveiaSemGluten` ligado em site.ts), volta a
                          "sem glúten e sem leite". Nenhum .astro escreve "sem glúten" à mão (tests/cardapio.test.mjs trava)
   data/cardapio.ts       categorias e produtos (variantes, opções com alérgenos, contem/podeConter), precoMinimo, emBreve,
                          formatarPreco, getImagensProduto (produtos/{id}/capa|corte|extra-N). `todasCategorias`/`todosProdutos`
@@ -82,8 +83,11 @@ src/
   Links internos sempre `/#id` (funcionam fora da home). Produto e preço só em `data/cardapio.ts`.
 - Toda animação precisa respeitar `prefers-reduced-motion`.
 - Promessa ao cliente (sem glúten, sem leite, sem açúcar…) só aparece se o dado estiver confirmado em `compromisso`;
-  null = não afirmar. Glúten e leite saem de `data/promessa.ts`: produto ou opção com `'aveia'` (aveia comum) mostra
-  "Glúten (aveia comum)", a etiqueta "Leva aveia" e o aviso "não indicado para celíacos", e entra no "exceto …" dos textos gerais.
+  null = não afirmar. Glúten e leite saem de `data/promessa.ts`. Produto ou opção com `'aveia'` segue o interruptor
+  `aveiaSemGluten` (site.ts): **ligado** (hoje; farinha declarada "não contém glúten" pelo fabricante na embalagem, sem selo),
+  mostra só "Aveia" em "Contém", os textos dizem "sem glúten e sem leite" e o FAQ avisa que alguns celíacos não toleram aveia;
+  **desligado**, mostra "Glúten (aveia comum)", a etiqueta "Leva aveia", o aviso "não indicado para celíacos" e entra no
+  "exceto …" / "sem leite e sem trigo" dos textos gerais. Os testes cobrem os dois estados.
 - Ingredientes: só os nomes que a cliente mandou (nunca receita, quantidade ou print). `ingredientesPendente` guarda a lista
   sem mostrar (hoje nenhum produto tem pendência). Os testes conferem a lista contra os alérgenos.
 - Parallax de foto: `data-par` em `img.par` dentro de `.media` (CSS preso à rolagem, desligado com movimento reduzido).
@@ -122,9 +126,10 @@ src/
   Convenção de pastas e nomes em `docs/FOTOS.md`.
 - **Depoimentos:** só entram falas confirmadas e `autorizado: true`. Print = só o balão (`npm run prints`).
 - **Nossa história (`historia` em `site.ts`):** o texto vem do briefing (`.briefing/Briefing_Jhessica_em_Cozinha_Saudavel.docx`, seção 2) e está em primeira pessoa; revisar o texto com a cliente. A data da loja ("desde setembro de 2025") é fixa, sem calcular anos.
-- **Aveia comum:** a cliente pode trocar a farinha de aveia do bolo de chocolate (aí sai `'aveia'` do bolo, da fatia Matilda
-  e da massa de chocolate do Bento, que é a mesma). A frase da seção Bento sai de `promessaPorMassa` (`promessa.ts`); a
-  chamada curta da categoria em `cardapio.ts` é texto fixo e volta a "sem glúten e sem leite" à mão.
+- **Aveia:** a farinha de aveia do bolo de chocolate (a mesma da fatia Matilda e da massa de chocolate do Bento) é declarada
+  sem glúten pelo fabricante, sem selo (cliente, 07/10): `aveiaSemGluten: true` em `site.ts`. Se ela trocar por aveia comum,
+  desligue o interruptor; se tirar a aveia, tire `'aveia'` dos três. Tudo (inclusive a chamada do Bento e a seção Bento,
+  `promessaPorMassa`) segue o interruptor sozinho.
 - **Ingredientes compostos:** massa, recheio e cobertura que se repetem ficam numa constante em `cardapio.ts` (`massaBaunilha`,
   `massaChocolate`, `recheios`, `coberturaCom`). Opção que muda a receita leva `ingredientes` no valor; parte fixa
   (cobertura dos bolos, massa e recheio das fatias, coberturas do Bento) vai em `partes`.

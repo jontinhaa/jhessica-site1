@@ -10,7 +10,7 @@ Fotos mantidas como definitivas:
   896×1200 para 1792×2400. A anterior (gerada no Google Flow) chegou no commit 29b19f6.
 
 Observações:
-- A foto mostra flocos de aveia. A Jhessica usa aveia comum, não certificada (confirmado em 2026-10-06), e o bolo de chocolate
-  leva farinha de aveia: a foto não promete nada além do que a receita tem.
+- A foto mostra flocos de aveia. O bolo de chocolate leva farinha de aveia, declarada sem glúten pelo fabricante e sem selo de
+  certificação (confirmado em 2026-10-07): a foto não promete nada além do que a receita tem.
 - O copo é de leite de amêndoas (o creme de amêndoas dissolvido em água entra em várias receitas).
 - Na foto, evitar ingrediente que a receita não usa (coco, manteiga, leite, creme, farinha de trigo identificável).
