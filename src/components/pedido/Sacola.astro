@@ -233,8 +233,7 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
   import { contagemAdiada, datasValidas, deIsoDia, diaCurto, isoDia, prazoDoPedido, type Modalidade } from '../../lib/pedido/prazos';
   import { entregaGratis, linkWhatsApp, montarMensagem, numeroPedido } from '../../lib/pedido/mensagem';
   import * as sacola from '../../scripts/sacola';
-  import { abrirFolha, fecharFolha, prepararFolha, recemAberta } from '../../scripts/folha';
-  import { registrar } from '../../scripts/diagnostico';
+  import { abrirFolha, prepararFolha, recemAberta } from '../../scripts/folha';
 
   const produtos = JSON.parse(document.getElementById('cardapio-dados')!.textContent!) as Produto[];
   const d = document.getElementById('sacola') as HTMLDialogElement;
@@ -391,7 +390,7 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
     form.reset();
     form.nome.value = sacola.lerNome();
     irPara(1);
-    fecharFolha(d, 'limpou a sacola');
+    d.close();
     sacola.aviso('Sacola limpa. Obrigada pelo pedido!');
   });
   $('[data-editar]').addEventListener('click', () => { enviado = null; irPara(2); });
@@ -412,7 +411,7 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
   }
   $('[data-continuar]').addEventListener('click', () => irPara(2));
   $('[data-voltar]').addEventListener('click', () => irPara(1));
-  d.querySelectorAll('[data-fechar]').forEach((b) => b.addEventListener('click', () => fecharFolha(d, 'botão fechar')));
+  d.querySelectorAll('[data-fechar]').forEach((b) => b.addEventListener('click', () => d.close()));
 
   let origem: HTMLElement | null = null, fechandoPeloHistorico = false;
   const urlCom = (aberta: boolean) => { const u = new URL(location.href); if (aberta) u.searchParams.set('sacola', '1'); else u.searchParams.delete('sacola'); return u; };
@@ -436,11 +435,7 @@ const dados = produtos.map(({ imagem, descricao, ingredientes, ...p }) => p);
   // sem ?sacola: o estado da entrada ({ sacola: true }) também conta, e nada fecha no mesmo toque que abriu.
   addEventListener('popstate', (e) => {
     const quer = !!(e.state as { sacola?: boolean } | null)?.sacola || new URL(location.href).searchParams.has('sacola');
-    if (!quer && d.open) {
-      if (recemAberta(d)) { registrar('sacola popstate ignorado', 'mesmo toque que abriu'); return; }
-      fechandoPeloHistorico = true;
-      fecharFolha(d, 'voltar do aparelho (popstate)');
-    }
+    if (!quer && d.open && !recemAberta(d)) { fechandoPeloHistorico = true; d.close(); }
     if (quer && !d.open) abrir(false);
   });
   document.addEventListener('click', (e) => {
