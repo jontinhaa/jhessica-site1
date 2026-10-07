@@ -219,7 +219,10 @@ ul, ol { list-style: none; }
    o ::backdrop não cobre o gutter, então ele ganha a mesma cor do backdrop sobre o --bg. */
 html:has(dialog.folha[open]) { overflow: hidden; background: color-mix(in srgb, rgb(20, 13, 10) 55%, var(--bg)); }
 /* o fundo é só um ajuste fino: sem color-mix (iOS anterior ao 16.2) a declaração cai e fica o --bg */
-.folha-in { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+/* flex: 1 1 auto, nunca flex: 1 (base 0%): no celular a folha não tem altura definida (só max-height) e o Safari do
+   iOS 26 resolveu a base 0% como zero; com min-height: 0, a folha abria com altura 0 (sacola "invisível" no iPhone).
+   Com base auto ela mede o conteúdo em qualquer navegador; no PC (height: 100dvh) o grow continua preenchendo. */
+.folha-in { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .alca { flex: none; display: grid; place-items: center; height: 26px; touch-action: none; cursor: grab; }
 .alca i { width: 44px; height: 5px; border-radius: 3px; background: var(--line-2); }
 @media (min-width: 860px) { .alca { display: none; } }
@@ -229,7 +232,7 @@ html:has(dialog.folha[open]) { overflow: hidden; background: color-mix(in srgb, 
 }
 @media (max-width: 859px) { .folha-fechar { top: 2.2rem; } }
 .folha-fechar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.folha-corpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 0 1.5rem 1.8rem; }
+.folha-corpo { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 1.6rem; padding: 0 1.5rem 1.8rem; }
 .folha-pe { flex: none; padding: .9rem 1.5rem calc(.9rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
 
 /* ---------- escolhas do DS: .seg (radio em pílula) e .stepper (quantidade) — painel de Detalhes e sacola ---------- */
