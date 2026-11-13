@@ -13,14 +13,11 @@ const social = [
   { label: 'Instagram da Jhessica', icon: 'simple-icons:instagram', href: redes.instagram },
   { label: 'WhatsApp da Jhessica', icon: 'simple-icons:whatsapp', href: redes.whatsapp },
 ] as const;
-// crédito do site: o nome leva ao LinkedIn; Instagram e GitHub vão em ícones discretos ao lado (links sem parâmetro de rastreio)
+// crédito do site: a logo da Koraki (versão creme, a faixa do rodapé é escura nos dois temas) leva ao site dela
 const autor = {
-  nome: 'Jhonatan Almeida',
-  linkedin: 'https://www.linkedin.com/in/jhonatanalmeidaalvs/',
-  redes: [
-    { label: 'Instagram do Jhonatan', icon: 'simple-icons:instagram', href: 'https://www.instagram.com/jhonatanl.exe/' },
-    { label: 'GitHub do Jhonatan', icon: 'simple-icons:github', href: 'https://github.com/jontinhaa' },
-  ],
+  nome: 'Koraki',
+  href: 'https://korakitech.com',
+  logo: url('/brand/koraki-horizontal-creme.svg'),
 } as const;
 ---
 
@@ -60,8 +57,7 @@ const autor = {
     <div class="fbot">
       <span>© {ano} {marca.nome}</span>
       <span class="autor">
-        Site por:&nbsp;<a href={autor.linkedin} target="_blank" rel="noopener">{autor.nome}</a>
-        {autor.redes.map((r) => <a class="autor-ico" href={r.href} aria-label={r.label} target="_blank" rel="noopener"><Icon name={r.icon} /></a>)}
+        Site por:&nbsp;<a class="autor-logo" href={autor.href} aria-label={`${autor.nome}, site da desenvolvedora`} target="_blank" rel="noopener"><img src={autor.logo} alt={autor.nome} width="110" height="22" loading="lazy" decoding="async" /></a>
       </span>
     </div>
   </div>
@@ -87,9 +83,9 @@ const autor = {
   .fbot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3.5rem; padding-top: 1.6rem; border-top: 1px solid var(--band-line); font-size: .68rem; letter-spacing: .04em; color: var(--on-band-2); }
   .fbot a { display: inline-block; padding-block: .7rem; color: var(--on-band); text-decoration: underline; text-decoration-color: var(--band-line); text-underline-offset: 3px; transition: text-decoration-color .3s; }
   .fbot a:hover { text-decoration-color: var(--accent-2); }
-  /* ícones do crédito: pequenos e na cor do texto do rodapé; a área de toque continua com 44px */
+  /* crédito: logo da Koraki, discreta; a área de toque tem 44px de altura */
   .autor { display: inline-flex; align-items: center; gap: .25rem; }
-  .autor a:first-of-type { margin-right: .5rem; } /* respiro entre o nome e os ícones */
-  .fbot .autor-ico { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; font-size: 13px; color: var(--on-band-2); text-decoration: none; transition: color .3s; }
-  .fbot .autor-ico:hover, .fbot .autor-ico:focus-visible { color: var(--accent-2); }
+  .fbot .autor-logo { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; text-decoration: none; opacity: .75; transition: opacity .3s; }
+  .fbot .autor-logo:hover, .fbot .autor-logo:focus-visible { opacity: 1; }
+  .autor-logo img { display: block; height: 22px; width: auto; }
 </style>
